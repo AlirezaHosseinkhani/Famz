@@ -17,7 +17,7 @@ class AlarmsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => context.read<AlarmBloc>()..add(GetAlarmsRequested()),
+      create: (context) => context.read<AlarmBloc>()..add(GetAlarmsEvent()),
       child: const AlarmsView(),
     );
   }
@@ -49,19 +49,19 @@ class AlarmsView extends StatelessWidget {
                   return CustomErrorWidget(
                     message: state.message,
                     onRetry: () {
-                      context.read<AlarmBloc>().add(GetAlarmsRequested());
+                      // context.read<AlarmBloc>().add(GetAlarmsRequested());
                     },
                   );
                 }
 
-                if (state is AlarmLoaded) {
+                if (state is AlarmsLoaded) {
                   if (state.alarms.isEmpty) {
                     return _buildEmptyState(context);
                   }
 
                   return RefreshIndicator(
                     onRefresh: () async {
-                      context.read<AlarmBloc>().add(GetAlarmsRequested());
+                      // context.read<AlarmBloc>().add(GetAlarmsRequested());
                     },
                     child: ListView.builder(
                       padding: const EdgeInsets.all(16),
@@ -73,12 +73,12 @@ class AlarmsView extends StatelessWidget {
                           child: AlarmItemWidget(
                             alarm: alarm,
                             onToggle: (isActive) {
-                              context.read<AlarmBloc>().add(
-                                    ToggleAlarmRequested(
-                                      alarmId: alarm.id,
-                                      isActive: isActive,
-                                    ),
-                                  );
+                              // context.read<AlarmBloc>().add(
+                              //       ToggleAlarmRequested(
+                              //         alarmId: alarm.id,
+                              //         isActive: isActive,
+                              //       ),
+                              //     );
                             },
                             onEdit: () {
                               context.push(
@@ -174,9 +174,9 @@ class AlarmsView extends StatelessWidget {
             TextButton(
               onPressed: () {
                 Navigator.of(dialogContext).pop();
-                context.read<AlarmBloc>().add(
-                      DeleteAlarmRequested(alarmId: alarmId),
-                    );
+                // context.read<AlarmBloc>().add(
+                //       DeleteAlarmRequested(alarmId: alarmId),
+                //     );
               },
               child: const Text(
                 'Delete',

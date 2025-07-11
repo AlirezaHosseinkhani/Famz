@@ -1,15 +1,18 @@
 import 'package:equatable/equatable.dart';
 
-class NavigationState extends Equatable {
+abstract class NavigationState extends Equatable {
+  const NavigationState();
+
+  @override
+  List<Object> get props => [];
+}
+
+class NavigationInitial extends NavigationState {}
+
+class NavigationChanged extends NavigationState {
   final int currentIndex;
 
-  const NavigationState({this.currentIndex = 0});
-
-  NavigationState copyWith({int? currentIndex}) {
-    return NavigationState(
-      currentIndex: currentIndex ?? this.currentIndex,
-    );
-  }
+  const NavigationChanged(this.currentIndex);
 
   @override
   List<Object> get props => [currentIndex];

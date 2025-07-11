@@ -171,7 +171,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../bloc/notification/notification_bloc.dart';
-import '../../../bloc/notification/notification_event.dart';
 import '../../../bloc/notification/notification_state.dart';
 import '../../../widgets/common/loading_widget.dart';
 import '../../../widgets/notification/notification_item_widget.dart';
@@ -187,7 +186,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
   @override
   void initState() {
     super.initState();
-    context.read<NotificationBloc>().add(GetNotificationsRequested());
+    // context.read<NotificationBloc>().add(GetNotificationsRequested());
   }
 
   @override
@@ -200,7 +199,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         actions: [
           BlocBuilder<NotificationBloc, NotificationState>(
             builder: (context, state) {
-              if (state is NotificationLoaded &&
+              if (state is NotificationsLoaded &&
                   state.notifications.isNotEmpty) {
                 final unreadCount = state.notifications
                     .where((notification) => !notification.isRead)
@@ -209,9 +208,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                 if (unreadCount > 0) {
                   return TextButton(
                     onPressed: () {
-                      context
-                          .read<NotificationBloc>()
-                          .add(MarkAllAsReadRequested());
+                      // context
+                      //     .read<NotificationBloc>()
+                      //     .add(MarkAllAsReadRequested());
                     },
                     child: const Text('Mark all as read'),
                   );
@@ -226,7 +225,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         builder: (context, state) {
           if (state is NotificationLoading) {
             return const LoadingWidget();
-          } else if (state is NotificationLoaded) {
+          } else if (state is NotificationsLoaded) {
             if (state.notifications.isEmpty) {
               return Center(
                 child: Column(
@@ -252,9 +251,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
             return RefreshIndicator(
               onRefresh: () async {
-                context
-                    .read<NotificationBloc>()
-                    .add(GetNotificationsRequested());
+                // context
+                //     .read<NotificationBloc>()
+                //     .add(GetNotificationsRequested());
               },
               child: ListView.builder(
                 padding: const EdgeInsets.all(16),
@@ -265,10 +264,10 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     notification: notification,
                     onTap: () {
                       if (!notification.isRead) {
-                        context.read<NotificationBloc>().add(
-                              MarkAsReadRequested(
-                                  notificationId: notification.id),
-                            );
+                        // context.read<NotificationBloc>().add(
+                        //       MarkAsReadRequested(
+                        //           notificationId: notification.id),
+                        //     );
                       }
                     },
                   );
@@ -297,9 +296,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () {
-                      context
-                          .read<NotificationBloc>()
-                          .add(GetNotificationsRequested());
+                      // context
+                      //     .read<NotificationBloc>()
+                      //     .add(GetNotificationsRequested());
                     },
                     child: const Text('Retry'),
                   ),

@@ -73,17 +73,24 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, User>> login(
       String phoneNumber, String password) async {
+    User userResponse = User(
+        id: 123,
+        email: "user@example.com",
+        username: "Alireza",
+        phoneNumber: "09126198846",
+        isActive: true);
+
     if (await networkInfo.isConnected) {
       try {
         final tokenResponse =
             await remoteDataSource.login(phoneNumber, password);
         await localDataSource.saveTokens(tokenResponse);
 
-        final userResponse = await remoteDataSource.getCurrentUser();
-        await localDataSource.saveUser(userResponse);
+        // final userResponse = await remoteDataSource.getCurrentUser();
+        // await localDataSource.saveUser(userResponse);
         await localDataSource.setLoggedIn(true);
 
-        return Right(userResponse.toEntity());
+        return Right(userResponse);
       } on AuthException catch (e) {
         return Left(AuthFailure(e.message, code: e.code));
       } on NetworkException catch (e) {

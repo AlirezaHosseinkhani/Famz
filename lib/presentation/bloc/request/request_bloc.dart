@@ -1,11 +1,11 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-// import '../../../domain/usecases/alarm_request/accept_request_usecase.dart';
-// import '../../../domain/usecases/alarm_request/create_alarm_request_usecase.dart';
-// import '../../../domain/usecases/alarm_request/delete_alarm_request_usecase.dart';
-// import '../../../domain/usecases/alarm_request/get_received_requests_usecase.dart';
-// import '../../../domain/usecases/alarm_request/get_sent_requests_usecase.dart';
-// import '../../../domain/usecases/alarm_request/reject_request_usecase.dart';
+import '../../../domain/usecases/alarm_request/accept_request_usecase.dart';
+import '../../../domain/usecases/alarm_request/create_alarm_request_usecase.dart';
+import '../../../domain/usecases/alarm_request/delete_alarm_request_usecase.dart';
+import '../../../domain/usecases/alarm_request/get_received_requests_usecase.dart';
+import '../../../domain/usecases/alarm_request/get_sent_requests_usecase.dart';
+import '../../../domain/usecases/alarm_request/reject_request_usecase.dart';
 import 'request_event.dart';
 import 'request_state.dart';
 
@@ -87,50 +87,50 @@ class RequestBloc extends Bloc<RequestEvent, RequestState> {
     AcceptRequestRequested event,
     Emitter<RequestState> emit,
   ) async {
-    final result = await acceptRequestUseCase(
-      AcceptRequestParams(requestId: event.requestId),
-    );
-
-    result.fold(
-      (failure) => emit(RequestError(message: failure.message)),
-      (_) {
-        emit(RequestAccepted(requestId: event.requestId));
-        add(GetReceivedRequestsRequested());
-      },
-    );
+    // final result = await acceptRequestUseCase(
+    //   AcceptRequestParams(requestId: event.requestId),
+    // );
+    //
+    // result.fold(
+    //   (failure) => emit(RequestError(message: failure.message)),
+    //   (_) {
+    //     emit(RequestAccepted(requestId: event.requestId));
+    //     add(GetReceivedRequestsRequested());
+    //   },
+    // );
   }
 
   Future<void> _onRejectRequestRequested(
     RejectRequestRequested event,
     Emitter<RequestState> emit,
   ) async {
-    final result = await rejectRequestUseCase(
-      RejectRequestParams(requestId: event.requestId),
-    );
-
-    result.fold(
-      (failure) => emit(RequestError(message: failure.message)),
-      (_) {
-        emit(RequestRejected(requestId: event.requestId));
-        add(GetReceivedRequestsRequested());
-      },
-    );
+    // final result = await rejectRequestUseCase(
+    //   RejectRequestParams(requestId: event.requestId),
+    // );
+    //
+    // result.fold(
+    //   (failure) => emit(RequestError(message: failure.message)),
+    //   (_) {
+    //     emit(RequestRejected(requestId: event.requestId));
+    //     add(GetReceivedRequestsRequested());
+    //   },
+    // );
   }
 
   Future<void> _onDeleteRequestRequested(
     DeleteRequestRequested event,
     Emitter<RequestState> emit,
   ) async {
-    final result = await deleteAlarmRequestUseCase(
-      DeleteAlarmRequestParams(requestId: event.requestId),
-    );
-
-    result.fold(
-      (failure) => emit(RequestError(message: failure.message)),
-      (_) {
-        emit(RequestDeleted(requestId: event.requestId));
-        add(GetSentRequestsRequested());
-      },
-    );
+    // final result = await deleteAlarmRequestUseCase(
+    //   DeleteAlarmRequestParams(requestId: event.requestId),
+    // );
+    //
+    // result.fold(
+    //   (failure) => emit(RequestError(message: failure.message)),
+    //   (_) {
+    //     emit(RequestDeleted(requestId: event.requestId));
+    //     add(GetSentRequestsRequested());
+    //   },
+    // );
   }
 }

@@ -94,10 +94,10 @@ class NotificationInitial extends NotificationState {}
 
 class NotificationLoading extends NotificationState {}
 
-class NotificationLoaded extends NotificationState {
+class NotificationsLoaded extends NotificationState {
   final List<NotificationEntity> notifications;
 
-  const NotificationLoaded({required this.notifications});
+  const NotificationsLoaded(this.notifications);
 
   @override
   List<Object> get props => [notifications];
@@ -106,19 +106,19 @@ class NotificationLoaded extends NotificationState {
 class NotificationError extends NotificationState {
   final String message;
 
-  const NotificationError({required this.message});
+  const NotificationError(this.message);
 
   @override
   List<Object> get props => [message];
 }
 
 class NotificationMarkedAsRead extends NotificationState {
-  final int notificationId;
+  final NotificationEntity notification;
 
-  const NotificationMarkedAsRead({required this.notificationId});
+  const NotificationMarkedAsRead(this.notification);
 
   @override
-  List<Object> get props => [notificationId];
+  List<Object> get props => [notification];
 }
 
 class AllNotificationsMarkedAsRead extends NotificationState {}

@@ -4,14 +4,22 @@ import 'navigation_event.dart';
 import 'navigation_state.dart';
 
 class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
-  NavigationBloc() : super(const NavigationState()) {
-    on<NavigationTabChanged>(_onTabChanged);
+  NavigationBloc() : super(const NavigationChanged(0)) {
+    on<NavigateToPageEvent>(_onNavigateToPage);
+    on<ResetNavigationEvent>(_onResetNavigation);
   }
 
-  void _onTabChanged(
-    NavigationTabChanged event,
+  void _onNavigateToPage(
+    NavigateToPageEvent event,
     Emitter<NavigationState> emit,
   ) {
-    emit(state.copyWith(currentIndex: event.index));
+    emit(NavigationChanged(event.pageIndex));
+  }
+
+  void _onResetNavigation(
+    ResetNavigationEvent event,
+    Emitter<NavigationState> emit,
+  ) {
+    emit(const NavigationChanged(0));
   }
 }

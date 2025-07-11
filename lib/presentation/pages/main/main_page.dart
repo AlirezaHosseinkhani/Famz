@@ -35,16 +35,21 @@ class MainView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<NavigationBloc, NavigationState>(
       builder: (context, state) {
+        int currentIndex = 0;
+        if (state is NavigationChanged) {
+          currentIndex = state.currentIndex;
+        }
+
         return Scaffold(
           body: IndexedStack(
-            index: state.selectedIndex,
+            index: currentIndex,
             children: _pages,
           ),
           bottomNavigationBar: CustomBottomNav(
-            currentIndex: state.selectedIndex,
+            currentIndex: currentIndex,
             onTap: (index) {
               context.read<NavigationBloc>().add(
-                    NavigationTabChanged(index),
+                    NavigateToPageEvent(index),
                   );
             },
           ),

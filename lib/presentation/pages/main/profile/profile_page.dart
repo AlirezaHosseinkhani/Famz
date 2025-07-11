@@ -318,7 +318,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    context.read<ProfileBloc>().add(GetProfileRequested());
+    // context.read<ProfileBloc>().add(GetProfileRequested());
   }
 
   @override
@@ -355,11 +355,11 @@ class _ProfilePageState extends State<ProfilePage> {
               child: Column(
                 children: [
                   const SizedBox(height: 20),
-                  ProfileAvatarWidget(
-                    imageUrl: profile.profilePicture,
-                    username: profile.username,
-                    size: 120,
-                  ),
+                  // ProfileAvatarWidget(
+                  //   imageUrl: profile.profilePicture,
+                  //   username: profile.username,
+                  //   size: 120,
+                  // ),
                   const SizedBox(height: 24),
                   Text(
                     profile.username,
@@ -380,7 +380,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     ),
                   ],
                   const SizedBox(height: 32),
-                  ProfileInfoWidget(profile: profile),
+                  // ProfileInfoWidget(profile: profile),
                   const SizedBox(height: 32),
                   _buildSettingsSection(context),
                 ],
@@ -408,7 +408,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: () {
-                      context.read<ProfileBloc>().add(GetProfileRequested());
+                      context.read<ProfileBloc>().add(GetProfileEvent());
                     },
                     child: const Text('Retry'),
                   ),

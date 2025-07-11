@@ -1,17 +1,17 @@
 class ApiConstants {
-  static const String baseUrl = 'http://192.168.0.188:8000/api';
-  static const String apiVersion = '/api';
+  static const String baseUrl = 'http://192.168.0.188:8000';
+  static const String apiVersion = 'api';
 
   // static const String baseUrl = 'https://api.famz.app/v1';
-  static const String authEndpoint = '/auth';
+  static const String authEndpoint = 'auth';
   static const String profileEndpoint = '/profile';
-  static const String alarmsEndpoint = '/alarms';
-  static const String requestsEndpoint = '/requests';
-  static const String recordingsEndpoint = '/recordings';
-  static const String notificationsEndpoint = '/notifications';
+  static const String alarmsEndpoint = 'alarms';
+  static const String requestsEndpoint = 'requests';
+  static const String recordingsEndpoint = 'recordings';
+  static const String notificationsEndpoint = 'notifications';
 
   // Auth endpoints
-  static const String loginEndpoint = '$apiVersion/$authEndpoint/login/';
+  static const String loginEndpoint = '/$apiVersion/$authEndpoint/login/';
   static const String registerEndpoint = '$apiVersion/$authEndpoint/register';
   static const String verifyPhoneEndpoint =
       '$apiVersion/$authEndpoint/verify-phone';

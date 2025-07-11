@@ -61,60 +61,67 @@ abstract class AlarmEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class GetAlarmsRequested extends AlarmEvent {}
+class GetAlarmsEvent extends AlarmEvent {}
 
-class ToggleAlarmRequested extends AlarmEvent {
-  final int alarmId;
+class CreateAlarmEvent extends AlarmEvent {
+  final DateTime time;
   final bool isActive;
+  final int? recordingId;
+  final List<int>? repeatDays;
+  final String? label;
 
-  const ToggleAlarmRequested({
-    required this.alarmId,
+  const CreateAlarmEvent({
+    required this.time,
     required this.isActive,
+    this.recordingId,
+    this.repeatDays,
+    this.label,
   });
 
   @override
-  List<Object> get props => [alarmId, isActive];
+  List<Object?> get props => [time, isActive, recordingId, repeatDays, label];
 }
 
-class DeleteAlarmRequested extends AlarmEvent {
+class UpdateAlarmEvent extends AlarmEvent {
+  final int id;
+  final DateTime? time;
+  final bool? isActive;
+  final int? recordingId;
+  final List<int>? repeatDays;
+  final String? label;
+
+  const UpdateAlarmEvent({
+    required this.id,
+    this.time,
+    this.isActive,
+    this.recordingId,
+    this.repeatDays,
+    this.label,
+  });
+
+  @override
+  List<Object?> get props =>
+      [id, time, isActive, recordingId, repeatDays, label];
+}
+
+class DeleteAlarmEvent extends AlarmEvent {
   final int alarmId;
 
-  const DeleteAlarmRequested({required this.alarmId});
+  const DeleteAlarmEvent(this.alarmId);
 
   @override
   List<Object> get props => [alarmId];
 }
 
-class CreateAlarmRequested extends AlarmEvent {
-  final String title;
-  final DateTime dateTime;
-  final String? audioUrl;
-  final String? videoUrl;
-  final String? description;
-  final bool isRepeating;
-  final List<int> repeatDays;
-  final String ringtone;
+class ToggleAlarmEvent extends AlarmEvent {
+  final int id;
+  final bool isActive;
 
-  const CreateAlarmRequested({
-    required this.title,
-    required this.dateTime,
-    this.audioUrl,
-    this.videoUrl,
-    this.description,
-    required this.isRepeating,
-    required this.repeatDays,
-    required this.ringtone,
+  const ToggleAlarmEvent({
+    required this.id,
+    required this.isActive,
   });
 
   @override
-  List<Object?> get props => [
-        title,
-        dateTime,
-        audioUrl,
-        videoUrl,
-        description,
-        isRepeating,
-        repeatDays,
-        ringtone,
-      ];
+  List<Object> get props => [id, isActive];
 }

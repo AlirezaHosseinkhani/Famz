@@ -7,11 +7,13 @@ abstract class NavigationEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class NavigationTabChanged extends NavigationEvent {
-  final int index;
+class NavigateToPageEvent extends NavigationEvent {
+  final int pageIndex;
 
-  const NavigationTabChanged(this.index);
+  const NavigateToPageEvent(this.pageIndex);
 
   @override
-  List<Object> get props => [index];
+  List<Object> get props => [pageIndex];
 }
+
+class ResetNavigationEvent extends NavigationEvent {}

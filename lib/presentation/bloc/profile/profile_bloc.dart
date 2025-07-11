@@ -143,25 +143,29 @@
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-// import '../../../domain/usecases/profile/get_profile_usecase.dart';
-// import '../../../domain/usecases/profile/update_profile_usecase.dart';
+import '../../../domain/usecases/profile/get_profile_usecase.dart';
+import '../../../domain/usecases/profile/patch_profile_usecase.dart';
+import '../../../domain/usecases/profile/update_profile_usecase.dart';
 import 'profile_event.dart';
 import 'profile_state.dart';
 
 class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
   final GetProfileUseCase getProfileUseCase;
   final UpdateProfileUseCase updateProfileUseCase;
+  final PatchProfileUseCase patchProfileUseCase;
 
   ProfileBloc({
     required this.getProfileUseCase,
     required this.updateProfileUseCase,
+    required this.patchProfileUseCase,
   }) : super(ProfileInitial()) {
-    on<GetProfileRequested>(_onGetProfileRequested);
-    on<UpdateProfileRequested>(_onUpdateProfileRequested);
+    on<GetProfileEvent>(_onGetProfile);
+    on<UpdateProfileEvent>(_onUpdateProfile);
+    on<PatchProfileEvent>(_onPatchProfile);
   }
 
-  Future<void> _onGetProfileRequested(
-    GetProfileRequested event,
+  Future<void> _onGetProfile(
+    GetProfileEvent event,
     Emitter<ProfileState> emit,
   ) async {
     emit(ProfileLoading());
@@ -169,28 +173,48 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
     final result = await getProfileUseCase();
 
     result.fold(
-      (failure) => emit(ProfileError(message: failure.message)),
-      (profile) => emit(ProfileLoaded(profile: profile)),
+      (failure) => emit(ProfileError(failure.message)),
+      (profile) => emit(ProfileLoaded(profile)),
     );
   }
 
-  Future<void> _onUpdateProfileRequested(
-    UpdateProfileRequested event,
+  Future<void> _onUpdateProfile(
+    UpdateProfileEvent event,
     Emitter<ProfileState> emit,
   ) async {
-    emit(ProfileLoading());
+    emit(ProfileUpdating());
 
-    final result = await updateProfileUseCase(
-      UpdateProfileParams(
-        phoneNumber: event.phoneNumber,
-        bio: event.bio,
-        profilePicture: event.profilePicture,
-      ),
+    final params = UpdateProfileParams(
+      phoneNumber: event.phoneNumber,
+      bio: event.bio,
+      profilePicture: event.profilePicture,
     );
 
+    final result = await updateProfileUseCase(params);
+
     result.fold(
-      (failure) => emit(ProfileError(message: failure.message)),
-      (profile) => emit(ProfileUpdated(profile: profile)),
+      (failure) => emit(ProfileError(failure.message)),
+      (profile) => emit(ProfileUpdated(profile)),
+    );
+  }
+
+  Future<void> _onPatchProfile(
+    PatchProfileEvent event,
+    Emitter<ProfileState> emit,
+  ) async {
+    emit(ProfileUpdating());
+
+    final params = PatchProfileParams(
+      phoneNumber: event.phoneNumber,
+      bio: event.bio,
+      profilePicture: event.profilePicture,
+    );
+
+    final result = await patchProfileUseCase(params);
+
+    result.fold(
+      (failure) => emit(ProfileError(failure.message)),
+      (profile) => emit(ProfileUpdated(profile)),
     );
   }
 }

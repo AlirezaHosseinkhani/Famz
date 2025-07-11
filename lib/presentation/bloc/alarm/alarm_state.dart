@@ -85,10 +85,10 @@ class AlarmInitial extends AlarmState {}
 
 class AlarmLoading extends AlarmState {}
 
-class AlarmLoaded extends AlarmState {
+class AlarmsLoaded extends AlarmState {
   final List<Alarm> alarms;
 
-  const AlarmLoaded({required this.alarms});
+  const AlarmsLoaded(this.alarms);
 
   @override
   List<Object> get props => [alarms];
@@ -97,34 +97,36 @@ class AlarmLoaded extends AlarmState {
 class AlarmError extends AlarmState {
   final String message;
 
-  const AlarmError({required this.message});
+  const AlarmError(this.message);
 
   @override
   List<Object> get props => [message];
 }
 
-class AlarmToggled extends AlarmState {
+class AlarmCreated extends AlarmState {
   final Alarm alarm;
 
-  const AlarmToggled({required this.alarm});
+  const AlarmCreated(this.alarm);
 
   @override
   List<Object> get props => [alarm];
 }
 
-class AlarmDeleted extends AlarmState {
-  final int alarmId;
-
-  const AlarmDeleted({required this.alarmId});
-
-  @override
-  List<Object> get props => [alarmId];
-}
-
-class AlarmCreated extends AlarmState {
+class AlarmUpdated extends AlarmState {
   final Alarm alarm;
 
-  const AlarmCreated({required this.alarm});
+  const AlarmUpdated(this.alarm);
+
+  @override
+  List<Object> get props => [alarm];
+}
+
+class AlarmDeleted extends AlarmState {}
+
+class AlarmToggled extends AlarmState {
+  final Alarm alarm;
+
+  const AlarmToggled(this.alarm);
 
   @override
   List<Object> get props => [alarm];
