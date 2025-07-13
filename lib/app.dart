@@ -4,10 +4,11 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 
 import 'core/config/theme_config.dart';
 import 'injection_container.dart' as di;
-// import 'localization/app_localizations.dart';
+import 'presentation/bloc/alarm/alarm_bloc.dart';
 import 'presentation/bloc/auth/auth_bloc.dart';
 import 'presentation/bloc/auth/auth_event.dart';
 import 'presentation/bloc/navigation/navigation_bloc.dart';
+import 'presentation/bloc/notification/notification_bloc.dart';
 import 'presentation/bloc/profile/profile_bloc.dart';
 import 'presentation/routes/app_router.dart';
 import 'presentation/routes/route_names.dart';
@@ -25,8 +26,14 @@ class FamzApp extends StatelessWidget {
         BlocProvider<NavigationBloc>(
           create: (context) => di.sl<NavigationBloc>(),
         ),
-        BlocProvider(
-          create: (context) => di.sl<ProfileBloc>(), // Add this
+        BlocProvider<ProfileBloc>(
+          create: (context) => di.sl<ProfileBloc>(),
+        ),
+        BlocProvider<NotificationBloc>(
+          create: (context) => di.sl<NotificationBloc>(),
+        ),
+        BlocProvider<AlarmBloc>(
+          create: (context) => di.sl<AlarmBloc>(),
         ),
       ],
       child: MaterialApp(
@@ -35,8 +42,7 @@ class FamzApp extends StatelessWidget {
         theme: ThemeConfig.lightTheme,
         darkTheme: ThemeConfig.darkTheme,
         themeMode: ThemeMode.system,
-        localizationsDelegates: [
-          // localization.delegate,
+        localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,

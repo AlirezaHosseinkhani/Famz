@@ -1,57 +1,3 @@
-// import 'package:equatable/equatable.dart';
-//
-// import '../../../domain/entities/alarm.dart';
-//
-// abstract class AlarmEvent extends Equatable {
-//   const AlarmEvent();
-//
-//   @override
-//   List<Object?> get props => [];
-// }
-//
-// class GetAlarmsRequested extends AlarmEvent {
-//   const GetAlarmsRequested();
-// }
-//
-// class ToggleAlarmRequested extends AlarmEvent {
-//   final int alarmId;
-//   final bool isActive;
-//
-//   const ToggleAlarmRequested({
-//     required this.alarmId,
-//     required this.isActive,
-//   });
-//
-//   @override
-//   List<Object?> get props => [alarmId, isActive];
-// }
-//
-// class DeleteAlarmRequested extends AlarmEvent {
-//   final int alarmId;
-//
-//   const DeleteAlarmRequested({required this.alarmId});
-//
-//   @override
-//   List<Object?> get props => [alarmId];
-// }
-//
-// class CreateAlarmRequested extends AlarmEvent {
-//   final Alarm alarm;
-//
-//   const CreateAlarmRequested({required this.alarm});
-//
-//   @override
-//   List<Object?> get props => [alarm];
-// }
-//
-// class UpdateAlarmRequested extends AlarmEvent {
-//   final Alarm alarm;
-//
-//   const UpdateAlarmRequested({required this.alarm});
-//
-//   @override
-//   List<Object?> get props => [alarm];
-// }
 import 'package:equatable/equatable.dart';
 
 abstract class AlarmEvent extends Equatable {
@@ -61,7 +7,7 @@ abstract class AlarmEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class GetAlarmsEvent extends AlarmEvent {}
+class LoadAlarmsEvent extends AlarmEvent {}
 
 class CreateAlarmEvent extends AlarmEvent {
   final DateTime time;
@@ -107,21 +53,23 @@ class UpdateAlarmEvent extends AlarmEvent {
 class DeleteAlarmEvent extends AlarmEvent {
   final int alarmId;
 
-  const DeleteAlarmEvent(this.alarmId);
+  const DeleteAlarmEvent({required this.alarmId});
 
   @override
   List<Object> get props => [alarmId];
 }
 
 class ToggleAlarmEvent extends AlarmEvent {
-  final int id;
+  final int alarmId;
   final bool isActive;
 
   const ToggleAlarmEvent({
-    required this.id,
+    required this.alarmId,
     required this.isActive,
   });
 
   @override
-  List<Object> get props => [id, isActive];
+  List<Object> get props => [alarmId, isActive];
 }
+
+class RefreshAlarmsEvent extends AlarmEvent {}

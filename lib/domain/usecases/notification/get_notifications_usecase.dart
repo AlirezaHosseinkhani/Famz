@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../core/errors/failures.dart';
-import '../../../domain/entities/notification.dart';
+import '../../entities/notification.dart';
 import '../../repositories/notification_repository.dart';
 
 class GetNotificationsUseCase {
@@ -10,7 +10,6 @@ class GetNotificationsUseCase {
   GetNotificationsUseCase(this.repository);
 
   Future<Either<Failure, List<NotificationEntity>>> call() async {
-    // Future<Either<Failure, List<Notification>>> call() async {
     return await repository.getNotifications();
   }
 }

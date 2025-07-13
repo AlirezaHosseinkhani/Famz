@@ -10,9 +10,7 @@ class ToggleAlarmUseCase {
   ToggleAlarmUseCase(this.repository);
 
   Future<Either<Failure, Alarm>> call(ToggleAlarmParams params) async {
-    return await repository.toggleAlarm(
-        // params.id, params.isActive
-        );
+    return await repository.toggleAlarm(params.id, params.isActive);
   }
 }
 

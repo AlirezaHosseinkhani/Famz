@@ -42,11 +42,11 @@ class MainView extends StatelessWidget {
 
         return Scaffold(
           body: IndexedStack(
-            index: 3,
+            index: currentIndex,
             children: _pages,
           ),
           bottomNavigationBar: CustomBottomNav(
-            currentIndex: 3,
+            currentIndex: currentIndex,
             onTap: (index) {
               context.read<NavigationBloc>().add(
                     NavigateToPageEvent(index),

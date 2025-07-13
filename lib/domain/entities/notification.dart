@@ -1,17 +1,10 @@
 import 'package:equatable/equatable.dart';
 
-enum NotificationType {
-  alarmRequest,
-  recordingReceived,
-  alarmTriggered,
-  system,
-}
-
 class NotificationEntity extends Equatable {
   final int id;
   final String title;
   final String message;
-  final NotificationType type;
+  final String type;
   final bool isRead;
   final DateTime createdAt;
   final Map<String, dynamic>? data;

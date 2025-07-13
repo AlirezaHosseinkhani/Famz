@@ -17,7 +17,5 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  // WidgetsFlutterBinding.ensureInitialized();
-
   runApp(const FamzApp());
 }

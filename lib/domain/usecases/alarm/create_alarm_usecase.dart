@@ -11,12 +11,12 @@ class CreateAlarmUseCase {
 
   Future<Either<Failure, Alarm>> call(CreateAlarmParams params) async {
     return await repository.createAlarm(
-        // time: params.time,
-        // isActive: params.isActive,
-        // recordingId: params.recordingId,
-        // repeatDays: params.repeatDays,
-        // label: params.label,
-        );
+      time: params.time,
+      isActive: params.isActive,
+      recordingId: params.recordingId,
+      repeatDays: params.repeatDays,
+      label: params.label,
+    );
   }
 }
 

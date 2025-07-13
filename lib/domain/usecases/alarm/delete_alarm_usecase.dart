@@ -8,7 +8,7 @@ class DeleteAlarmUseCase {
 
   DeleteAlarmUseCase(this.repository);
 
-  Future<Either<Failure, void>> call(int alarmId) async {
+  Future<Either<Failure, bool>> call(int alarmId) async {
     return await repository.deleteAlarm(alarmId);
   }
 }

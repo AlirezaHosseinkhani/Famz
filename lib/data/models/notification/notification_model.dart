@@ -1,4 +1,4 @@
-import 'package:famz/domain/entities/notification.dart';
+import '../../../domain/entities/notification.dart';
 
 class NotificationModel extends NotificationEntity {
   const NotificationModel({
@@ -13,13 +13,12 @@ class NotificationModel extends NotificationEntity {
 
   factory NotificationModel.fromJson(Map<String, dynamic> json) {
     return NotificationModel(
-      id: json['id'] as int? ?? 0,
+      id: json['id'] as int,
       title: json['title'] as String,
       message: json['message'] as String,
-      // type: json['type'] as String,
-      type: json['type'] as NotificationType,
-      isRead: json['isRead'] as bool,
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      type: json['type'] as String,
+      isRead: json['is_read'] as bool,
+      createdAt: DateTime.parse(json['created_at'] as String),
       data: json['data'] as Map<String, dynamic>?,
     );
   }
@@ -30,21 +29,29 @@ class NotificationModel extends NotificationEntity {
       'title': title,
       'message': message,
       'type': type,
-      'isRead': isRead,
-      'createdAt': createdAt.toIso8601String(),
-      if (data != null) 'data': data,
+      'is_read': isRead,
+      'created_at': createdAt.toIso8601String(),
+      'data': data,
     };
   }
 
-  factory NotificationModel.fromEntity(NotificationEntity notification) {
+  NotificationModel copyWith({
+    int? id,
+    String? title,
+    String? message,
+    String? type,
+    bool? isRead,
+    DateTime? createdAt,
+    Map<String, dynamic>? data,
+  }) {
     return NotificationModel(
-      id: notification.id,
-      title: notification.title,
-      message: notification.message,
-      type: notification.type,
-      isRead: notification.isRead,
-      createdAt: notification.createdAt,
-      data: notification.data,
+      id: id ?? this.id,
+      title: title ?? this.title,
+      message: message ?? this.message,
+      type: type ?? this.type,
+      isRead: isRead ?? this.isRead,
+      createdAt: createdAt ?? this.createdAt,
+      data: data ?? this.data,
     );
   }
 }

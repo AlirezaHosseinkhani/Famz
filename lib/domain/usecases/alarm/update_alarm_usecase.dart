@@ -11,13 +11,13 @@ class UpdateAlarmUseCase {
 
   Future<Either<Failure, Alarm>> call(UpdateAlarmParams params) async {
     return await repository.updateAlarm(
-        // id: params.id,
-        // time: params.time,
-        // isActive: params.isActive,
-        // recordingId: params.recordingId,
-        // repeatDays: params.repeatDays,
-        // label: params.label,
-        );
+      id: params.id,
+      time: params.time,
+      isActive: params.isActive,
+      recordingId: params.recordingId,
+      repeatDays: params.repeatDays,
+      label: params.label,
+    );
   }
 }
 

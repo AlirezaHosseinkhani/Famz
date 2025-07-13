@@ -55,10 +55,10 @@ class AlarmItemWidget extends StatelessWidget {
                     ),
                   ],
                 ),
-                if (alarm.title != null) ...[
+                if (alarm.label != null) ...[
                   const SizedBox(height: 4),
                   Text(
-                    alarm.title!,
+                    alarm.label!,
                     style: TextStyle(
                       color: alarm.isActive ? Colors.white70 : Colors.white38,
                       fontSize: 14,
@@ -83,7 +83,7 @@ class AlarmItemWidget extends StatelessWidget {
                   Row(
                     children: [
                       Icon(
-                        alarm.recordingType == RecordingType.audio
+                        alarm.recordingType == "audio"
                             ? Icons.audiotrack
                             : Icons.videocam,
                         size: 16,
@@ -93,7 +93,7 @@ class AlarmItemWidget extends StatelessWidget {
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        alarm.recordingType == RecordingType.audio
+                        alarm.recordingType == "audio"
                             ? 'Audio Alarm'
                             : 'Video Alarm',
                         style: TextStyle(
