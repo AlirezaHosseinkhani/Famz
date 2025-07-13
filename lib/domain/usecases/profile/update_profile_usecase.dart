@@ -11,10 +11,10 @@ class UpdateProfileUseCase {
 
   Future<Either<Failure, Profile>> call(UpdateProfileParams params) async {
     return await repository.updateProfile(
-        // phoneNumber: params.phoneNumber,
-        // bio: params.bio,
-        // profilePicture: params.profilePicture,
-        );
+      phoneNumber: params.phoneNumber,
+      bio: params.bio,
+      profilePicture: params.profilePicture,
+    );
   }
 }
 

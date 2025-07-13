@@ -8,6 +8,7 @@ import 'injection_container.dart' as di;
 import 'presentation/bloc/auth/auth_bloc.dart';
 import 'presentation/bloc/auth/auth_event.dart';
 import 'presentation/bloc/navigation/navigation_bloc.dart';
+import 'presentation/bloc/profile/profile_bloc.dart';
 import 'presentation/routes/app_router.dart';
 import 'presentation/routes/route_names.dart';
 
@@ -23,6 +24,9 @@ class FamzApp extends StatelessWidget {
         ),
         BlocProvider<NavigationBloc>(
           create: (context) => di.sl<NavigationBloc>(),
+        ),
+        BlocProvider(
+          create: (context) => di.sl<ProfileBloc>(), // Add this
         ),
       ],
       child: MaterialApp(

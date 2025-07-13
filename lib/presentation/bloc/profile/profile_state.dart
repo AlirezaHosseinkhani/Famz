@@ -9,35 +9,46 @@ abstract class ProfileState extends Equatable {
   List<Object?> get props => [];
 }
 
-class ProfileInitial extends ProfileState {}
+class ProfileInitial extends ProfileState {
+  const ProfileInitial();
+}
 
-class ProfileLoading extends ProfileState {}
+class ProfileLoading extends ProfileState {
+  const ProfileLoading();
+}
 
 class ProfileLoaded extends ProfileState {
   final Profile profile;
 
-  const ProfileLoaded(this.profile);
+  const ProfileLoaded({required this.profile});
 
   @override
-  List<Object> get props => [profile];
+  List<Object?> get props => [profile];
+}
+
+class ProfileUpdating extends ProfileState {
+  final Profile currentProfile;
+
+  const ProfileUpdating({required this.currentProfile});
+
+  @override
+  List<Object?> get props => [currentProfile];
+}
+
+class ProfileUpdated extends ProfileState {
+  final Profile profile;
+
+  const ProfileUpdated({required this.profile});
+
+  @override
+  List<Object?> get props => [profile];
 }
 
 class ProfileError extends ProfileState {
   final String message;
 
-  const ProfileError(this.message);
+  const ProfileError({required this.message});
 
   @override
-  List<Object> get props => [message];
-}
-
-class ProfileUpdating extends ProfileState {}
-
-class ProfileUpdated extends ProfileState {
-  final Profile profile;
-
-  const ProfileUpdated(this.profile);
-
-  @override
-  List<Object> get props => [profile];
+  List<Object?> get props => [message];
 }

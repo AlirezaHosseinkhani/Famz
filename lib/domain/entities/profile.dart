@@ -21,6 +21,28 @@ class Profile extends Equatable {
     required this.updatedAt,
   });
 
+  Profile copyWith({
+    int? id,
+    String? email,
+    String? username,
+    String? phoneNumber,
+    String? bio,
+    String? profilePicture,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return Profile(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      username: username ?? this.username,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      bio: bio ?? this.bio,
+      profilePicture: profilePicture ?? this.profilePicture,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
   @override
   List<Object?> get props => [
         id,

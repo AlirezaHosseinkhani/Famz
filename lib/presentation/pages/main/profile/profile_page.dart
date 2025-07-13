@@ -1,311 +1,14 @@
-// import 'package:famz/core/constants/route_constants.dart';
-// import 'package:famz/presentation/bloc/auth/auth_bloc.dart';
-// import 'package:famz/presentation/bloc/profile/profile_bloc.dart';
-// import 'package:famz/presentation/widgets/common/custom_app_bar.dart';
-// import 'package:famz/presentation/widgets/common/error_widget.dart';
-// import 'package:famz/presentation/widgets/common/loading_widget.dart';
-// import 'package:famz/presentation/widgets/profile/profile_avatar_widget.dart';
-// import 'package:famz/presentation/widgets/profile/profile_info_widget.dart';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_bloc/flutter_bloc.dart';
-// import 'package:go_router/go_router.dart';
-//
-// class ProfilePage extends StatelessWidget {
-//   const ProfilePage({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocProvider(
-//       create: (context) =>
-//           context.read<ProfileBloc>()..add(GetProfileRequested()),
-//       child: const ProfileView(),
-//     );
-//   }
-// }
-//
-// class ProfileView extends StatelessWidget {
-//   const ProfileView({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: Colors.black,
-//       appBar: CustomAppBar(
-//         title: 'Profile',
-//         titleColor: Colors.white,
-//         backgroundColor: Colors.black,
-//         showBackButton: false,
-//         actions: [
-//           IconButton(
-//             icon: const Icon(Icons.edit, color: Color(0xFFFF6B35)),
-//             onPressed: () {
-//               context.push(RouteConstants.editProfile);
-//             },
-//           ),
-//         ],
-//       ),
-//       body: BlocBuilder<ProfileBloc, ProfileState>(
-//         builder: (context, state) {
-//           if (state is ProfileLoading) {
-//             return const LoadingWidget();
-//           }
-//
-//           if (state is ProfileError) {
-//             return CustomErrorWidget(
-//               message: state.message,
-//               onRetry: () {
-//                 context.read<ProfileBloc>().add(GetProfileRequested());
-//               },
-//             );
-//           }
-//
-//           if (state is ProfileLoaded) {
-//             return SingleChildScrollView(
-//               padding: const EdgeInsets.all(16),
-//               child: Column(
-//                 children: [
-//                   const SizedBox(height: 20),
-//                   ProfileAvatarWidget(
-//                     imageUrl: state.profile.profilePicture,
-//                     size: 100,
-//                     onTap: () {
-//                       // Handle avatar tap
-//                     },
-//                   ),
-//                   const SizedBox(height: 20),
-//                   Text(
-//                     state.profile.user.username,
-//                     style: const TextStyle(
-//                       color: Colors.white,
-//                       fontSize: 24,
-//                       fontWeight: FontWeight.bold,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 8),
-//                   Text(
-//                     state.profile.user.email,
-//                     style: TextStyle(
-//                       color: Colors.white.withOpacity(0.7),
-//                       fontSize: 16,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 30),
-//                   ProfileInfoWidget(profile: state.profile),
-//                   const SizedBox(height: 30),
-//                   _buildSettingsSection(context),
-//                 ],
-//               ),
-//             );
-//           }
-//
-//           return const SizedBox.shrink();
-//         },
-//       ),
-//     );
-//   }
-//
-//   Widget _buildSettingsSection(BuildContext context) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         const Text(
-//           'Settings',
-//           style: TextStyle(
-//             color: Colors.white,
-//             fontSize: 18,
-//             fontWeight: FontWeight.bold,
-//           ),
-//         ),
-//         const SizedBox(height: 16),
-//         _buildSettingsItem(
-//           icon: Icons.notifications,
-//           title: 'Notifications',
-//           subtitle: 'Manage notification preferences',
-//           onTap: () {
-//             // Navigate to notification settings
-//           },
-//         ),
-//         _buildSettingsItem(
-//           icon: Icons.security,
-//           title: 'Privacy & Security',
-//           subtitle: 'Manage your privacy settings',
-//           onTap: () {
-//             // Navigate to privacy settings
-//           },
-//         ),
-//         _buildSettingsItem(
-//           icon: Icons.help,
-//           title: 'Help & Support',
-//           subtitle: 'Get help and contact support',
-//           onTap: () {
-//             // Navigate to help
-//           },
-//         ),
-//         _buildSettingsItem(
-//           icon: Icons.info,
-//           title: 'About',
-//           subtitle: 'App version and information',
-//           onTap: () {
-//             // Show about dialog
-//           },
-//         ),
-//         const SizedBox(height: 20),
-//         _buildLogoutButton(context),
-//       ],
-//     );
-//   }
-//
-//   Widget _buildSettingsItem({
-//     required IconData icon,
-//     required String title,
-//     required String subtitle,
-//     required VoidCallback onTap,
-//   }) {
-//     return GestureDetector(
-//       onTap: onTap,
-//       child: Container(
-//         margin: const EdgeInsets.only(bottom: 12),
-//         padding: const EdgeInsets.all(16),
-//         decoration: BoxDecoration(
-//           color: const Color(0xFF1E1E1E),
-//           borderRadius: BorderRadius.circular(12),
-//           border: Border.all(
-//             color: Colors.white.withOpacity(0.1),
-//           ),
-//         ),
-//         child: Row(
-//           children: [
-//             Container(
-//               width: 40,
-//               height: 40,
-//               decoration: BoxDecoration(
-//                 color: const Color(0xFFFF6B35).withOpacity(0.2),
-//                 borderRadius: BorderRadius.circular(20),
-//               ),
-//               child: Icon(
-//                 icon,
-//                 color: const Color(0xFFFF6B35),
-//                 size: 20,
-//               ),
-//             ),
-//             const SizedBox(width: 16),
-//             Expanded(
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   Text(
-//                     title,
-//                     style: const TextStyle(
-//                       color: Colors.white,
-//                       fontSize: 16,
-//                       fontWeight: FontWeight.w500,
-//                     ),
-//                   ),
-//                   const SizedBox(height: 2),
-//                   Text(
-//                     subtitle,
-//                     style: TextStyle(
-//                       color: Colors.white.withOpacity(0.6),
-//                       fontSize: 14,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//             Icon(
-//               Icons.chevron_right,
-//               color: Colors.white.withOpacity(0.3),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Widget _buildLogoutButton(BuildContext context) {
-//     return GestureDetector(
-//       onTap: () {
-//         _showLogoutDialog(context);
-//       },
-//       child: Container(
-//         width: double.infinity,
-//         padding: const EdgeInsets.all(16),
-//         decoration: BoxDecoration(
-//           color: Colors.red.withOpacity(0.1),
-//           borderRadius: BorderRadius.circular(12),
-//           border: Border.all(
-//             color: Colors.red.withOpacity(0.3),
-//           ),
-//         ),
-//         child: const Row(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: [
-//             Icon(
-//               Icons.logout,
-//               color: Colors.red,
-//               size: 20,
-//             ),
-//             SizedBox(width: 8),
-//             Text(
-//               'Logout',
-//               style: TextStyle(
-//                 color: Colors.red,
-//                 fontSize: 16,
-//                 fontWeight: FontWeight.w500,
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   void _showLogoutDialog(BuildContext context) {
-//     showDialog(
-//       context: context,
-//       builder: (BuildContext dialogContext) {
-//         return AlertDialog(
-//           backgroundColor: const Color(0xFF1E1E1E),
-//           title: const Text(
-//             'Logout',
-//             style: TextStyle(color: Colors.white),
-//           ),
-//           content: const Text(
-//             'Are you sure you want to logout?',
-//             style: TextStyle(color: Colors.white70),
-//           ),
-//           actions: [
-//             TextButton(
-//               onPressed: () => Navigator.of(dialogContext).pop(),
-//               child: const Text(
-//                 'Cancel',
-//                 style: TextStyle(color: Colors.white54),
-//               ),
-//             ),
-//             TextButton(
-//               onPressed: () {
-//                 Navigator.of(dialogContext).pop();
-//                 context.read<AuthBloc>().add(AuthLogoutRequested());
-//               },
-//               child: const Text(
-//                 'Logout',
-//                 style: TextStyle(color: Colors.red),
-//               ),
-//             ),
-//           ],
-//         );
-//       },
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../bloc/profile/profile_bloc.dart';
 import '../../../bloc/profile/profile_event.dart';
 import '../../../bloc/profile/profile_state.dart';
+import '../../../widgets/common/error_widget.dart';
 import '../../../widgets/common/loading_widget.dart';
+import '../../../widgets/profile/profile_avatar_widget.dart';
+import '../../../widgets/profile/profile_info_widget.dart';
+import 'edit_profile_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -318,151 +21,166 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    // context.read<ProfileBloc>().add(GetProfileRequested());
+    context.read<ProfileBloc>().add(const GetProfileEvent());
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         title: const Text('Profile'),
-        automaticallyImplyLeading: false,
+        centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.edit),
             onPressed: () {
-              Navigator.pushNamed(context, '/edit-profile');
+              context.read<ProfileBloc>().add(const GetProfileEvent());
             },
-          ),
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () {
-              _showLogoutDialog(context);
-            },
+            icon: const Icon(Icons.refresh),
           ),
         ],
       ),
-      body: BlocBuilder<ProfileBloc, ProfileState>(
+      body: BlocConsumer<ProfileBloc, ProfileState>(
+        listener: (context, state) {
+          if (state is ProfileError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          } else if (state is ProfileUpdated) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Profile updated successfully'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            // Reload profile after update
+            context.read<ProfileBloc>().add(const GetProfileEvent());
+          }
+        },
         builder: (context, state) {
           if (state is ProfileLoading) {
             return const LoadingWidget();
-          } else if (state is ProfileLoaded) {
-            final profile = state.profile;
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  // ProfileAvatarWidget(
-                  //   imageUrl: profile.profilePicture,
-                  //   username: profile.username,
-                  //   size: 120,
-                  // ),
-                  const SizedBox(height: 24),
-                  Text(
-                    profile.username,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  if (profile.bio != null) ...[
-                    const SizedBox(height: 8),
-                    Text(
-                      profile.bio!,
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                  const SizedBox(height: 32),
-                  // ProfileInfoWidget(profile: profile),
-                  const SizedBox(height: 32),
-                  _buildSettingsSection(context),
-                ],
-              ),
-            );
           } else if (state is ProfileError) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Colors.red[400],
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    state.message,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.red[600],
+            return CustomErrorWidget(
+              message: state.message,
+              onRetry: () {
+                context.read<ProfileBloc>().add(const GetProfileEvent());
+              },
+            );
+          } else if (state is ProfileLoaded || state is ProfileUpdating) {
+            final profile = state is ProfileLoaded
+                ? state.profile
+                : (state as ProfileUpdating).currentProfile;
+
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<ProfileBloc>().add(const GetProfileEvent());
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 20),
+                    // Profile Avatar
+                    ProfileAvatarWidget(
+                      imageUrl: profile.profilePicture,
+                      size: 120,
+                      isEditable: true,
+                      onTap: () => _navigateToEditProfile(context),
                     ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      context.read<ProfileBloc>().add(GetProfileEvent());
-                    },
-                    child: const Text('Retry'),
-                  ),
-                ],
+                    const SizedBox(height: 16),
+                    // Profile Name
+                    Text(
+                      profile.username,
+                      style:
+                          Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                    ),
+                    if (profile.bio != null && profile.bio!.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 8,
+                        ),
+                        child: Text(
+                          profile.bio!,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Colors.grey[600],
+                                  ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    const SizedBox(height: 20),
+                    // Profile Information Card
+                    ProfileInfoWidget(
+                      profile: profile,
+                      onEditTap: () => _navigateToEditProfile(context),
+                    ),
+                    const SizedBox(height: 20),
+                    // Action Buttons
+                    _buildActionButtons(context),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             );
           }
-
-          return const SizedBox.shrink();
+          return const Center(
+            child: Text('Something went wrong'),
+          );
         },
       ),
     );
   }
 
-  Widget _buildSettingsSection(BuildContext context) {
-    return Card(
+  Widget _buildActionButtons(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          ListTile(
-            leading: const Icon(Icons.notifications),
-            title: const Text('Notification Settings'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              // Navigate to notification settings
-            },
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _navigateToEditProfile(context),
+              icon: const Icon(Icons.edit),
+              label: const Text('Edit Profile'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
           ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.privacy_tip),
-            title: const Text('Privacy'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              // Navigate to privacy settings
-            },
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.help),
-            title: const Text('Help & Support'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              // Navigate to help & support
-            },
-          ),
-          const Divider(height: 1),
-          ListTile(
-            leading: const Icon(Icons.info),
-            title: const Text('About'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              // Navigate to about page
-            },
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () => _showLogoutDialog(context),
+              icon: const Icon(Icons.logout, color: Colors.red),
+              label: const Text(
+                'Logout',
+                style: TextStyle(color: Colors.red),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                side: const BorderSide(color: Colors.red),
+              ),
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _navigateToEditProfile(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const EditProfilePage(),
       ),
     );
   }
@@ -476,22 +194,19 @@ class _ProfilePageState extends State<ProfilePage> {
           content: const Text('Are you sure you want to logout?'),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
               child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 // TODO: Implement logout functionality
-                Navigator.pushNamedAndRemoveUntil(
-                  context,
-                  '/intro',
-                  (route) => false,
-                );
+                // context.read<AuthBloc>().add(LogoutEvent());
               },
-              child: const Text('Logout'),
+              child: const Text(
+                'Logout',
+                style: TextStyle(color: Colors.red),
+              ),
             ),
           ],
         );

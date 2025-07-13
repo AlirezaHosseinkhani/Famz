@@ -11,10 +11,10 @@ class PatchProfileUseCase {
 
   Future<Either<Failure, Profile>> call(PatchProfileParams params) async {
     return await repository.patchProfile(
-        // phoneNumber: params.phoneNumber,
-        // bio: params.bio,
-        // profilePicture: params.profilePicture,
-        );
+      phoneNumber: params.phoneNumber,
+      bio: params.bio,
+      profilePicture: params.profilePicture,
+    );
   }
 }
 
