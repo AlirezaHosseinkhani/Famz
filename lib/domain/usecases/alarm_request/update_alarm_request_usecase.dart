@@ -1,7 +1,8 @@
 import 'package:dartz/dartz.dart';
+import 'package:equatable/equatable.dart';
 
 import '../../../core/errors/failures.dart';
-import '../../entities/alarm_request.dart';
+import '../../entities/sent_request.dart';
 import '../../repositories/alarm_request_repository.dart';
 
 class UpdateAlarmRequestUseCase {
@@ -9,21 +10,24 @@ class UpdateAlarmRequestUseCase {
 
   UpdateAlarmRequestUseCase(this.repository);
 
-  Future<Either<Failure, AlarmRequest>> call(
+  Future<Either<Failure, SentRequest>> call(
       UpdateAlarmRequestParams params) async {
     return await repository.updateAlarmRequest(
-        // id: params.id,
-        // message: params.message,
-        );
+      requestId: params.requestId,
+      message: params.message,
+    );
   }
 }
 
-class UpdateAlarmRequestParams {
-  final int id;
+class UpdateAlarmRequestParams extends Equatable {
+  final int requestId;
   final String message;
 
-  UpdateAlarmRequestParams({
-    required this.id,
+  const UpdateAlarmRequestParams({
+    required this.requestId,
     required this.message,
   });
+
+  @override
+  List<Object?> get props => [requestId, message];
 }

@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
+import 'package:equatable/equatable.dart';
 
 import '../../../core/errors/failures.dart';
-// import '../../entities/received_request.dart';
 import '../../repositories/alarm_request_repository.dart';
 
 class RejectRequestUseCase {
@@ -9,8 +9,16 @@ class RejectRequestUseCase {
 
   RejectRequestUseCase(this.repository);
 
-  // Future<Either<Failure, ReceivedRequest>> call(int requestId) async {
-  Future<Either<Failure, String>> call(int requestId) async {
-    return await repository.rejectRequest(requestId);
+  Future<Either<Failure, void>> call(RejectRequestParams params) async {
+    return await repository.rejectRequest(params.requestId);
   }
+}
+
+class RejectRequestParams extends Equatable {
+  final int requestId;
+
+  const RejectRequestParams({required this.requestId});
+
+  @override
+  List<Object?> get props => [requestId];
 }

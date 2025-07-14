@@ -13,14 +13,17 @@ import 'data/datasources/local/alarm_local_datasource.dart';
 // Data
 import 'data/datasources/local/auth_local_datasource.dart';
 import 'data/datasources/remote/alarm_remote_datasource.dart';
+import 'data/datasources/remote/alarm_request_remote_datasource.dart';
 import 'data/datasources/remote/auth_remote_datasource.dart';
 import 'data/datasources/remote/notification_remote_datasource.dart';
 import 'data/datasources/remote/profile_remote_datasource.dart';
 import 'data/repositories/alarm_repository_impl.dart';
+import 'data/repositories/alarm_request_repository_impl.dart';
 import 'data/repositories/auth_repository_impl.dart';
 import 'data/repositories/notification_repository_impl.dart';
 import 'data/repositories/profile_repository_impl.dart';
 import 'domain/repositories/alarm_repository.dart';
+import 'domain/repositories/alarm_request_repository.dart';
 // Domain
 import 'domain/repositories/auth_repository.dart';
 import 'domain/repositories/notification_repository.dart';
@@ -30,6 +33,13 @@ import 'domain/usecases/alarm/delete_alarm_usecase.dart';
 import 'domain/usecases/alarm/get_alarms_usecase.dart';
 import 'domain/usecases/alarm/toggle_alarm_usecase.dart';
 import 'domain/usecases/alarm/update_alarm_usecase.dart';
+import 'domain/usecases/alarm_request/accept_request_usecase.dart';
+import 'domain/usecases/alarm_request/create_alarm_request_usecase.dart';
+import 'domain/usecases/alarm_request/delete_alarm_request_usecase.dart';
+import 'domain/usecases/alarm_request/get_received_requests_usecase.dart';
+import 'domain/usecases/alarm_request/get_sent_requests_usecase.dart';
+import 'domain/usecases/alarm_request/reject_request_usecase.dart';
+import 'domain/usecases/alarm_request/update_alarm_request_usecase.dart';
 import 'domain/usecases/auth/login_usecase.dart';
 import 'domain/usecases/auth/logout_usecase.dart';
 import 'domain/usecases/auth/refresh_token_usecase.dart';
@@ -43,6 +53,7 @@ import 'domain/usecases/profile/patch_profile_usecase.dart';
 import 'domain/usecases/profile/update_profile_usecase.dart';
 //Presentation
 import 'presentation/bloc/alarm/alarm_bloc.dart';
+import 'presentation/bloc/alarm_request/alarm_request_bloc.dart';
 import 'presentation/bloc/auth/auth_bloc.dart';
 import 'presentation/bloc/navigation/navigation_bloc.dart';
 import 'presentation/bloc/notification/notification_bloc.dart';
@@ -106,18 +117,22 @@ Future<void> init() async {
     () => NotificationRemoteDataSourceImpl(apiClient: sl()),
   );
 
-  // Alarm data sources
-  sl.registerLazySingleton<AlarmRepository>(
-    () => AlarmRepositoryImpl(
+  // Alarm Request data sources
+  sl.registerLazySingleton<AlarmRequestRemoteDataSource>(
+    () => AlarmRequestRemoteDataSourceImpl(apiClient: sl()),
+  );
+
+  // Repositories
+  sl.registerLazySingleton<AuthRepository>(
+    () => AuthRepositoryImpl(
       remoteDataSource: sl(),
       localDataSource: sl(),
       networkInfo: sl(),
     ),
   );
 
-  // Repositories
-  sl.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(
+  sl.registerLazySingleton<AlarmRepository>(
+    () => AlarmRepositoryImpl(
       remoteDataSource: sl(),
       localDataSource: sl(),
       networkInfo: sl(),
@@ -133,6 +148,13 @@ Future<void> init() async {
 
   sl.registerLazySingleton<NotificationRepository>(
     () => NotificationRepositoryImpl(
+      remoteDataSource: sl(),
+      networkInfo: sl(),
+    ),
+  );
+
+  sl.registerLazySingleton<AlarmRequestRepository>(
+    () => AlarmRequestRepositoryImpl(
       remoteDataSource: sl(),
       networkInfo: sl(),
     ),
@@ -161,6 +183,15 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetAlarmsUseCase(sl()));
   sl.registerLazySingleton(() => ToggleAlarmUseCase(sl()));
   sl.registerLazySingleton(() => UpdateAlarmUseCase(sl()));
+
+  // Alarm Request use cases
+  sl.registerLazySingleton(() => CreateAlarmRequestUseCase(sl()));
+  sl.registerLazySingleton(() => UpdateAlarmRequestUseCase(sl()));
+  sl.registerLazySingleton(() => DeleteAlarmRequestUseCase(sl()));
+  sl.registerLazySingleton(() => GetSentRequestsUseCase(sl()));
+  sl.registerLazySingleton(() => GetReceivedRequestsUseCase(sl()));
+  sl.registerLazySingleton(() => AcceptRequestUseCase(sl()));
+  sl.registerLazySingleton(() => RejectRequestUseCase(sl()));
 
   // BLoCs
   sl.registerFactory(
@@ -199,4 +230,16 @@ Future<void> init() async {
         toggleAlarmUseCase: sl(),
         updateAlarmUseCase: sl(),
       ));
+
+  sl.registerFactory(
+    () => AlarmRequestBloc(
+      getSentRequestsUseCase: sl(),
+      getReceivedRequestsUseCase: sl(),
+      createAlarmRequestUseCase: sl(),
+      updateAlarmRequestUseCase: sl(),
+      deleteAlarmRequestUseCase: sl(),
+      acceptRequestUseCase: sl(),
+      rejectRequestUseCase: sl(),
+    ),
+  );
 }

@@ -1,20 +1,21 @@
 import 'package:dartz/dartz.dart';
 
 import '../../core/errors/failures.dart';
-import '../entities/alarm_request.dart';
+import '../entities/received_request.dart';
+import '../entities/sent_request.dart';
 
 abstract class AlarmRequestRepository {
-  Future<Either<Failure, String>> acceptRequest(int requestId);
-
-  Future<Either<Failure, AlarmRequest>> createAlarmRequest();
-
-  Future<Either<Failure, String>> deleteAlarmRequest(int requestId);
-
-  Future<Either<Failure, List<AlarmRequest>>> getReceivedRequests();
-
-  Future<Either<Failure, List<AlarmRequest>>> getSentRequests();
-
-  Future<Either<Failure, String>> rejectRequest(int requestId);
-
-  Future<Either<Failure, AlarmRequest>> updateAlarmRequest();
+  Future<Either<Failure, List<SentRequest>>> getSentRequests();
+  Future<Either<Failure, List<ReceivedRequest>>> getReceivedRequests();
+  Future<Either<Failure, SentRequest>> createAlarmRequest({
+    required int toUserId,
+    required String message,
+  });
+  Future<Either<Failure, SentRequest>> updateAlarmRequest({
+    required int requestId,
+    required String message,
+  });
+  Future<Either<Failure, void>> deleteAlarmRequest(int requestId);
+  Future<Either<Failure, void>> acceptRequest(int requestId);
+  Future<Either<Failure, void>> rejectRequest(int requestId);
 }
