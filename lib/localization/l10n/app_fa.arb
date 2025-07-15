@@ -1,0 +1,46 @@
+{
+  "@@locale": "fa",
+  "login": "ورود",
+  "register": "ثبت نام",
+  "phoneNumber": "شماره تلفن",
+  "verificationCode": "کد تایید",
+  "enterName": "نام خود را وارد کنید",
+  "allowNotifications": "اجازه نوتیفیکیشن",
+
+  "alarms": "آلارم‌ها",
+  "requests": "درخواست‌ها",
+  "notifications": "اعلان‌ها",
+  "profile": "پروفایل",
+
+  "sentRequests": "درخواست‌های ارسالی",
+  "receivedRequests": "درخواست‌های دریافتی",
+  "createRequest": "ایجاد درخواست",
+  "acceptRequest": "قبول",
+  "rejectRequest": "رد",
+  "recordAlarm": "ضبط آلارم",
+  "shareRequestLink": "اشتراک لینک درخواست",
+
+  "setAlarm": "تنظیم آلارم",
+  "activeAlarms": "آلارم‌های فعال",
+  "inactiveAlarms": "آلارم‌های غیرفعال",
+  "selectDateTime": "انتخاب تاریخ و زمان",
+  "selectRecording": "انتخاب ضبط",
+
+  "save": "ذخیره",
+  "cancel": "لغو",
+  "delete": "حذف",
+  "edit": "ویرایش",
+  "share": "اشتراک",
+  "refresh": "تازه‌سازی",
+  "loading": "در حال بارگیری...",
+  "error": "خطا",
+  "success": "موفقیت",
+  "retry": "تلاش مجدد",
+
+  "requestSentSuccessfully": "درخواست با موفقیت ارسال شد",
+  "requestAcceptedSuccessfully": "درخواست با موفقیت قبول شد",
+  "requestRejectedSuccessfully": "درخواست با موفقیت رد شد",
+  "alarmCreatedSuccessfully": "آلارم با موفقیت ایجاد شد",
+  "networkError": "خطای شبکه رخ داده است",
+  "serverError": "خطای سرور رخ داده است"
+}

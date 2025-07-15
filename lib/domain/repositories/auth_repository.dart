@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../../core/errors/failures.dart';
+import '../../data/models/auth/token_model.dart';
 import '../entities/user.dart';
 
 abstract class AuthRepository {
@@ -9,7 +10,8 @@ abstract class AuthRepository {
   Future<Either<Failure, User>> verifyOtpAndLogin(
       String phoneNumber, String otpCode);
 
-  Future<Either<Failure, User>> login(String phoneNumber, String password);
+  Future<Either<Failure, TokenModel>> login(
+      String phoneNumber, String password);
 
   Future<Either<Failure, User>> register(
       String phoneNumber, String name, String otpCode);

@@ -1,10 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../core/utils/validators.dart';
 import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/auth/auth_event.dart';
 import '../../bloc/auth/auth_state.dart';
@@ -69,22 +67,22 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
 
   void _verifyOtp() {
     if (_formKey.currentState?.validate() ?? false) {
-      if (widget.isNewUser) {
-        Navigator.of(context).pushNamed(
-          RouteNames.nameInput,
-          arguments: {
-            'phoneNumber': widget.phoneNumber,
-            'otpCode': _otpController.text,
-          },
-        );
-      } else {
-        context.read<AuthBloc>().add(
-              AuthVerifyOtpEvent(
-                phoneNumber: widget.phoneNumber,
-                otpCode: _otpController.text,
-              ),
-            );
-      }
+      // if (widget.isNewUser) {
+      //   Navigator.of(context).pushNamed(
+      //     RouteNames.nameInput,
+      //     arguments: {
+      //       'phoneNumber': widget.phoneNumber,
+      //       'otpCode': _otpController.text,
+      //     },
+      //   );
+      // } else {
+      context.read<AuthBloc>().add(
+            AuthLoginEvent(
+              phoneNumber: widget.phoneNumber,
+              password: _otpController.text,
+            ),
+          );
+      // }
     }
   }
 
@@ -163,19 +161,19 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                     label: 'Verification Code',
                     hint: 'Enter 6-digit code',
                     controller: _otpController,
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.text,
                     focusNode: _focusNode,
                     textInputAction: TextInputAction.done,
-                    maxLength: 6,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(6),
-                    ],
-                    validator: Validators.validateOtp,
+                    // maxLength: 6,
+                    // inputFormatters: [
+                    //   FilteringTextInputFormatter.digitsOnly,
+                    //   LengthLimitingTextInputFormatter(6),
+                    // ],
+                    // validator: Validators.validateOtp,
                     onChanged: (value) {
-                      if (value.length == 6) {
-                        _verifyOtp();
-                      }
+                      // if (value.length == 6) {
+                      //   _verifyOtp();
+                      // }
                     },
                     onSubmitted: (_) => _verifyOtp(),
                   ),

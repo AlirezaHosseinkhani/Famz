@@ -3,6 +3,7 @@ import 'package:dartz/dartz.dart';
 import '../../core/errors/exceptions.dart';
 import '../../core/errors/failures.dart';
 import '../../core/network/network_info.dart';
+import '../../data/models/auth/token_model.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/local/auth_local_datasource.dart';
@@ -71,14 +72,14 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> login(
+  Future<Either<Failure, TokenModel>> login(
       String phoneNumber, String password) async {
-    User userResponse = User(
-        id: 123,
-        email: "user@example.com",
-        username: "Alireza",
-        phoneNumber: "09126198846",
-        isActive: true);
+    // User userResponse = User(
+    //     id: 123,
+    //     email: "user@example.com",
+    //     username: "Alireza",
+    //     phoneNumber: "09126198846",
+    //     isActive: true);
 
     if (await networkInfo.isConnected) {
       try {
@@ -90,7 +91,8 @@ class AuthRepositoryImpl implements AuthRepository {
         // await localDataSource.saveUser(userResponse);
         await localDataSource.setLoggedIn(true);
 
-        return Right(userResponse);
+        // return Right(userResponse);
+        return Right(tokenResponse);
       } on AuthException catch (e) {
         return Left(AuthFailure(e.message, code: e.code));
       } on NetworkException catch (e) {

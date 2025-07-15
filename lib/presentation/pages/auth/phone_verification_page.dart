@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/utils/validators.dart';
 import '../../bloc/auth/auth_bloc.dart';
-import '../../bloc/auth/auth_event.dart';
 import '../../bloc/auth/auth_state.dart';
 import '../../routes/route_names.dart';
 import '../../widgets/common/custom_app_bar.dart';
@@ -33,10 +31,15 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
 
   void _submitPhoneNumber() {
     if (_formKey.currentState?.validate() ?? false) {
-      final phoneNumber = Validators.formatPhoneNumber(_phoneController.text);
-      context.read<AuthBloc>().add(
-            AuthSendVerificationCodeEvent(phoneNumber: phoneNumber),
-          );
+      final phoneNumber = Validators.validateEmail(_phoneController.text);
+      Navigator.of(context).pushNamed(
+        RouteNames.otpVerification,
+        arguments: {
+          'phoneNumber': _phoneController.text,
+          'isNewUser': false,
+        },
+      );
+      // context.read<AuthBloc>().add(AuthLoginEvent(phoneNumber: phoneNumber,pa));
     }
   }
 
@@ -56,6 +59,8 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
                 'isNewUser': false,
               },
             );
+          } else if (state is AuthLogin) {
+            Navigator.of(context).pushNamed(RouteNames.main);
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -91,15 +96,15 @@ class _PhoneVerificationPageState extends State<PhoneVerificationPage> {
                     label: 'Phone Number',
                     hint: 'Enter your phone number',
                     controller: _phoneController,
-                    keyboardType: TextInputType.phone,
+                    keyboardType: TextInputType.text,
                     focusNode: _focusNode,
                     textInputAction: TextInputAction.done,
                     prefixIcon: const Icon(Icons.phone),
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(11),
-                    ],
-                    validator: Validators.validatePhoneNumber,
+                    // inputFormatters: [
+                    //   FilteringTextInputFormatter.digitsOnly,
+                    //   LengthLimitingTextInputFormatter(11),
+                    // ],
+                    validator: Validators.validateEmail,
                     onSubmitted: (_) => _submitPhoneNumber(),
                   ),
                   const SizedBox(height: 24),

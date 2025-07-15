@@ -51,12 +51,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<TokenModel> login(String phoneNumber, String otpCode) async {
+  Future<TokenModel> login(String phoneNumber, String password) async {
     final response = await apiClient.post(
       ApiConstants.loginEndpoint,
       body: {
         'email': phoneNumber,
-        'password': otpCode,
+        'password': password,
       },
     );
     return TokenModel.fromJson(response);

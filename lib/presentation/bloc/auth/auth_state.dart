@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-import '../../../domain/entities/user.dart';
+import '../../../data/models/auth/token_model.dart';
 
 abstract class AuthState extends Equatable {
   const AuthState();
@@ -28,13 +28,26 @@ class AuthVerificationCodeSent extends AuthState {
   List<Object?> get props => [message, phoneNumber];
 }
 
-class AuthAuthenticated extends AuthState {
-  final User user;
+class AuthLogin extends AuthState {
+  final String phoneNumber;
+  final String password;
 
-  const AuthAuthenticated({required this.user});
+  const AuthLogin({
+    required this.phoneNumber,
+    required this.password,
+  });
 
   @override
-  List<Object?> get props => [user];
+  List<Object?> get props => [phoneNumber, password];
+}
+
+class AuthAuthenticated extends AuthState {
+  final TokenModel token;
+
+  const AuthAuthenticated({required this.token});
+
+  @override
+  List<Object?> get props => [token];
 }
 
 class AuthError extends AuthState {

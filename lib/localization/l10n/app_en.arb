@@ -1,0 +1,46 @@
+{
+  "@@locale": "en",
+  "login": "Login",
+  "register": "Register",
+  "phoneNumber": "Phone Number",
+  "verificationCode": "Verification Code",
+  "enterName": "Enter Your Name",
+  "allowNotifications": "Allow Notifications",
+
+  "alarms": "Alarms",
+  "requests": "Requests",
+  "notifications": "Notifications",
+  "profile": "Profile",
+
+  "sentRequests": "Sent Requests",
+  "receivedRequests": "Received Requests",
+  "createRequest": "Create Request",
+  "acceptRequest": "Accept",
+  "rejectRequest": "Reject",
+  "recordAlarm": "Record Alarm",
+  "shareRequestLink": "Share Request Link",
+
+  "setAlarm": "Set Alarm",
+  "activeAlarms": "Active Alarms",
+  "inactiveAlarms": "Inactive Alarms",
+  "selectDateTime": "Select Date & Time",
+  "selectRecording": "Select Recording",
+
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "share": "Share",
+  "refresh": "Refresh",
+  "loading": "Loading...",
+  "error": "Error",
+  "success": "Success",
+  "retry": "Retry",
+
+  "requestSentSuccessfully": "Request sent successfully",
+  "requestAcceptedSuccessfully": "Request accepted successfully",
+  "requestRejectedSuccessfully": "Request rejected successfully",
+  "alarmCreatedSuccessfully": "Alarm created successfully",
+  "networkError": "Network error occurred",
+  "serverError": "Server error occurred"
+}

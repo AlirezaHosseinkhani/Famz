@@ -18,6 +18,16 @@ class AuthSendVerificationCodeEvent extends AuthEvent {
   List<Object?> get props => [phoneNumber];
 }
 
+class AuthLoginEvent extends AuthEvent {
+  final String phoneNumber;
+  final String password;
+
+  const AuthLoginEvent({required this.phoneNumber, required this.password});
+
+  @override
+  List<Object?> get props => [phoneNumber, password];
+}
+
 class AuthVerifyOtpEvent extends AuthEvent {
   final String phoneNumber;
   final String otpCode;

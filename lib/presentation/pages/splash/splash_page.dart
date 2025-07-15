@@ -66,7 +66,7 @@ class _SplashPageState extends State<SplashPage>
             Navigator.of(context).pushReplacementNamed(RouteNames.main);
           });
         } else if (state is AuthUnauthenticated) {
-          Navigator.of(context).pushReplacementNamed(RouteNames.main);
+          Navigator.of(context).pushReplacementNamed(RouteNames.intro);
         }
       },
       child: Scaffold(

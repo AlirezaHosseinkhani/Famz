@@ -1,11 +1,12 @@
 class ApiConstants {
+  // static const String baseUrl = 'http://192.168.0.142:8000';
   static const String baseUrl = 'http://192.168.28.23:8000';
   static const String apiVersion = 'api';
 
   // static const String baseUrl = 'https://api.famz.app/v1';
   static const String authEndpoint = 'auth';
   static const String profileEndpoint = '/profile';
-  static const String alarmsEndpoint = 'alarms';
+  static const String alarmsEndpoint = 'alarm-recordings';
   static const String requestsEndpoint = 'requests';
   static const String recordingsEndpoint = 'recordings';
   static const String notificationsEndpoint = 'notifications';

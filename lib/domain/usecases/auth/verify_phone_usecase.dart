@@ -1,7 +1,7 @@
 import 'package:dartz/dartz.dart';
 
 import '../../../core/errors/failures.dart';
-import '../../entities/user.dart';
+import '../../../data/models/auth/token_model.dart';
 import '../../repositories/auth_repository.dart';
 
 class VerifyPhoneUseCase {
@@ -9,7 +9,7 @@ class VerifyPhoneUseCase {
 
   VerifyPhoneUseCase(this.repository);
 
-  Future<Either<Failure, User>> call(VerifyPhoneParams params) async {
+  Future<Either<Failure, TokenModel>> call(VerifyPhoneParams params) async {
     // return await repository.login(params.phoneNumber, params.otpCode);
     return await repository.login("user@example.com", "password123");
   }

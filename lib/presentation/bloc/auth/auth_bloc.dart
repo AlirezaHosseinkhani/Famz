@@ -28,6 +28,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }) : super(AuthInitial()) {
     on<AuthCheckStatusEvent>(_onCheckStatus);
     on<AuthSendVerificationCodeEvent>(_onSendVerificationCode);
+    on<AuthLoginEvent>(_onLogin);
     on<AuthVerifyOtpEvent>(_onVerifyOtp);
     on<AuthRegisterEvent>(_onRegister);
     on<AuthLogoutEvent>(_onLogout);
@@ -48,24 +49,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       },
       (isLoggedIn) async {
         if (isLoggedIn) {
-          final userResult = await authRepository.getCurrentUser();
-          userResult.fold(
-            (failure) {
-              if (failure is AuthFailure) {
-                // Token might be expired, try refreshing
-                add(AuthRefreshTokenEvent());
-              } else {
-                emit(AuthUnauthenticated());
-              }
-            },
-            (user) {
-              if (user != null) {
-                emit(AuthAuthenticated(user: user));
-              } else {
-                emit(AuthUnauthenticated());
-              }
-            },
-          );
+          // final userResult = await authRepository.getCurrentUser();
+          // userResult.fold(
+          //   (failure) {
+          //     if (failure is AuthFailure) {
+          //       // Token might be expired, try refreshing
+          //       add(AuthRefreshTokenEvent());
+          //     } else {
+          //       emit(AuthUnauthenticated());
+          //     }
+          //   },
+          //   (token) {
+          //     if (token != null) {
+          //       emit(AuthAuthenticated(token: token));
+          //     } else {
+          //       emit(AuthUnauthenticated());
+          //     }
+          //   },
+          // );
         } else {
           emit(AuthUnauthenticated());
         }
@@ -97,6 +98,33 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     // );
   }
 
+  Future<void> _onLogin(
+    AuthLoginEvent event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(AuthLoading());
+
+    final result = await loginUseCase(event.phoneNumber, event.password);
+    result.fold(
+      (failure) {
+        if (failure is NetworkFailure) {
+          emit(AuthNetworkError(message: failure.message));
+        } else {
+          emit(AuthError(message: failure.message, code: failure.code));
+        }
+      },
+      // (message) {
+      //   emit(AuthVerificationCodeSent(
+      //     message: "message",
+      //     phoneNumber: event.phoneNumber,
+      //   ));
+      // },
+      (token) {
+        emit(AuthAuthenticated(token: token));
+      },
+    );
+  }
+
   Future<void> _onVerifyOtp(
     AuthVerifyOtpEvent event,
     Emitter<AuthState> emit,
@@ -116,8 +144,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthError(message: failure.message, code: failure.code));
         }
       },
-      (user) {
-        emit(AuthAuthenticated(user: user));
+      (token) {
+        emit(AuthAuthenticated(token: token));
       },
     );
   }
@@ -128,24 +156,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
 
-    final result = await registerUseCase(RegisterParams(
-      phoneNumber: event.phoneNumber,
-      name: event.name,
-      otpCode: event.otpCode,
-    ));
-
-    result.fold(
-      (failure) {
-        if (failure is NetworkFailure) {
-          emit(AuthNetworkError(message: failure.message));
-        } else {
-          emit(AuthError(message: failure.message, code: failure.code));
-        }
-      },
-      (user) {
-        emit(AuthAuthenticated(user: user));
-      },
-    );
+    // final result = await registerUseCase(RegisterParams(
+    //   phoneNumber: event.phoneNumber,
+    //   name: event.name,
+    //   otpCode: event.otpCode,
+    // ));
+    //
+    // result.fold(
+    //   (failure) {
+    //     if (failure is NetworkFailure) {
+    //       emit(AuthNetworkError(message: failure.message));
+    //     } else {
+    //       emit(AuthError(message: failure.message, code: failure.code));
+    //     }
+    //   },
+    //   (user) {
+    //     emit(AuthAuthenticated(token: token));
+    //   },
+    // );
   }
 
   Future<void> _onLogout(
@@ -170,15 +198,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthRefreshTokenEvent event,
     Emitter<AuthState> emit,
   ) async {
-    final result = await refreshTokenUseCase();
-    result.fold(
-      (failure) {
-        emit(AuthUnauthenticated());
-      },
-      (user) {
-        emit(AuthAuthenticated(user: user));
-      },
-    );
+    // final result = await refreshTokenUseCase();
+    // result.fold(
+    //   (failure) {
+    //     emit(AuthUnauthenticated());
+    //   },
+    //   (user) {
+    //     emit(AuthAuthenticated(token: token));
+    //   },
+    // );
   }
 
   void _onClearError(
