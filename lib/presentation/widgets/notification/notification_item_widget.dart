@@ -43,7 +43,7 @@ class NotificationItemWidget extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            notification.title,
+                            notification.notificationType,
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 16,
@@ -75,7 +75,8 @@ class NotificationItemWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      "timeago.format(notification.createdAt)",
+                      // "timeago.format(notification.createdAt)",
+                      notification.alarmRequest.toString(),
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 12,
@@ -95,7 +96,7 @@ class NotificationItemWidget extends StatelessWidget {
     IconData iconData;
     Color iconColor;
 
-    switch (notification.type.toLowerCase()) {
+    switch (notification.notificationType.toLowerCase()) {
       case 'alarm_request':
         iconData = Icons.alarm;
         iconColor = Colors.blue;
