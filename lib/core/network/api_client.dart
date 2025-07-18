@@ -16,16 +16,17 @@ class ApiClient {
     required this.secureStorage,
   });
 
-  Future<Map<String, dynamic>> get(
+  Future<dynamic> get(
     String endpoint, {
     Map<String, String>? headers,
+    bool expectList = false,
   }) async {
     try {
       final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       final requestHeaders = await _buildHeaders(headers);
 
       final response = await client.get(uri, headers: requestHeaders);
-      return _handleResponse(response);
+      return _handleResponse(response, expectList: expectList);
     } catch (e) {
       throw _handleError(e);
     }
@@ -169,13 +170,22 @@ class ApiClient {
     return requestHeaders;
   }
 
-  Map<String, dynamic> _handleResponse(http.Response response) {
+  dynamic _handleResponse(http.Response response, {bool expectList = false}) {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       if (response.body.isEmpty) {
-        return {};
+        return expectList ? [] : {};
       }
+
       try {
-        return json.decode(response.body) as Map<String, dynamic>;
+        final decoded = json.decode(response.body);
+
+        if (expectList && decoded is List) {
+          return decoded;
+        } else if (!expectList && decoded is Map<String, dynamic>) {
+          return decoded;
+        } else {
+          throw const ServerException('Unexpected response format');
+        }
       } catch (e) {
         throw const ServerException('Invalid response format');
       }

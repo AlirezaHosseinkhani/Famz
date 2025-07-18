@@ -70,7 +70,8 @@ class ProfileInfoWidget extends StatelessWidget {
             _buildInfoRow(
               context,
               'Member Since',
-              _formatDate(profile.createdAt),
+              _formatDate(DateTime.now()),
+              // _formatDate(profile.createdAt),
               Icons.calendar_today,
             ),
           ],

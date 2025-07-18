@@ -196,13 +196,13 @@ Future<void> init() async {
   // BLoCs
   sl.registerFactory(
     () => AuthBloc(
-      loginUseCase: sl(),
-      verifyPhoneUseCase: sl(),
-      registerUseCase: sl(),
-      logoutUseCase: sl(),
-      refreshTokenUseCase: sl(),
-      authRepository: sl(),
-    ),
+        loginUseCase: sl(),
+        verifyPhoneUseCase: sl(),
+        registerUseCase: sl(),
+        logoutUseCase: sl(),
+        refreshTokenUseCase: sl(),
+        authRepository: sl(),
+        secureStorage: sl()),
   );
 
   sl.registerFactory(() => NavigationBloc());

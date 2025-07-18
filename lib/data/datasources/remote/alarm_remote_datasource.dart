@@ -70,17 +70,25 @@ class AlarmRemoteDataSourceImpl implements AlarmRemoteDataSource {
   }
 
   @override
-  Future<List<AlarmModel>> getAlarms() async {
-    try {
-      final response = await apiClient.get(ApiConstants.alarmsEndpoint);
-      final List<dynamic> alarmsJson = response['results'] ?? response;
+  // Future<List<AlarmModel>> getAlarms() async {
+  //   try {
+  //     final response = await apiClient.get(ApiConstants.alarmsEndpoint);
+  //     final List<dynamic> alarmsJson = response['results'] ?? response;
+  //
+  //     return alarmsJson
+  //         .map((alarmJson) => AlarmModel.fromJson(alarmJson))
+  //         .toList();
+  //   } catch (e) {
+  //     throw ServerException(e.toString());
+  //   }
+  // }
 
-      return alarmsJson
-          .map((alarmJson) => AlarmModel.fromJson(alarmJson))
-          .toList();
-    } catch (e) {
-      throw ServerException(e.toString());
-    }
+  Future<List<AlarmModel>> getAlarms() async {
+    final response = await apiClient.get(ApiConstants.alarmsEndpoint,
+        expectList: true); // <-- we'll add expectList
+    return (response as List<dynamic>)
+        .map((item) => AlarmModel.fromJson(item))
+        .toList();
   }
 
   @override

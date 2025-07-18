@@ -1,6 +1,8 @@
+import 'package:famz/data/models/auth/token_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/errors/failures.dart';
+import '../../../core/storage/secure_storage.dart';
 import '../../../domain/repositories/auth_repository.dart';
 import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/logout_usecase.dart';
@@ -17,6 +19,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final LogoutUseCase logoutUseCase;
   final RefreshTokenUseCase refreshTokenUseCase;
   final AuthRepository authRepository;
+  final SecureStorage secureStorage;
 
   AuthBloc({
     required this.loginUseCase,
@@ -25,6 +28,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required this.logoutUseCase,
     required this.refreshTokenUseCase,
     required this.authRepository,
+    required this.secureStorage,
   }) : super(AuthInitial()) {
     on<AuthCheckStatusEvent>(_onCheckStatus);
     on<AuthSendVerificationCodeEvent>(_onSendVerificationCode);
@@ -43,12 +47,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
 
     final isLoggedInResult = await authRepository.isLoggedIn();
+    final accessToken = await secureStorage.getAccessToken();
+    final refreshToken = await secureStorage.getRefreshToken();
+
     await isLoggedInResult.fold(
       (failure) async {
         emit(AuthUnauthenticated());
       },
       (isLoggedIn) async {
         if (isLoggedIn) {
+          final token =
+              TokenModel(access: accessToken!, refresh: refreshToken!);
+
+          emit(AuthAuthenticated(token: token));
           // final userResult = await authRepository.getCurrentUser();
           // userResult.fold(
           //   (failure) {

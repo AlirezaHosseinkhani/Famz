@@ -67,6 +67,8 @@ class AlarmRepositoryImpl implements AlarmRepository {
     if (await networkInfo.isConnected) {
       try {
         final alarmModels = await remoteDataSource.getAlarms();
+        final alarms = alarmModels.map((model) => model.toEntity()).toList();
+
         await localDataSource.cacheAlarms(alarmModels);
         return Right(alarmModels.map((model) => model.toEntity()).toList());
       } on ServerException catch (e) {

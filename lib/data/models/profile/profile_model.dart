@@ -8,8 +8,8 @@ class ProfileModel extends Profile {
     super.phoneNumber,
     super.bio,
     super.profilePicture,
-    required super.createdAt,
-    required super.updatedAt,
+    // required super.createdAt,
+    // required super.updatedAt,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
@@ -20,8 +20,8 @@ class ProfileModel extends Profile {
       phoneNumber: json['phone_number'] as String?,
       bio: json['bio'] as String?,
       profilePicture: json['profile_picture'] as String?,
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: DateTime.parse(json['updated_at'] as String),
+      // createdAt: DateTime.parse(json['created_at'] as String),
+      // updatedAt: DateTime.parse(json['updated_at'] as String),
     );
   }
 
@@ -33,8 +33,8 @@ class ProfileModel extends Profile {
       'phone_number': phoneNumber,
       'bio': bio,
       'profile_picture': profilePicture,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
+      // 'created_at': createdAt.toIso8601String(),
+      // 'updated_at': updatedAt.toIso8601String(),
     };
   }
 
@@ -46,8 +46,8 @@ class ProfileModel extends Profile {
       phoneNumber: profile.phoneNumber,
       bio: profile.bio,
       profilePicture: profile.profilePicture,
-      createdAt: profile.createdAt,
-      updatedAt: profile.updatedAt,
+      // createdAt: profile.createdAt,
+      // updatedAt: profile.updatedAt,
     );
   }
 }

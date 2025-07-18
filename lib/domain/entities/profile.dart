@@ -7,8 +7,8 @@ class Profile extends Equatable {
   final String? phoneNumber;
   final String? bio;
   final String? profilePicture;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  // final DateTime createdAt;
+  // final DateTime updatedAt;
 
   const Profile({
     required this.id,
@@ -17,8 +17,8 @@ class Profile extends Equatable {
     this.phoneNumber,
     this.bio,
     this.profilePicture,
-    required this.createdAt,
-    required this.updatedAt,
+    // required this.createdAt,
+    // required this.updatedAt,
   });
 
   Profile copyWith({
@@ -28,8 +28,8 @@ class Profile extends Equatable {
     String? phoneNumber,
     String? bio,
     String? profilePicture,
-    DateTime? createdAt,
-    DateTime? updatedAt,
+    // DateTime? createdAt,
+    // DateTime? updatedAt,
   }) {
     return Profile(
       id: id ?? this.id,
@@ -38,8 +38,8 @@ class Profile extends Equatable {
       phoneNumber: phoneNumber ?? this.phoneNumber,
       bio: bio ?? this.bio,
       profilePicture: profilePicture ?? this.profilePicture,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+      // createdAt: createdAt ?? this.createdAt,
+      // updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 
@@ -51,7 +51,7 @@ class Profile extends Equatable {
         phoneNumber,
         bio,
         profilePicture,
-        createdAt,
-        updatedAt,
+        // createdAt,
+        // updatedAt,
       ];
 }
