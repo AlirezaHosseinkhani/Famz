@@ -7,9 +7,7 @@ abstract class AlarmRequestEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class GetSentRequestsEvent extends AlarmRequestEvent {}
-
-class GetReceivedRequestsEvent extends AlarmRequestEvent {}
+class LoadAllRequestsEvent extends AlarmRequestEvent {}
 
 class CreateAlarmRequestEvent extends AlarmRequestEvent {
   final int toUserId;

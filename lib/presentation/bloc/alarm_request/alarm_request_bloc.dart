@@ -29,8 +29,9 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     required this.acceptRequestUseCase,
     required this.rejectRequestUseCase,
   }) : super(AlarmRequestInitial()) {
-    on<GetSentRequestsEvent>(_onGetSentRequests);
-    on<GetReceivedRequestsEvent>(_onGetReceivedRequests);
+    // on<GetSentRequestsEvent>(_onGetSentRequests);
+    // on<GetReceivedRequestsEvent>(_onGetReceivedRequests);
+    on<LoadAllRequestsEvent>(_onLoadAllRequests);
     on<CreateAlarmRequestEvent>(_onCreateAlarmRequest);
     on<UpdateAlarmRequestEvent>(_onUpdateAlarmRequest);
     on<DeleteAlarmRequestEvent>(_onDeleteAlarmRequest);
@@ -39,35 +40,91 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     on<RefreshRequestsEvent>(_onRefreshRequests);
   }
 
-  Future<void> _onGetSentRequests(
-    GetSentRequestsEvent event,
+  // Future<void> _onGetSentRequests(
+  //   GetSentRequestsEvent event,
+  //   Emitter<AlarmRequestState> emit,
+  // ) async {
+  //   // Preserve existing received requests if available
+  //   final currentReceived = state is AlarmRequestsLoaded
+  //       ? (state as AlarmRequestsLoaded).receivedRequests
+  //       : <ReceivedRequest>[];
+  //
+  //   emit(AlarmRequestLoading(preserveData: currentReceived.isNotEmpty));
+  //
+  //   final result = await getSentRequestsUseCase.call();
+  //
+  //   result.fold(
+  //     (failure) =>
+  //         emit(AlarmRequestError(message: _mapFailureToMessage(failure))),
+  //     (sentRequests) {
+  //       // Ensure the list is properly typed
+  //       final typedSentRequests = sentRequests is List<SentRequest>
+  //           ? sentRequests
+  //           : sentRequests.cast<SentRequest>();
+  //
+  //       emit(AlarmRequestsLoaded(
+  //         receivedRequests: currentReceived,
+  //         sentRequests: typedSentRequests,
+  //       ));
+  //     },
+  //   );
+  // }
+  //
+  // Future<void> _onGetReceivedRequests(
+  //   GetReceivedRequestsEvent event,
+  //   Emitter<AlarmRequestState> emit,
+  // ) async {
+  //   // Preserve existing sent requests if available
+  //   final currentSent = state is AlarmRequestsLoaded
+  //       ? (state as AlarmRequestsLoaded).sentRequests
+  //       : <SentRequest>[];
+  //
+  //   emit(AlarmRequestLoading(preserveData: currentSent.isNotEmpty));
+  //
+  //   final result = await getReceivedRequestsUseCase.call();
+  //
+  //   result.fold(
+  //     (failure) =>
+  //         emit(AlarmRequestError(message: _mapFailureToMessage(failure))),
+  //     (receivedRequests) {
+  //       // Ensure the list is properly typed
+  //       final typedReceivedRequests = receivedRequests is List<ReceivedRequest>
+  //           ? receivedRequests
+  //           : receivedRequests.cast<ReceivedRequest>();
+  //
+  //       emit(AlarmRequestsLoaded(
+  //         receivedRequests: typedReceivedRequests,
+  //         sentRequests: currentSent,
+  //       ));
+  //     },
+  //   );
+  // }
+
+  Future<void> _onLoadAllRequests(
+    LoadAllRequestsEvent event,
     Emitter<AlarmRequestState> emit,
   ) async {
     emit(AlarmRequestLoading());
 
-    final result = await getSentRequestsUseCase.call();
+    final sentResult = await getSentRequestsUseCase.call();
+    final receivedResult = await getReceivedRequestsUseCase.call();
 
-    result.fold(
-      (failure) =>
-          emit(AlarmRequestError(message: _mapFailureToMessage(failure))),
-      (sentRequests) => emit(SentRequestsLoaded(sentRequests: sentRequests)),
-    );
-  }
+    // Prefer showing an error if either fails
+    final failure = sentResult.fold((l) => l, (_) => null) ??
+        receivedResult.fold((l) => l, (_) => null);
 
-  Future<void> _onGetReceivedRequests(
-    GetReceivedRequestsEvent event,
-    Emitter<AlarmRequestState> emit,
-  ) async {
-    emit(AlarmRequestLoading());
+    if (failure != null) {
+      emit(AlarmRequestError(message: _mapFailureToMessage(failure)));
+      return;
+    }
 
-    final result = await getReceivedRequestsUseCase.call();
+    final sentRequests = sentResult.getOrElse(() => []);
+    final receivedRequests = receivedResult.getOrElse(() => []);
 
-    result.fold(
-      (failure) =>
-          emit(AlarmRequestError(message: _mapFailureToMessage(failure))),
-      (receivedRequests) =>
-          emit(ReceivedRequestsLoaded(receivedRequests: receivedRequests)),
-    );
+    emit(AlarmRequestsLoaded(
+      sentRequests: sentRequests,
+      receivedRequests: receivedRequests,
+    ));
   }
 
   Future<void> _onCreateAlarmRequest(
@@ -86,8 +143,12 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     result.fold(
       (failure) =>
           emit(AlarmRequestError(message: _mapFailureToMessage(failure))),
-      (_) =>
-          emit(const AlarmRequestCreated(message: 'Request sent successfully')),
+      (_) {
+        // After successful creation, refresh both lists
+        // add(GetSentRequestsEvent());
+        // add(GetReceivedRequestsEvent());
+        add(LoadAllRequestsEvent());
+      },
     );
   }
 
@@ -171,8 +232,9 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     Emitter<AlarmRequestState> emit,
   ) async {
     // Refresh both sent and received requests
-    add(GetSentRequestsEvent());
-    add(GetReceivedRequestsEvent());
+    // add(GetSentRequestsEvent());
+    // add(GetReceivedRequestsEvent());
+    add(LoadAllRequestsEvent());
   }
 
   String _mapFailureToMessage(Failure failure) {

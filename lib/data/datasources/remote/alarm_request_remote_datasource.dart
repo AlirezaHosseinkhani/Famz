@@ -34,9 +34,10 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
   @override
   Future<List<SentRequestModel>> getSentRequests() async {
     try {
-      final response =
-          await apiClient.get(ApiConstants.sentRequestsEndpoint) as List;
-      return response.map((json) => SentRequestModel.fromJson(json)).toList();
+      final response = await apiClient.get(ApiConstants.sentRequestsEndpoint,
+          expectList: true) as List;
+      // return response.map((json) => SentRequestModel.fromJson(json)).toList();
+      return (response).map((item) => SentRequestModel.fromJson(item)).toList();
     } catch (e) {
       throw ServerException('Failed to get sent requests');
     }
@@ -45,10 +46,10 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
   @override
   Future<List<ReceivedRequestModel>> getReceivedRequests() async {
     try {
-      final response =
-          await apiClient.get(ApiConstants.receivedRequestsEndpoint) as List;
-      return response
-          .map((json) => ReceivedRequestModel.fromJson(json))
+      final response = await apiClient
+          .get(ApiConstants.receivedRequestsEndpoint, expectList: true) as List;
+      return (response)
+          .map((item) => ReceivedRequestModel.fromJson(item))
           .toList();
     } catch (e) {
       throw ServerException('Failed to get received requests');

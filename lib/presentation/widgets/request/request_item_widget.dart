@@ -29,19 +29,19 @@ class RequestItemWidget extends StatelessWidget {
           children: [
             Row(
               children: [
-                CircleAvatar(
-                  backgroundImage: _getProfileImage(),
-                  child: _getProfileImage() == null
-                      ? const Icon(Icons.person)
-                      : null,
-                ),
+                // CircleAvatar(
+                //   backgroundImage: _getProfileImage(),
+                //   child: _getProfileImage() == null
+                //       ? const Icon(Icons.person)
+                //       : null,
+                // ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _getUsername(),
+                        "_getUsername()",
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       Text(

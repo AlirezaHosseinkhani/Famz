@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../domain/entities/received_request.dart';
+import '../../../../domain/entities/sent_request.dart';
 import '../../../../injection_container.dart' as di;
 import '../../../bloc/alarm_request/alarm_request_bloc.dart';
 import '../../../bloc/alarm_request/alarm_request_event.dart';
@@ -37,8 +39,9 @@ class _RequestsPageState extends State<RequestsPage>
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => di.sl<AlarmRequestBloc>()
-        ..add(GetReceivedRequestsEvent())
-        ..add(GetSentRequestsEvent()),
+        // ..add(GetReceivedRequestsEvent())
+        // ..add(GetSentRequestsEvent()),
+        ..add(LoadAllRequestsEvent()),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Requests'),
@@ -156,48 +159,53 @@ class _ReceivedRequestsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AlarmRequestBloc, AlarmRequestState>(
       builder: (context, state) {
-        if (state is AlarmRequestLoading) {
+        if (state is AlarmRequestLoading && !(state is AlarmRequestsLoaded)) {
           return const LoadingWidget();
-        } else if (state is ReceivedRequestsLoaded) {
-          if (state.receivedRequests.isEmpty) {
-            return const Center(
-              child: Text('No received requests'),
-            );
-          }
-          return ListView.builder(
-            itemCount: state.receivedRequests.length,
-            itemBuilder: (context, index) {
-              final request = state.receivedRequests[index];
-              return RequestItemWidget(
-                request: request,
-                onAccept: () {
-                  context.read<AlarmRequestBloc>().add(
-                        AcceptRequestEvent(requestId: request.id),
-                      );
-                },
-                onReject: () {
-                  context.read<AlarmRequestBloc>().add(
-                        RejectRequestEvent(requestId: request.id),
-                      );
-                },
-                onRecord: () => _navigateToRecording(context, request),
-              );
-            },
-          );
         } else if (state is AlarmRequestError) {
           return CustomErrorWidget(
             message: state.message,
             onRetry: () {
-              context.read<AlarmRequestBloc>().add(GetReceivedRequestsEvent());
+              context.read<AlarmRequestBloc>().add(LoadAllRequestsEvent());
             },
           );
         }
-        return const SizedBox();
+
+        // Handle loaded state
+        final receivedRequests = state is AlarmRequestsLoaded
+            ? state.receivedRequests
+            : <ReceivedRequest>[];
+
+        if (receivedRequests.isEmpty) {
+          return const Center(
+            child: Text('No received requests'),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: receivedRequests.length,
+          itemBuilder: (context, index) {
+            final request = receivedRequests[index];
+            return RequestItemWidget(
+              request: request,
+              onAccept: () {
+                context.read<AlarmRequestBloc>().add(
+                      AcceptRequestEvent(requestId: request.id),
+                    );
+              },
+              onReject: () {
+                context.read<AlarmRequestBloc>().add(
+                      RejectRequestEvent(requestId: request.id),
+                    );
+              },
+              onRecord: () => _navigateToRecording(context, request),
+            );
+          },
+        );
       },
     );
   }
 
-  void _navigateToRecording(BuildContext context, dynamic request) {
+  void _navigateToRecording(BuildContext context, ReceivedRequest request) {
     Navigator.pushNamed(
       context,
       '/record-alarm',
@@ -213,43 +221,47 @@ class _SentRequestsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<AlarmRequestBloc, AlarmRequestState>(
       builder: (context, state) {
-        if (state is AlarmRequestLoading) {
+        if (state is AlarmRequestLoading && !(state is AlarmRequestsLoaded)) {
           return const LoadingWidget();
-        } else if (state is SentRequestsLoaded) {
-          if (state.sentRequests.isEmpty) {
-            return const Center(
-              child: Text('No sent requests'),
-            );
-          }
-          return ListView.builder(
-            itemCount: state.sentRequests.length,
-            itemBuilder: (context, index) {
-              final request = state.sentRequests[index];
-              return RequestItemWidget(
-                request: request,
-                onDelete: () {
-                  context.read<AlarmRequestBloc>().add(
-                        DeleteAlarmRequestEvent(requestId: request.id),
-                      );
-                },
-                onEdit: () => _showEditDialog(context, request),
-              );
-            },
-          );
         } else if (state is AlarmRequestError) {
           return CustomErrorWidget(
             message: state.message,
             onRetry: () {
-              context.read<AlarmRequestBloc>().add(GetSentRequestsEvent());
+              context.read<AlarmRequestBloc>().add(LoadAllRequestsEvent());
             },
           );
         }
-        return const SizedBox();
+
+        // Handle loaded state
+        final sentRequests =
+            state is AlarmRequestsLoaded ? state.sentRequests : <SentRequest>[];
+
+        if (sentRequests.isEmpty) {
+          return const Center(
+            child: Text('No sent requests'),
+          );
+        }
+
+        return ListView.builder(
+          itemCount: sentRequests.length,
+          itemBuilder: (context, index) {
+            final request = sentRequests[index];
+            return RequestItemWidget(
+              request: request,
+              onDelete: () {
+                context.read<AlarmRequestBloc>().add(
+                      DeleteAlarmRequestEvent(requestId: request.id),
+                    );
+              },
+              onEdit: () => _showEditDialog(context, request),
+            );
+          },
+        );
       },
     );
   }
 
-  void _showEditDialog(BuildContext context, dynamic request) {
+  void _showEditDialog(BuildContext context, SentRequest request) {
     final messageController = TextEditingController(text: request.message);
 
     showDialog(

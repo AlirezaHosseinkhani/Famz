@@ -12,76 +12,80 @@ abstract class AlarmRequestState extends Equatable {
 
 class AlarmRequestInitial extends AlarmRequestState {}
 
-class AlarmRequestLoading extends AlarmRequestState {}
+class AlarmRequestLoading extends AlarmRequestState {
+  final bool preserveData;
 
-class SentRequestsLoaded extends AlarmRequestState {
-  final List<SentRequest> sentRequests;
-
-  const SentRequestsLoaded({required this.sentRequests});
+  const AlarmRequestLoading({this.preserveData = false});
 
   @override
-  List<Object?> get props => [sentRequests];
+  List<Object?> get props => [preserveData];
 }
 
-class ReceivedRequestsLoaded extends AlarmRequestState {
+class AlarmRequestsLoaded extends AlarmRequestState {
+  final List<SentRequest> sentRequests;
   final List<ReceivedRequest> receivedRequests;
 
-  const ReceivedRequestsLoaded({required this.receivedRequests});
+  const AlarmRequestsLoaded({
+    required this.sentRequests,
+    required this.receivedRequests,
+  });
+
+  List<SentRequest> get typedSentRequests => sentRequests.cast<SentRequest>();
+  List<ReceivedRequest> get typedReceivedRequests =>
+      receivedRequests.cast<ReceivedRequest>();
+
+  AlarmRequestsLoaded copyWith({
+    List<SentRequest>? sentRequests,
+    List<ReceivedRequest>? receivedRequests,
+  }) {
+    return AlarmRequestsLoaded(
+      sentRequests: sentRequests ?? this.sentRequests,
+      receivedRequests: receivedRequests ?? this.receivedRequests,
+    );
+  }
 
   @override
-  List<Object?> get props => [receivedRequests];
+  List<Object?> get props => [sentRequests, receivedRequests];
 }
 
-class AlarmRequestCreated extends AlarmRequestState {
+abstract class AlarmRequestOperationSuccess extends AlarmRequestState {
   final String message;
 
-  const AlarmRequestCreated({required this.message});
+  const AlarmRequestOperationSuccess({required this.message});
 
   @override
   List<Object?> get props => [message];
 }
 
-class AlarmRequestUpdated extends AlarmRequestState {
-  final String message;
-
-  const AlarmRequestUpdated({required this.message});
-
-  @override
-  List<Object?> get props => [message];
+class AlarmRequestCreated extends AlarmRequestOperationSuccess {
+  const AlarmRequestCreated({required super.message});
 }
 
-class AlarmRequestDeleted extends AlarmRequestState {
-  final String message;
-
-  const AlarmRequestDeleted({required this.message});
-
-  @override
-  List<Object?> get props => [message];
+class AlarmRequestUpdated extends AlarmRequestOperationSuccess {
+  const AlarmRequestUpdated({required super.message});
 }
 
-class RequestAccepted extends AlarmRequestState {
-  final String message;
-
-  const RequestAccepted({required this.message});
-
-  @override
-  List<Object?> get props => [message];
+class AlarmRequestDeleted extends AlarmRequestOperationSuccess {
+  const AlarmRequestDeleted({required super.message});
 }
 
-class RequestRejected extends AlarmRequestState {
-  final String message;
+class RequestAccepted extends AlarmRequestOperationSuccess {
+  const RequestAccepted({required super.message});
+}
 
-  const RequestRejected({required this.message});
-
-  @override
-  List<Object?> get props => [message];
+class RequestRejected extends AlarmRequestOperationSuccess {
+  const RequestRejected({required super.message});
 }
 
 class AlarmRequestError extends AlarmRequestState {
   final String message;
+  final bool isCritical;
 
-  const AlarmRequestError({required this.message});
+  const AlarmRequestError({
+    required this.message,
+    this.isCritical = false,
+  });
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, isCritical];
 }
