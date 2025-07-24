@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../domain/repositories/alarm_repository.dart';
 import '../../../domain/usecases/alarm/create_alarm_usecase.dart';
 import '../../../domain/usecases/alarm/delete_alarm_usecase.dart';
 import '../../../domain/usecases/alarm/get_alarms_usecase.dart';
@@ -14,6 +15,7 @@ class AlarmBloc extends Bloc<AlarmEvent, AlarmState> {
   final UpdateAlarmUseCase updateAlarmUseCase;
   final DeleteAlarmUseCase deleteAlarmUseCase;
   final ToggleAlarmUseCase toggleAlarmUseCase;
+  final AlarmRepository alarmRepository;
 
   AlarmBloc({
     required this.getAlarmsUseCase,
@@ -21,116 +23,118 @@ class AlarmBloc extends Bloc<AlarmEvent, AlarmState> {
     required this.updateAlarmUseCase,
     required this.deleteAlarmUseCase,
     required this.toggleAlarmUseCase,
+    required this.alarmRepository,
   }) : super(AlarmInitial()) {
+    on<InitializeAlarmServiceEvent>(_onInitializeAlarmService);
     on<LoadAlarmsEvent>(_onLoadAlarms);
+    on<RefreshAlarmsEvent>(_onRefreshAlarms);
     on<CreateAlarmEvent>(_onCreateAlarm);
     on<UpdateAlarmEvent>(_onUpdateAlarm);
     on<DeleteAlarmEvent>(_onDeleteAlarm);
     on<ToggleAlarmEvent>(_onToggleAlarm);
-    on<RefreshAlarmsEvent>(_onRefreshAlarms);
   }
 
-  void _onLoadAlarms(LoadAlarmsEvent event, Emitter<AlarmState> emit) async {
+  Future<void> _onInitializeAlarmService(
+    InitializeAlarmServiceEvent event,
+    Emitter<AlarmState> emit,
+  ) async {
+    try {
+      await alarmRepository.init();
+    } catch (e) {
+      emit(AlarmError(
+          message: 'Failed to initialize alarm service: ${e.toString()}'));
+    }
+  }
+
+  Future<void> _onLoadAlarms(
+    LoadAlarmsEvent event,
+    Emitter<AlarmState> emit,
+  ) async {
     emit(AlarmLoading());
-
-    final result = await getAlarmsUseCase();
-
-    result.fold(
-      (failure) => emit(AlarmError(message: failure.message)),
-      (alarms) => emit(AlarmLoaded(alarms: alarms)),
-    );
+    try {
+      final alarms = await getAlarmsUseCase();
+      emit(AlarmLoaded(alarms: alarms));
+    } catch (e) {
+      emit(AlarmError(message: 'Failed to load alarms: ${e.toString()}'));
+    }
   }
 
-  void _onCreateAlarm(CreateAlarmEvent event, Emitter<AlarmState> emit) async {
-    emit(AlarmCreating());
-
-    final params = CreateAlarmParams(
-      time: event.time,
-      isActive: event.isActive,
-      recordingId: event.recordingId,
-      repeatDays: event.repeatDays,
-      label: event.label,
-    );
-
-    final result = await createAlarmUseCase(params);
-
-    result.fold(
-      (failure) => emit(AlarmError(message: failure.message)),
-      (alarm) {
-        emit(AlarmCreated(alarm: alarm));
-        // Reload alarms after creation
-        add(LoadAlarmsEvent());
-      },
-    );
+  Future<void> _onRefreshAlarms(
+    RefreshAlarmsEvent event,
+    Emitter<AlarmState> emit,
+  ) async {
+    try {
+      final alarms = await getAlarmsUseCase();
+      emit(AlarmLoaded(alarms: alarms));
+    } catch (e) {
+      emit(AlarmError(message: 'Failed to refresh alarms: ${e.toString()}'));
+    }
   }
 
-  void _onUpdateAlarm(UpdateAlarmEvent event, Emitter<AlarmState> emit) async {
-    emit(AlarmUpdating());
+  Future<void> _onCreateAlarm(
+    CreateAlarmEvent event,
+    Emitter<AlarmState> emit,
+  ) async {
+    try {
+      await createAlarmUseCase(event.alarm);
+      emit(AlarmCreated(alarm: event.alarm));
 
-    final params = UpdateAlarmParams(
-      id: event.id,
-      time: event.time,
-      isActive: event.isActive,
-      recordingId: event.recordingId,
-      repeatDays: event.repeatDays,
-      label: event.label,
-    );
-
-    final result = await updateAlarmUseCase(params);
-
-    result.fold(
-      (failure) => emit(AlarmError(message: failure.message)),
-      (alarm) {
-        emit(AlarmUpdated(alarm: alarm));
-        // Reload alarms after update
-        add(LoadAlarmsEvent());
-      },
-    );
+      // Reload alarms after creation
+      final alarms = await getAlarmsUseCase();
+      emit(AlarmLoaded(alarms: alarms));
+    } catch (e) {
+      emit(AlarmError(message: 'Failed to create alarm: ${e.toString()}'));
+    }
   }
 
-  void _onDeleteAlarm(DeleteAlarmEvent event, Emitter<AlarmState> emit) async {
-    emit(AlarmDeleting());
+  Future<void> _onUpdateAlarm(
+    UpdateAlarmEvent event,
+    Emitter<AlarmState> emit,
+  ) async {
+    try {
+      await updateAlarmUseCase(event.alarm);
+      emit(AlarmUpdated(alarm: event.alarm));
 
-    final result = await deleteAlarmUseCase(event.alarmId);
-
-    result.fold(
-      (failure) => emit(AlarmError(message: failure.message)),
-      (success) {
-        emit(AlarmDeleted(alarmId: event.alarmId));
-        // Reload alarms after deletion
-        add(LoadAlarmsEvent());
-      },
-    );
+      // Reload alarms after update
+      final alarms = await getAlarmsUseCase();
+      emit(AlarmLoaded(alarms: alarms));
+    } catch (e) {
+      emit(AlarmError(message: 'Failed to update alarm: ${e.toString()}'));
+    }
   }
 
-  void _onToggleAlarm(ToggleAlarmEvent event, Emitter<AlarmState> emit) async {
-    emit(AlarmToggling());
+  Future<void> _onDeleteAlarm(
+    DeleteAlarmEvent event,
+    Emitter<AlarmState> emit,
+  ) async {
+    try {
+      await deleteAlarmUseCase(event.alarmId);
+      emit(AlarmDeleted(alarmId: event.alarmId));
 
-    final params = ToggleAlarmParams(
-      id: event.alarmId,
-      isActive: event.isActive,
-    );
-
-    final result = await toggleAlarmUseCase(params);
-
-    result.fold(
-      (failure) => emit(AlarmError(message: failure.message)),
-      (alarm) {
-        emit(AlarmToggled(alarm: alarm));
-        // Reload alarms after toggle
-        add(LoadAlarmsEvent());
-      },
-    );
+      // Reload alarms after deletion
+      final alarms = await getAlarmsUseCase();
+      emit(AlarmLoaded(alarms: alarms));
+    } catch (e) {
+      emit(AlarmError(message: 'Failed to delete alarm: ${e.toString()}'));
+    }
   }
 
-  void _onRefreshAlarms(
-      RefreshAlarmsEvent event, Emitter<AlarmState> emit) async {
-    // Don't show loading for refresh
-    final result = await getAlarmsUseCase();
+  Future<void> _onToggleAlarm(
+    ToggleAlarmEvent event,
+    Emitter<AlarmState> emit,
+  ) async {
+    try {
+      await toggleAlarmUseCase(event.alarmId, event.isActive);
 
-    result.fold(
-      (failure) => emit(AlarmError(message: failure.message)),
-      (alarms) => emit(AlarmLoaded(alarms: alarms)),
-    );
+      // Get the updated alarm list to find the toggled alarm
+      final alarms = await getAlarmsUseCase();
+      final toggledAlarm =
+          alarms.firstWhere((alarm) => alarm.id == event.alarmId);
+
+      emit(AlarmToggled(alarm: toggledAlarm));
+      emit(AlarmLoaded(alarms: alarms));
+    } catch (e) {
+      emit(AlarmError(message: 'Failed to toggle alarm: ${e.toString()}'));
+    }
   }
 }

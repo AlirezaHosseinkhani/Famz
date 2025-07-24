@@ -1,57 +1,38 @@
 import 'package:equatable/equatable.dart';
 
+import '../../../domain/entities/alarm.dart';
+
 abstract class AlarmEvent extends Equatable {
   const AlarmEvent();
 
   @override
-  List<Object?> get props => [];
+  List<Object> get props => [];
 }
 
 class LoadAlarmsEvent extends AlarmEvent {}
 
-class CreateAlarmEvent extends AlarmEvent {
-  final DateTime time;
-  final bool isActive;
-  final int? recordingId;
-  final List<int>? repeatDays;
-  final String? label;
+class RefreshAlarmsEvent extends AlarmEvent {}
 
-  const CreateAlarmEvent({
-    required this.time,
-    required this.isActive,
-    this.recordingId,
-    this.repeatDays,
-    this.label,
-  });
+class CreateAlarmEvent extends AlarmEvent {
+  final Alarm alarm;
+
+  const CreateAlarmEvent({required this.alarm});
 
   @override
-  List<Object?> get props => [time, isActive, recordingId, repeatDays, label];
+  List<Object> get props => [alarm];
 }
 
 class UpdateAlarmEvent extends AlarmEvent {
-  final int id;
-  final DateTime? time;
-  final bool? isActive;
-  final int? recordingId;
-  final List<int>? repeatDays;
-  final String? label;
+  final Alarm alarm;
 
-  const UpdateAlarmEvent({
-    required this.id,
-    this.time,
-    this.isActive,
-    this.recordingId,
-    this.repeatDays,
-    this.label,
-  });
+  const UpdateAlarmEvent({required this.alarm});
 
   @override
-  List<Object?> get props =>
-      [id, time, isActive, recordingId, repeatDays, label];
+  List<Object> get props => [alarm];
 }
 
 class DeleteAlarmEvent extends AlarmEvent {
-  final int alarmId;
+  final String alarmId;
 
   const DeleteAlarmEvent({required this.alarmId});
 
@@ -60,7 +41,7 @@ class DeleteAlarmEvent extends AlarmEvent {
 }
 
 class ToggleAlarmEvent extends AlarmEvent {
-  final int alarmId;
+  final String alarmId;
   final bool isActive;
 
   const ToggleAlarmEvent({
@@ -72,4 +53,4 @@ class ToggleAlarmEvent extends AlarmEvent {
   List<Object> get props => [alarmId, isActive];
 }
 
-class RefreshAlarmsEvent extends AlarmEvent {}
+class InitializeAlarmServiceEvent extends AlarmEvent {}

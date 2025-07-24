@@ -1,3 +1,4 @@
+import 'package:famz/presentation/pages/main/alarms/set_alarm_page.dart';
 import 'package:flutter/material.dart';
 
 import '../pages/auth/intro_page.dart';
@@ -85,10 +86,19 @@ class AppRouter {
         );
 
       // case RouteNames.setAlarm:
+      //   final alarm = settings.arguments as Alarm?;
       //   return MaterialPageRoute(
-      //     builder: (_) => const SetAlarmPage(),
-      //     settings: settings,
+      //     builder: (_) => BlocProvider<AlarmBloc>(
+      //       create: (_) => di.sl<AlarmBloc>(),
+      //       child: SetAlarmPage(alarm: alarm),
+      //     ),
       //   );
+
+      case RouteNames.setAlarm:
+        return MaterialPageRoute(
+          builder: (_) => const SetAlarmPage(),
+          settings: settings,
+        );
       //
       // case RouteNames.alarmDetails:
       //   final args = settings.arguments as Map<String, dynamic>?;

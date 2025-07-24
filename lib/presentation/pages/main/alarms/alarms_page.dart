@@ -25,6 +25,8 @@ class _AlarmsPageState extends State<AlarmsPage>
   @override
   void initState() {
     super.initState();
+    // Initialize alarm service first, then load alarms
+    context.read<AlarmBloc>().add(InitializeAlarmServiceEvent());
     context.read<AlarmBloc>().add(LoadAlarmsEvent());
   }
 
@@ -227,16 +229,20 @@ class _AlarmsPageState extends State<AlarmsPage>
       padding: const EdgeInsets.all(16),
       child: CustomButton(
         text: 'Add Alarm',
-        onPressed: () {
-          Navigator.pushNamed(context, RouteNames.setAlarm);
+        onPressed: () async {
+          final result =
+              await Navigator.pushNamed(context, RouteNames.setAlarm);
+          if (result == true) {
+            context.read<AlarmBloc>().add(LoadAlarmsEvent());
+          }
         },
         backgroundColor: Colors.orange,
-        icon: Icon(Icons.add),
+        icon: const Icon(Icons.add),
       ),
     );
   }
 
-  void _showDeleteDialog(int alarmId) {
+  void _showDeleteDialog(String alarmId) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

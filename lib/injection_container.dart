@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Core
 import 'core/network/api_client.dart';
 import 'core/network/network_info.dart';
+import 'core/services/alarm_service.dart';
 import 'core/storage/secure_storage.dart';
 import 'core/storage/shared_preferences_helper.dart';
 import 'data/datasources/local/alarm_local_datasource.dart';
@@ -86,6 +87,8 @@ Future<void> init() async {
     ),
   );
 
+  sl.registerLazySingleton(() => AlarmService());
+
   // Data sources
   sl.registerLazySingleton<AuthRemoteDataSource>(
     () => AuthRemoteDataSourceImpl(apiClient: sl()),
@@ -98,9 +101,7 @@ Future<void> init() async {
   );
 
   sl.registerLazySingleton<AlarmLocalDataSource>(
-    () => AlarmLocalDataSourceImpl(
-      sharedPreferences: sl(),
-    ),
+    () => AlarmLocalDataSourceImpl(sharedPreferences: sl()),
   );
 
   sl.registerLazySingleton<AlarmRemoteDataSource>(
@@ -133,9 +134,8 @@ Future<void> init() async {
 
   sl.registerLazySingleton<AlarmRepository>(
     () => AlarmRepositoryImpl(
-      remoteDataSource: sl(),
       localDataSource: sl(),
-      networkInfo: sl(),
+      alarmService: sl(),
     ),
   );
 
@@ -178,11 +178,11 @@ Future<void> init() async {
   sl.registerLazySingleton(() => MarkAllAsReadUseCase(sl()));
 
   // Alarm use cases
-  sl.registerLazySingleton(() => CreateAlarmUseCase(sl()));
-  sl.registerLazySingleton(() => DeleteAlarmUseCase(sl()));
   sl.registerLazySingleton(() => GetAlarmsUseCase(sl()));
-  sl.registerLazySingleton(() => ToggleAlarmUseCase(sl()));
+  sl.registerLazySingleton(() => CreateAlarmUseCase(sl()));
   sl.registerLazySingleton(() => UpdateAlarmUseCase(sl()));
+  sl.registerLazySingleton(() => DeleteAlarmUseCase(sl()));
+  sl.registerLazySingleton(() => ToggleAlarmUseCase(sl()));
 
   // Alarm Request use cases
   sl.registerLazySingleton(() => CreateAlarmRequestUseCase(sl()));
@@ -224,11 +224,12 @@ Future<void> init() async {
   );
 
   sl.registerFactory(() => AlarmBloc(
-        createAlarmUseCase: sl(),
-        deleteAlarmUseCase: sl(),
         getAlarmsUseCase: sl(),
-        toggleAlarmUseCase: sl(),
+        createAlarmUseCase: sl(),
         updateAlarmUseCase: sl(),
+        deleteAlarmUseCase: sl(),
+        toggleAlarmUseCase: sl(),
+        alarmRepository: sl(),
       ));
 
   sl.registerFactory(

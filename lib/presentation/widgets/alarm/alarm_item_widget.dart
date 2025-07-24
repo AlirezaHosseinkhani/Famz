@@ -1,10 +1,11 @@
-import 'package:famz/domain/entities/alarm.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../domain/entities/alarm.dart';
+
 class AlarmItemWidget extends StatelessWidget {
   final Alarm alarm;
-  final ValueChanged<bool> onToggle;
+  final Function(bool) onToggle;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -18,166 +19,98 @@ class AlarmItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E1E1E),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: alarm.isActive
-              ? const Color(0xFFFF6B35).withOpacity(0.3)
-              : Colors.white.withOpacity(0.1),
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    final timeFormat = DateFormat('h:mm a');
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      color: Colors.grey[900],
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Text(
-                      DateFormat('HH:mm').format(alarm.time),
-                      style: TextStyle(
-                        color: alarm.isActive ? Colors.white : Colors.white54,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      DateFormat('a').format(alarm.time),
-                      style: TextStyle(
-                        color: alarm.isActive ? Colors.white70 : Colors.white38,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ],
+                Text(
+                  timeFormat.format(alarm.scheduledTime),
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: alarm.isActive ? Colors.white : Colors.grey,
+                  ),
                 ),
-                if (alarm.label != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    alarm.label!,
-                    style: TextStyle(
-                      color: alarm.isActive ? Colors.white70 : Colors.white38,
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-                if (alarm.repeatDays != null &&
-                    alarm.repeatDays!.isNotEmpty) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    _formatRepeatDays(alarm.repeatDays!),
-                    style: TextStyle(
-                      color: alarm.isActive
-                          ? const Color(0xFFFF6B35)
-                          : Colors.white38,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-                if (alarm.recordingType != null) ...[
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        alarm.recordingType == "audio"
-                            ? Icons.audiotrack
-                            : Icons.videocam,
-                        size: 16,
-                        color: alarm.isActive
-                            ? const Color(0xFFFF6B35)
-                            : Colors.white38,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        alarm.recordingType == "audio"
-                            ? 'Audio Alarm'
-                            : 'Video Alarm',
-                        style: TextStyle(
-                          color: alarm.isActive
-                              ? const Color(0xFFFF6B35)
-                              : Colors.white38,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                Switch(
+                  value: alarm.isActive,
+                  onChanged: onToggle,
+                  activeColor: Colors.orange,
+                ),
               ],
             ),
-          ),
-          Column(
-            children: [
-              Switch(
-                value: alarm.isActive,
-                onChanged: onToggle,
-                activeColor: const Color(0xFFFF6B35),
-                activeTrackColor: const Color(0xFFFF6B35).withOpacity(0.3),
-                inactiveThumbColor: Colors.white54,
-                inactiveTrackColor: Colors.white12,
+            const SizedBox(height: 8),
+            // Display weekday information for recurring alarms
+            Text(
+              alarm.isRecurring ? alarm.getWeekdaysText() : 'One time',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: alarm.isActive ? Colors.white70 : Colors.grey,
               ),
-              const SizedBox(height: 8),
+            ),
+            const SizedBox(height: 8),
+            if (!alarm.isRecurring)
+              Text(
+                DateFormat('EEE, MMM d, yyyy').format(alarm.scheduledTime),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: alarm.isActive ? Colors.white70 : Colors.grey,
+                ),
+              ),
+            const SizedBox(height: 8),
+            // Video information
+            if (alarm.videoPath.isNotEmpty)
               Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  GestureDetector(
-                    onTap: onEdit,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+                  const Icon(Icons.videocam, size: 16, color: Colors.white54),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      _getFileName(alarm.videoPath),
+                      style: TextStyle(
+                        color: alarm.isActive ? Colors.white54 : Colors.grey,
                       ),
-                      child: const Icon(
-                        Icons.edit,
-                        size: 16,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: onDelete,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.delete,
-                        size: 16,
-                        color: Colors.red,
-                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
-        ],
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit, color: Colors.blue),
+                  label:
+                      const Text('Edit', style: TextStyle(color: Colors.blue)),
+                ),
+                const SizedBox(width: 8),
+                TextButton.icon(
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  label:
+                      const Text('Delete', style: TextStyle(color: Colors.red)),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  String _formatRepeatDays(List<int> days) {
-    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-    if (days.length == 7) {
-      return 'Every day';
-    }
-
-    if (days.length == 5 && days.every((day) => day >= 1 && day <= 5)) {
-      return 'Weekdays';
-    }
-
-    if (days.length == 2 && days.contains(0) && days.contains(6)) {
-      return 'Weekends';
-    }
-
-    return days.map((day) => dayNames[day]).join(', ');
+  String _getFileName(String path) {
+    if (path.isEmpty) return 'Default Alarm';
+    return path.split('/').last;
   }
 }

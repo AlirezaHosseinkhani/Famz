@@ -1,72 +1,59 @@
 import 'package:equatable/equatable.dart';
 
 class Alarm extends Equatable {
-  final int? id;
-  final DateTime time;
+  final String? id;
+  final DateTime scheduledTime;
+  final String videoPath;
   final bool isActive;
-  final int? recordingId;
-  final List<int>? repeatDays;
-  final String? label;
-  final String? recordingTitle;
-  final String? recordingType; // 'audio' or 'video'
-  final String? recordingUrl;
-  final DateTime? createdAt;
-  final DateTime? updatedAt;
+  final bool isRecurring;
+  final List<bool> weekdays; // Index 0 = Monday, 1 = Tuesday, ..., 6 = Sunday
 
   const Alarm({
     this.id,
-    required this.time,
-    required this.isActive,
-    this.recordingId,
-    this.repeatDays,
-    this.label,
-    this.recordingTitle,
-    this.recordingType,
-    this.recordingUrl,
-    this.createdAt,
-    this.updatedAt,
-  });
+    required this.scheduledTime,
+    required this.videoPath,
+    this.isActive = true,
+    this.isRecurring = false,
+    List<bool>? weekdays,
+  }) : weekdays =
+            weekdays ?? const [false, false, false, false, false, false, false];
+
+  // Helper method to get a human-readable representation of weekdays
+  String getWeekdaysText() {
+    if (!isRecurring) return 'One time';
+
+    List<String> dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    List<String> selectedDays = [];
+
+    for (int i = 0; i < 7; i++) {
+      if (weekdays[i]) selectedDays.add(dayNames[i]);
+    }
+
+    if (selectedDays.length == 7) return 'Every day';
+    if (selectedDays.isEmpty) return 'Never';
+
+    return selectedDays.join(', ');
+  }
 
   Alarm copyWith({
-    int? id,
-    DateTime? time,
+    String? id,
+    DateTime? scheduledTime,
+    String? videoPath,
     bool? isActive,
-    int? recordingId,
-    List<int>? repeatDays,
-    String? label,
-    String? recordingTitle,
-    String? recordingType,
-    String? recordingUrl,
-    DateTime? createdAt,
-    DateTime? updatedAt,
+    bool? isRecurring,
+    List<bool>? weekdays,
   }) {
     return Alarm(
       id: id ?? this.id,
-      time: time ?? this.time,
+      scheduledTime: scheduledTime ?? this.scheduledTime,
+      videoPath: videoPath ?? this.videoPath,
       isActive: isActive ?? this.isActive,
-      recordingId: recordingId ?? this.recordingId,
-      repeatDays: repeatDays ?? this.repeatDays,
-      label: label ?? this.label,
-      recordingTitle: recordingTitle ?? this.recordingTitle,
-      recordingType: recordingType ?? this.recordingType,
-      recordingUrl: recordingUrl ?? this.recordingUrl,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
+      isRecurring: isRecurring ?? this.isRecurring,
+      weekdays: weekdays ?? this.weekdays,
     );
   }
 
   @override
-  List<Object?> get props => [
-        id,
-        time,
-        isActive,
-        recordingId,
-        repeatDays,
-        label,
-        recordingTitle,
-        recordingType,
-        recordingUrl,
-        createdAt,
-        updatedAt,
-      ];
+  List<Object?> get props =>
+      [id, scheduledTime, videoPath, isActive, isRecurring, weekdays];
 }

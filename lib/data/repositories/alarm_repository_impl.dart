@@ -1,136 +1,93 @@
-import 'package:dartz/dartz.dart';
-
-import '../../core/errors/exceptions.dart';
-import '../../core/errors/failures.dart';
-import '../../core/network/network_info.dart';
+import '../../core/services/alarm_service.dart';
 import '../../domain/entities/alarm.dart';
 import '../../domain/repositories/alarm_repository.dart';
 import '../datasources/local/alarm_local_datasource.dart';
-import '../datasources/remote/alarm_remote_datasource.dart';
+import '../models/alarm/alarm_model.dart';
 
 class AlarmRepositoryImpl implements AlarmRepository {
-  final AlarmRemoteDataSource remoteDataSource;
   final AlarmLocalDataSource localDataSource;
-  final NetworkInfo networkInfo;
+  final AlarmService alarmService;
 
   AlarmRepositoryImpl({
-    required this.remoteDataSource,
     required this.localDataSource,
-    required this.networkInfo,
+    required this.alarmService,
   });
 
   @override
-  Future<Either<Failure, Alarm>> createAlarm({
-    required DateTime time,
-    required bool isActive,
-    int? recordingId,
-    List<int>? repeatDays,
-    String? label,
-  }) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final alarmModel = await remoteDataSource.createAlarm(
-          time: time,
-          isActive: isActive,
-          recordingId: recordingId,
-          repeatDays: repeatDays,
-          label: label,
-        );
+  Future<void> init() async {
+    await alarmService.init();
+  }
 
-        await localDataSource.cacheAlarm(alarmModel);
-        return Right(alarmModel.toEntity());
-      } on ServerException catch (e) {
-        return Left(ServerFailure(e.message));
-      }
+  @override
+  Future<List<Alarm>> getAlarms() async {
+    final alarmModels = await localDataSource.getAlarms();
+    return alarmModels.cast<Alarm>();
+  }
+
+  @override
+  Future<void> saveAlarm(Alarm alarm) async {
+    final alarms = await localDataSource.getAlarms();
+    final alarmModel = AlarmModel.fromEntity(alarm);
+
+    // Check if alarm with this ID already exists
+    final existingIndex = alarms.indexWhere((a) => a.id == alarm.id);
+
+    if (existingIndex >= 0) {
+      alarms[existingIndex] = alarmModel;
     } else {
-      return const Left(NetworkFailure('No internet connection'));
+      alarms.add(alarmModel);
+    }
+
+    await localDataSource.saveAlarms(alarms);
+
+    // Schedule alarm using alarm service
+    if (alarm.isActive) {
+      await alarmService.scheduleAlarm(alarm);
+    } else {
+      await alarmService.cancelAlarm(alarm.id!);
     }
   }
 
   @override
-  Future<Either<Failure, bool>> deleteAlarm(int alarmId) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final result = await remoteDataSource.deleteAlarm(alarmId);
-        await localDataSource.deleteAlarm(alarmId);
-        return Right(result);
-      } on ServerException catch (e) {
-        return Left(ServerFailure(e.message));
-      }
-    } else {
-      return const Left(NetworkFailure('No internet connection'));
-    }
+  Future<void> deleteAlarm(String id) async {
+    await alarmService.cancelAlarm(id);
+    await localDataSource.deleteAlarm(id);
   }
 
   @override
-  Future<Either<Failure, List<Alarm>>> getAlarms() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final alarmModels = await remoteDataSource.getAlarms();
-        final alarms = alarmModels.map((model) => model.toEntity()).toList();
+  Future<void> toggleAlarm(String id, bool isActive) async {
+    final alarms = await localDataSource.getAlarms();
+    final alarmIndex = alarms.indexWhere((a) => a.id == id);
 
-        await localDataSource.cacheAlarms(alarmModels);
-        return Right(alarmModels.map((model) => model.toEntity()).toList());
-      } on ServerException catch (e) {
-        try {
-          final cachedAlarms = await localDataSource.getCachedAlarms();
-          return Right(cachedAlarms.map((model) => model.toEntity()).toList());
-        } on CacheException {
-          return Left(ServerFailure(e.message));
-        }
-      }
-    } else {
-      try {
-        final cachedAlarms = await localDataSource.getCachedAlarms();
-        return Right(cachedAlarms.map((model) => model.toEntity()).toList());
-      } on CacheException catch (e) {
-        return Left(CacheFailure(e.message));
+    if (alarmIndex >= 0) {
+      final alarm = alarms[alarmIndex];
+      final updatedAlarm = AlarmModel(
+        id: alarm.id,
+        scheduledTime: alarm.scheduledTime,
+        videoPath: alarm.videoPath,
+        isActive: isActive,
+        isRecurring: alarm.isRecurring,
+        weekdays: alarm.weekdays,
+      );
+
+      alarms[alarmIndex] = updatedAlarm;
+      await localDataSource.saveAlarms(alarms);
+
+      if (isActive) {
+        await alarmService.scheduleAlarm(updatedAlarm);
+      } else {
+        await alarmService.cancelAlarm(id);
       }
     }
   }
 
   @override
-  Future<Either<Failure, Alarm>> toggleAlarm(int id, bool isActive) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final alarmModel = await remoteDataSource.toggleAlarm(id, isActive);
-        await localDataSource.cacheAlarm(alarmModel);
-        return Right(alarmModel.toEntity());
-      } on ServerException catch (e) {
-        return Left(ServerFailure(e.message));
-      }
-    } else {
-      return const Left(NetworkFailure('No internet connection'));
-    }
+  Future<void> scheduleAlarm(Alarm alarm) async {
+    await alarmService.scheduleAlarm(alarm);
   }
 
   @override
-  Future<Either<Failure, Alarm>> updateAlarm({
-    required int id,
-    DateTime? time,
-    bool? isActive,
-    int? recordingId,
-    List<int>? repeatDays,
-    String? label,
-  }) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final alarmModel = await remoteDataSource.updateAlarm(
-          id: id,
-          time: time,
-          isActive: isActive,
-          recordingId: recordingId,
-          repeatDays: repeatDays,
-          label: label,
-        );
-
-        await localDataSource.cacheAlarm(alarmModel);
-        return Right(alarmModel.toEntity());
-      } on ServerException catch (e) {
-        return Left(ServerFailure(e.message));
-      }
-    } else {
-      return const Left(NetworkFailure('No internet connection'));
-    }
+  Future<void> cancelAlarm(String id) async {
+    await alarmService.cancelAlarm(id);
   }
 }

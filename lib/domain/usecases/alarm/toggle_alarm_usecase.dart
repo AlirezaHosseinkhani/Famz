@@ -1,7 +1,3 @@
-import 'package:dartz/dartz.dart';
-
-import '../../../core/errors/failures.dart';
-import '../../entities/alarm.dart';
 import '../../repositories/alarm_repository.dart';
 
 class ToggleAlarmUseCase {
@@ -9,17 +5,7 @@ class ToggleAlarmUseCase {
 
   ToggleAlarmUseCase(this.repository);
 
-  Future<Either<Failure, Alarm>> call(ToggleAlarmParams params) async {
-    return await repository.toggleAlarm(params.id, params.isActive);
+  Future<void> call(String id, bool isActive) async {
+    return await repository.toggleAlarm(id, isActive);
   }
-}
-
-class ToggleAlarmParams {
-  final int id;
-  final bool isActive;
-
-  ToggleAlarmParams({
-    required this.id,
-    required this.isActive,
-  });
 }
