@@ -1,3 +1,5 @@
+import 'package:famz/presentation/bloc/alarm_recording/alarm_recording_bloc.dart';
+import 'package:famz/presentation/bloc/alarm_request/alarm_request_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -34,6 +36,12 @@ class FamzApp extends StatelessWidget {
         ),
         BlocProvider<AlarmBloc>(
           create: (context) => di.sl<AlarmBloc>(),
+        ),
+        BlocProvider<AlarmRecordingBloc>(
+          create: (context) => di.sl<AlarmRecordingBloc>(),
+        ),
+        BlocProvider<AlarmRequestBloc>(
+          create: (context) => di.sl<AlarmRequestBloc>(),
         ),
       ],
       child: MaterialApp(

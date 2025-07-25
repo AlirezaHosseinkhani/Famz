@@ -6,8 +6,6 @@ import '../../../bloc/alarm/alarm_event.dart';
 import '../../../bloc/alarm/alarm_state.dart';
 import '../../../routes/route_names.dart';
 import '../../../widgets/alarm/alarm_item_widget.dart';
-import '../../../widgets/common/custom_button.dart';
-import '../../../widgets/common/error_widget.dart';
 import '../../../widgets/common/loading_widget.dart';
 
 class AlarmsPage extends StatefulWidget {
@@ -25,7 +23,6 @@ class _AlarmsPageState extends State<AlarmsPage>
   @override
   void initState() {
     super.initState();
-    // Initialize alarm service first, then load alarms
     context.read<AlarmBloc>().add(InitializeAlarmServiceEvent());
     context.read<AlarmBloc>().add(LoadAlarmsEvent());
   }
@@ -35,209 +32,225 @@ class _AlarmsPageState extends State<AlarmsPage>
     super.build(context);
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text(
-          'Alarms',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(),
+            Expanded(
+              child: BlocConsumer<AlarmBloc, AlarmState>(
+                listener: (context, state) {
+                  if (state is AlarmError) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(state.message),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  } else if (state is AlarmCreated) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Alarm created successfully'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } else if (state is AlarmDeleted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Alarm deleted successfully'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  }
+                },
+                builder: (context, state) {
+                  if (state is AlarmLoading) {
+                    return const LoadingWidget();
+                  } else if (state is AlarmLoaded) {
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        context.read<AlarmBloc>().add(RefreshAlarmsEvent());
+                      },
+                      child: state.alarms.isEmpty
+                          ? _buildEmptyState()
+                          : _buildAlarmsList(state),
+                    );
+                  }
+                  return const LoadingWidget();
+                },
+              ),
+            ),
+            _buildAddAlarmButton(),
+          ],
         ),
-        elevation: 0,
       ),
-      body: BlocConsumer<AlarmBloc, AlarmState>(
-        listener: (context, state) {
-          if (state is AlarmError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
-            );
-          } else if (state is AlarmCreated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Alarm created successfully'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          } else if (state is AlarmDeleted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Alarm deleted successfully'),
-                backgroundColor: Colors.green,
-              ),
-            );
-          } else if (state is AlarmToggled) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Alarm ${state.alarm.isActive ? 'activated' : 'deactivated'}',
-                ),
-                backgroundColor: Colors.green,
-              ),
-            );
-          }
-        },
-        builder: (context, state) {
-          if (state is AlarmLoading) {
-            return const LoadingWidget();
-          } else if (state is AlarmError) {
-            return CustomErrorWidget(
-              message: state.message,
-              onRetry: () {
-                context.read<AlarmBloc>().add(LoadAlarmsEvent());
-              },
-            );
-          } else if (state is AlarmLoaded) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<AlarmBloc>().add(RefreshAlarmsEvent());
-              },
-              child: Column(
-                children: [
-                  Expanded(
-                    child: state.alarms.isEmpty
-                        ? _buildEmptyState()
-                        : _buildAlarmsList(state),
-                  ),
-                  _buildAddAlarmButton(),
-                ],
-              ),
-            );
-          }
+    );
+  }
 
-          return const LoadingWidget();
-        },
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Logo
+          Row(
+            children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  'famz',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Today section
+          const Text(
+            'Today',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.alarm_off,
-            size: 100,
-            color: Colors.grey[600],
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        const SizedBox(height: 100),
+        Center(
+          child: Column(
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(60),
+                ),
+                child: Icon(
+                  Icons.alarm,
+                  size: 60,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                'No alarms set',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Tap + to create your first alarm',
+                style: TextStyle(
+                  color: Colors.grey[600],
+                  fontSize: 14,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 24),
-          Text(
-            'No alarms set',
-            style: TextStyle(
-              color: Colors.grey[400],
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Tap the + button to create your first alarm',
-            style: TextStyle(
-              color: Colors.grey[600],
-              fontSize: 14,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildAlarmsList(AlarmLoaded state) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        if (state.activeAlarms.isNotEmpty) ...[
-          const Text(
-            'Active Alarms',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      itemCount: state.alarms.length,
+      itemBuilder: (context, index) {
+        final alarm = state.alarms[index];
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: AlarmItemWidget(
+            alarm: alarm,
+            onToggle: (isActive) {
+              context.read<AlarmBloc>().add(
+                    ToggleAlarmEvent(
+                      alarmId: alarm.id!,
+                      isActive: isActive,
+                    ),
+                  );
+            },
+            onEdit: () {
+              Navigator.pushNamed(
+                context,
+                RouteNames.setAlarm,
+                arguments: alarm,
+              );
+            },
+            onDelete: () {
+              context.read<AlarmBloc>().add(
+                    DeleteAlarmEvent(alarmId: alarm.id!),
+                  );
+            },
           ),
-          const SizedBox(height: 12),
-          ...state.activeAlarms
-              .map((alarm) => AlarmItemWidget(
-                    alarm: alarm,
-                    onToggle: (isActive) {
-                      context.read<AlarmBloc>().add(
-                            ToggleAlarmEvent(
-                              alarmId: alarm.id!,
-                              isActive: isActive,
-                            ),
-                          );
-                    },
-                    onEdit: () {
-                      Navigator.pushNamed(
-                        context,
-                        RouteNames.setAlarm,
-                        arguments: alarm,
-                      );
-                    },
-                    onDelete: () {
-                      _showDeleteDialog(alarm.id!);
-                    },
-                  ))
-              .toList(),
-          const SizedBox(height: 24),
-        ],
-        if (state.inactiveAlarms.isNotEmpty) ...[
-          const Text(
-            'Inactive Alarms',
-            style: TextStyle(
-              color: Colors.grey,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ...state.inactiveAlarms
-              .map((alarm) => AlarmItemWidget(
-                    alarm: alarm,
-                    onToggle: (isActive) {
-                      context.read<AlarmBloc>().add(
-                            ToggleAlarmEvent(
-                              alarmId: alarm.id!,
-                              isActive: isActive,
-                            ),
-                          );
-                    },
-                    onEdit: () {
-                      Navigator.pushNamed(
-                        context,
-                        RouteNames.setAlarm,
-                        arguments: alarm,
-                      );
-                    },
-                    onDelete: () {
-                      _showDeleteDialog(alarm.id!);
-                    },
-                  ))
-              .toList(),
-        ],
-      ],
+        );
+      },
     );
   }
 
   Widget _buildAddAlarmButton() {
     return Container(
-      padding: const EdgeInsets.all(16),
-      child: CustomButton(
-        text: 'Add Alarm',
-        onPressed: () async {
-          final result =
-              await Navigator.pushNamed(context, RouteNames.setAlarm);
-          if (result == true) {
-            context.read<AlarmBloc>().add(LoadAlarmsEvent());
-          }
-        },
-        backgroundColor: Colors.orange,
-        icon: const Icon(Icons.add),
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        children: [
+          Expanded(
+            child: ElevatedButton(
+              onPressed: () async {
+                final result =
+                    await Navigator.pushNamed(context, RouteNames.setAlarm);
+                if (result == true) {
+                  context.read<AlarmBloc>().add(LoadAlarmsEvent());
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                foregroundColor: Colors.orange,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: Colors.orange),
+                ),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.add, color: Colors.orange),
+                  SizedBox(width: 8),
+                  Text(
+                    'Add Alarm',
+                    style: TextStyle(
+                      color: Colors.orange,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

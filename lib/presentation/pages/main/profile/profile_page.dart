@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../bloc/auth/auth_bloc.dart';
+import '../../../bloc/auth/auth_event.dart';
 import '../../../bloc/profile/profile_bloc.dart';
 import '../../../bloc/profile/profile_event.dart';
 import '../../../bloc/profile/profile_state.dart';
+import '../../../routes/route_names.dart';
 import '../../../widgets/common/error_widget.dart';
 import '../../../widgets/common/loading_widget.dart';
 import '../../../widgets/profile/profile_avatar_widget.dart';
@@ -200,8 +203,8 @@ class _ProfilePageState extends State<ProfilePage> {
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                // TODO: Implement logout functionality
-                // context.read<AuthBloc>().add(LogoutEvent());
+                context.read<AuthBloc>().add(AuthLogoutEvent());
+                Navigator.of(context).pushReplacementNamed(RouteNames.intro);
               },
               child: const Text(
                 'Logout',

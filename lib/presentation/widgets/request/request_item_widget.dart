@@ -41,7 +41,7 @@ class RequestItemWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "_getUsername()",
+                        _getUsername(),
                         style: Theme.of(context).textTheme.titleMedium,
                       ),
                       Text(
@@ -87,9 +87,9 @@ class RequestItemWidget extends StatelessWidget {
 
   String _getUsername() {
     if (request.runtimeType.toString().contains('Received')) {
-      return request.fromUsername ?? 'Unknown User';
+      return request.fromUser.email ?? 'Unknown User';
     } else {
-      return request.toUsername ?? 'Unknown User';
+      return request.toUser.email ?? 'Unknown User';
     }
   }
 

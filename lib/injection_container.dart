@@ -1,4 +1,5 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:famz/presentation/bloc/alarm_recording/alarm_recording_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
@@ -13,16 +14,19 @@ import 'core/storage/shared_preferences_helper.dart';
 import 'data/datasources/local/alarm_local_datasource.dart';
 // Data
 import 'data/datasources/local/auth_local_datasource.dart';
+import 'data/datasources/remote/alarm_recording_remote_datasource.dart';
 import 'data/datasources/remote/alarm_remote_datasource.dart';
 import 'data/datasources/remote/alarm_request_remote_datasource.dart';
 import 'data/datasources/remote/auth_remote_datasource.dart';
 import 'data/datasources/remote/notification_remote_datasource.dart';
 import 'data/datasources/remote/profile_remote_datasource.dart';
+import 'data/repositories/alarm_recording_repository_impl.dart';
 import 'data/repositories/alarm_repository_impl.dart';
 import 'data/repositories/alarm_request_repository_impl.dart';
 import 'data/repositories/auth_repository_impl.dart';
 import 'data/repositories/notification_repository_impl.dart';
 import 'data/repositories/profile_repository_impl.dart';
+import 'domain/repositories/alarm_recording_repository.dart';
 import 'domain/repositories/alarm_repository.dart';
 import 'domain/repositories/alarm_request_repository.dart';
 // Domain
@@ -34,6 +38,8 @@ import 'domain/usecases/alarm/delete_alarm_usecase.dart';
 import 'domain/usecases/alarm/get_alarms_usecase.dart';
 import 'domain/usecases/alarm/toggle_alarm_usecase.dart';
 import 'domain/usecases/alarm/update_alarm_usecase.dart';
+import 'domain/usecases/alarm_recording/download_recording_usecase.dart';
+import 'domain/usecases/alarm_recording/get_recordings_usecase.dart';
 import 'domain/usecases/alarm_request/accept_request_usecase.dart';
 import 'domain/usecases/alarm_request/create_alarm_request_usecase.dart';
 import 'domain/usecases/alarm_request/delete_alarm_request_usecase.dart';
@@ -123,6 +129,12 @@ Future<void> init() async {
     () => AlarmRequestRemoteDataSourceImpl(apiClient: sl()),
   );
 
+  sl.registerLazySingleton<AlarmRecordingRemoteDataSource>(
+    () => AlarmRecordingRemoteDataSourceImpl(
+      apiClient: sl(),
+    ),
+  );
+
   // Repositories
   sl.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
@@ -160,6 +172,12 @@ Future<void> init() async {
     ),
   );
 
+  sl.registerLazySingleton<AlarmRecordingRepository>(
+    () => AlarmRecordingRepositoryImpl(
+      remoteDataSource: sl(),
+    ),
+  );
+
   // Use cases
   sl.registerLazySingleton(() => LoginUseCase(sl()));
   sl.registerLazySingleton(() => VerifyPhoneUseCase(sl()));
@@ -192,6 +210,10 @@ Future<void> init() async {
   sl.registerLazySingleton(() => GetReceivedRequestsUseCase(sl()));
   sl.registerLazySingleton(() => AcceptRequestUseCase(sl()));
   sl.registerLazySingleton(() => RejectRequestUseCase(sl()));
+
+  // Alarm Recording Use cases
+  sl.registerLazySingleton(() => GetRecordingsUseCase(sl()));
+  sl.registerLazySingleton(() => DownloadRecordingUseCase(sl()));
 
   // BLoCs
   sl.registerFactory(
@@ -241,6 +263,13 @@ Future<void> init() async {
       deleteAlarmRequestUseCase: sl(),
       acceptRequestUseCase: sl(),
       rejectRequestUseCase: sl(),
+    ),
+  );
+
+  sl.registerFactory(
+    () => AlarmRecordingBloc(
+      getRecordingsUseCase: sl(),
+      downloadRecordingUseCase: sl(),
     ),
   );
 }

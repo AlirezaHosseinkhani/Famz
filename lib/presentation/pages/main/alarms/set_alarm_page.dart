@@ -1,20 +1,20 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:video_player/video_player.dart';
 
 import '../../../../domain/entities/alarm.dart';
+import '../../../../domain/entities/alarm_recording.dart';
 import '../../../bloc/alarm/alarm_bloc.dart';
 import '../../../bloc/alarm/alarm_event.dart';
+import '../../../bloc/alarm_recording/alarm_recording_bloc.dart';
+import '../../../bloc/alarm_recording/alarm_recording_event.dart';
+import '../../../bloc/alarm_recording/alarm_recording_state.dart';
+import '../../../widgets/alarm/media_selector_widget.dart';
 import '../../../widgets/common/custom_button.dart';
 
 class SetAlarmPage extends StatefulWidget {
-  final Alarm? alarm; // For editing existing alarm
+  final Alarm? alarm;
 
   const SetAlarmPage({super.key, this.alarm});
 
@@ -25,8 +25,7 @@ class SetAlarmPage extends StatefulWidget {
 class _SetAlarmPageState extends State<SetAlarmPage> {
   DateTime _selectedDateTime = DateTime.now().add(const Duration(minutes: 1));
   String _videoPath = '';
-  VideoPlayerController? _videoController;
-  bool _isVideoLoading = false;
+  AlarmRecording? _selectedRecording;
 
   bool _isRecurring = false;
   final List<bool> _selectedWeekdays = List.filled(7, false);
@@ -46,6 +45,8 @@ class _SetAlarmPageState extends State<SetAlarmPage> {
   @override
   void initState() {
     super.initState();
+    context.read<AlarmRecordingBloc>().add(LoadRecordingsEvent());
+
     if (_isEditing) {
       _initializeWithExistingAlarm();
     }
@@ -60,53 +61,10 @@ class _SetAlarmPageState extends State<SetAlarmPage> {
     for (int i = 0; i < 7; i++) {
       _selectedWeekdays[i] = alarm.weekdays[i];
     }
-
-    // Initialize video controller if video exists
-    if (_videoPath.isNotEmpty && File(_videoPath).existsSync()) {
-      _videoController = VideoPlayerController.file(File(_videoPath))
-        ..initialize().then((_) {
-          setState(() {});
-        });
-    }
-  }
-
-  @override
-  void dispose() {
-    _videoController?.dispose();
-    super.dispose();
-  }
-
-  Future<void> _pickVideo() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? video = await picker.pickVideo(source: ImageSource.gallery);
-
-    if (video != null) {
-      setState(() {
-        _isVideoLoading = true;
-      });
-
-      // Copy the video to app's directory for persistence
-      final directory = await getApplicationDocumentsDirectory();
-      final fileName = video.name;
-      final savedFile = File('${directory.path}/$fileName');
-
-      await File(video.path).copy(savedFile.path);
-
-      // Set up video controller
-      _videoController?.dispose();
-      _videoController = VideoPlayerController.file(savedFile)
-        ..initialize().then((_) {
-          setState(() {
-            _videoPath = savedFile.path;
-            _isVideoLoading = false;
-          });
-        });
-    }
   }
 
   Future<void> _selectDateTime(BuildContext context) async {
     if (_isRecurring) {
-      // For recurring alarms, only select time
       final TimeOfDay? pickedTime = await showTimePicker(
         context: context,
         initialTime: TimeOfDay.fromDateTime(_selectedDateTime),
@@ -124,7 +82,6 @@ class _SetAlarmPageState extends State<SetAlarmPage> {
         });
       }
     } else {
-      // For one-time alarms, select both date and time
       final DateTime? pickedDate = await showDatePicker(
         context: context,
         initialDate: _selectedDateTime,
@@ -154,7 +111,6 @@ class _SetAlarmPageState extends State<SetAlarmPage> {
   }
 
   Future<void> _saveAlarm() async {
-    // Validate input
     if (!_isRecurring && _selectedDateTime.isBefore(DateTime.now())) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a future time')),
@@ -174,7 +130,7 @@ class _SetAlarmPageState extends State<SetAlarmPage> {
       final alarm = Alarm(
         id: _isEditing ? widget.alarm!.id : const Uuid().v4(),
         scheduledTime: _selectedDateTime,
-        videoPath: _videoPath,
+        videoPath: _selectedRecording?.localPath ?? _videoPath,
         isRecurring: _isRecurring,
         weekdays: _selectedWeekdays,
       );
@@ -189,8 +145,9 @@ class _SetAlarmPageState extends State<SetAlarmPage> {
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(
-                'Error ${_isEditing ? 'updating' : 'creating'} alarm: $e')),
+          content:
+              Text('Error ${_isEditing ? 'updating' : 'creating'} alarm: $e'),
+        ),
       );
     }
   }
@@ -206,201 +163,265 @@ class _SetAlarmPageState extends State<SetAlarmPage> {
           style: const TextStyle(color: Colors.white),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'When should the alarm go off?',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-            InkWell(
-              onTap: () => _selectDateTime(context),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.grey[900],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          TimeOfDay.fromDateTime(_selectedDateTime)
-                              .format(context),
-                          style: const TextStyle(
-                              fontSize: 24, color: Colors.white),
-                        ),
-                        if (!_isRecurring)
-                          Text(
-                            DateFormat('EEE, MMM d, yyyy')
-                                .format(_selectedDateTime),
-                            style: const TextStyle(
-                                fontSize: 14, color: Colors.grey),
-                          ),
-                      ],
-                    ),
-                    const Icon(Icons.access_time, color: Colors.white),
-                  ],
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-            // Recurring alarm section
-            Row(
-              children: [
-                Switch(
-                  value: _isRecurring,
-                  onChanged: (value) {
-                    setState(() {
-                      _isRecurring = value;
-                    });
-                  },
-                  activeColor: Colors.orange,
-                ),
-                const Text(
-                  'Repeat weekly',
-                  style: TextStyle(fontSize: 16, color: Colors.white),
-                ),
-              ],
-            ),
-
-            // Show weekday selector if recurring is enabled
-            if (_isRecurring) ...[
-              const SizedBox(height: 16),
-              const Text(
-                'Select days:',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: List.generate(7, (index) {
-                  return FilterChip(
-                    label: Text(_weekdays[index]),
-                    selected: _selectedWeekdays[index],
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedWeekdays[index] = selected;
-                      });
-                    },
-                    selectedColor: Colors.orange,
-                    backgroundColor: Colors.grey[800],
-                    labelStyle: TextStyle(
-                      color: _selectedWeekdays[index]
-                          ? Colors.black
-                          : Colors.white,
-                    ),
-                  );
-                }),
-              ),
-            ],
-
-            const SizedBox(height: 24),
-            const Text(
-              'Select a video to play when alarm goes off:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-            Center(
-              child: CustomButton(
-                text: 'Select Video',
-                onPressed: _pickVideo,
-                backgroundColor: Colors.grey[800]!,
-                icon: const Icon(Icons.video_library),
-              ),
-            ),
-
-            const SizedBox(height: 16),
-            if (_isVideoLoading)
-              const Center(child: CircularProgressIndicator())
-            else if (_videoController != null &&
-                _videoController!.value.isInitialized)
-              AspectRatio(
-                aspectRatio: _videoController!.value.aspectRatio,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    VideoPlayer(_videoController!),
-                    IconButton(
-                      icon: Icon(
-                        _videoController!.value.isPlaying
-                            ? Icons.pause
-                            : Icons.play_arrow,
-                        size: 50,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _videoController!.value.isPlaying
-                              ? _videoController!.pause()
-                              : _videoController!.play();
-                        });
-                      },
-                    ),
-                  ],
-                ),
-              )
-            else if (_videoPath.isNotEmpty)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey[800],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.videocam, color: Colors.white),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _getFileName(_videoPath),
-                        style: const TextStyle(color: Colors.white),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
+            // Time Selection
+            _buildTimeSection(),
             const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: CustomButton(
-                text: _isEditing ? 'Update Alarm' : 'Save Alarm',
-                onPressed: _saveAlarm,
-                backgroundColor: Colors.orange,
-              ),
-            ),
+
+            // Repeat Section
+            _buildRepeatSection(),
+            const SizedBox(height: 32),
+
+            // Media Selection
+            _buildMediaSection(),
+            const SizedBox(height: 40),
+
+            // Action Buttons
+            _buildActionButtons(),
           ],
         ),
       ),
     );
   }
 
-  String _getFileName(String path) {
-    if (path.isEmpty) return 'Default Alarm';
-    return path.split('/').last;
+  Widget _buildTimeSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Date and Time',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 16),
+        InkWell(
+          onTap: () => _selectDateTime(context),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[900],
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.grey[700]!),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.schedule, color: Colors.orange),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        DateFormat('h:mm a').format(_selectedDateTime),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      if (!_isRecurring)
+                        Text(
+                          DateFormat('EEE, MMM d, yyyy')
+                              .format(_selectedDateTime),
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: Colors.grey[400]),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRepeatSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Repeat',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey[900],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey[700]!),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Repeat alarm',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  Switch(
+                    value: _isRecurring,
+                    onChanged: (value) {
+                      setState(() {
+                        _isRecurring = value;
+                        if (!value) {
+                          for (int i = 0; i < 7; i++) {
+                            _selectedWeekdays[i] = false;
+                          }
+                        }
+                      });
+                    },
+                    activeColor: Colors.orange,
+                  ),
+                ],
+              ),
+              if (_isRecurring) ...[
+                const SizedBox(height: 16),
+                const Divider(color: Colors.grey),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(7, (index) {
+                    return GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedWeekdays[index] = !_selectedWeekdays[index];
+                        });
+                      },
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: _selectedWeekdays[index]
+                              ? Colors.orange
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: _selectedWeekdays[index]
+                                ? Colors.orange
+                                : Colors.grey,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            _weekdays[index][0],
+                            style: TextStyle(
+                              color: _selectedWeekdays[index]
+                                  ? Colors.black
+                                  : Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  }),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMediaSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Pick a media',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 16),
+        BlocBuilder<AlarmRecordingBloc, AlarmRecordingState>(
+          builder: (context, state) {
+            if (state is AlarmRecordingLoading) {
+              return const Center(
+                child: CircularProgressIndicator(color: Colors.orange),
+              );
+            } else if (state is AlarmRecordingLoaded) {
+              return MediaSelectorWidget(
+                recordings: state.recordings,
+                selectedRecording: _selectedRecording,
+                onRecordingSelected: (recording) {
+                  setState(() {
+                    _selectedRecording = recording;
+                  });
+                },
+                onDownloadRequested: (recording) {
+                  context.read<AlarmRecordingBloc>().add(
+                        DownloadRecordingEvent(recording: recording),
+                      );
+                },
+              );
+            } else if (state is AlarmRecordingError) {
+              return Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.red[900]?.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  state.message,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons() {
+    return Row(
+      children: [
+        Expanded(
+          child: CustomButton(
+            text: 'Back',
+            onPressed: () => Navigator.pop(context),
+            backgroundColor: Colors.grey[800]!,
+            textColor: Colors.white,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: CustomButton(
+            text: _isEditing ? 'Update alarm' : 'Create alarm',
+            onPressed: _saveAlarm,
+            backgroundColor: Colors.orange,
+            textColor: Colors.black,
+          ),
+        ),
+      ],
+    );
   }
 }
