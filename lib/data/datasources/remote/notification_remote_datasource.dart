@@ -44,7 +44,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
   Future<NotificationModel> markAsRead(int notificationId) async {
     try {
       final response = await apiClient.post(
-        '${ApiConstants.notificationsEndpoint}$notificationId/mark_as_read/',
+        '${ApiConstants.notificationsEndpoint}/$notificationId/mark_as_read/',
       );
       return NotificationModel.fromJson(response);
     } catch (e) {

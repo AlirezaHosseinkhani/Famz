@@ -5,7 +5,7 @@ class ApiConstants {
 
   // static const String baseUrl = 'https://api.famz.app/v1';
   static const String authEndpoint = 'auth';
-  static const String profileEndpoint = '/$apiVersion/profile';
+  static const String profileEndpoint = '/$apiVersion/profile/';
   static const String alarmsEndpoint = '/$apiVersion/alarm-recordings';
   static const String requestsEndpoint = '/$apiVersion/requests';
   static const String recordingsEndpoint = '/$apiVersion/recordings';
@@ -33,7 +33,7 @@ class ApiConstants {
   // Notification endpoints
   static const String notifications = '$apiVersion/notifications/';
   static const String markAllAsRead =
-      '$apiVersion/notifications/mark_all_as_read/';
+      '/$apiVersion/notifications/mark_all_as_read/';
 
   static const String sentRequestsEndpoint = '/api/sent-requests';
   static const String receivedRequestsEndpoint = '/api/received-requests';
