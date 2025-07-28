@@ -35,8 +35,8 @@ class ApiConstants {
   static const String markAllAsRead =
       '/$apiVersion/notifications/mark_all_as_read/';
 
-  static const String sentRequestsEndpoint = '/api/sent-requests';
-  static const String receivedRequestsEndpoint = '/api/received-requests';
+  static const String sentRequestsEndpoint = '/api/sent-requests/';
+  static const String receivedRequestsEndpoint = '/api/received-requests/';
 
   // Headers
   static const String contentType = 'application/json';

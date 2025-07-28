@@ -82,7 +82,7 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
   }) async {
     try {
       final response = await apiClient.put(
-        '${ApiConstants.sentRequestsEndpoint}/$requestId/',
+        '${ApiConstants.sentRequestsEndpoint}$requestId/',
         body: {
           'message': message,
         },
@@ -96,8 +96,7 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
   @override
   Future<void> deleteAlarmRequest(int requestId) async {
     try {
-      await apiClient
-          .delete('${ApiConstants.sentRequestsEndpoint}/$requestId/');
+      await apiClient.delete('${ApiConstants.sentRequestsEndpoint}$requestId/');
     } catch (e) {
       throw ServerException('Failed to delete alarm request');
     }
@@ -107,7 +106,7 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
   Future<void> acceptRequest(int requestId) async {
     try {
       await apiClient
-          .post('${ApiConstants.receivedRequestsEndpoint}/$requestId/accept/');
+          .post('${ApiConstants.receivedRequestsEndpoint}$requestId/accept/');
     } catch (e) {
       throw ServerException('Failed to accept alarm request');
     }
