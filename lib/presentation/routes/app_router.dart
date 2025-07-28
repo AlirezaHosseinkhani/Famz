@@ -1,6 +1,7 @@
 import 'package:famz/presentation/pages/main/alarms/set_alarm_page.dart';
 import 'package:flutter/material.dart';
 
+import '../../domain/entities/received_request.dart';
 import '../pages/auth/intro_page.dart';
 import '../pages/auth/name_input_page.dart';
 import '../pages/auth/notification_permission_page.dart';
@@ -12,6 +13,7 @@ import '../pages/main/main_page.dart';
 import '../pages/main/notifications/notifications_page.dart';
 // import '../pages/main/profile/edit_profile_page.dart';
 import '../pages/main/profile/profile_page.dart';
+import '../pages/main/requests/record_alarm_page.dart';
 import '../pages/main/requests/requests_page.dart';
 // import '../pages/main/requests/record_alarm_page.dart';
 // import '../pages/main/requests/share_request_page.dart';
@@ -83,6 +85,11 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const RequestsPage(),
           settings: settings,
+        );
+      case RouteNames.recordAlarm:
+        final request = settings.arguments as ReceivedRequest;
+        return MaterialPageRoute(
+          builder: (_) => RecordAlarmPage(request: request),
         );
 
       // case RouteNames.setAlarm:

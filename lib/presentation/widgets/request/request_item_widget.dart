@@ -151,13 +151,21 @@ class RequestItemWidget extends StatelessWidget {
             ),
           ],
         );
-      } else if (request.status == 'accepted') {
+      } else if (request.status == 'accepted' ||
+          request.status == 'recording_pending') {
         return SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
             onPressed: onRecord,
             icon: const Icon(Icons.mic),
-            label: const Text('Record Alarm'),
+            label: Text(request.status == 'recording_pending'
+                ? 'Continue Recording'
+                : 'Record Alarm'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: request.status == 'recording_pending'
+                  ? Colors.orange
+                  : Colors.blue,
+            ),
           ),
         );
       }
