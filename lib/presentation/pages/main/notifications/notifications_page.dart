@@ -7,6 +7,7 @@ import '../../../bloc/notification/notification_state.dart';
 import '../../../widgets/common/custom_app_bar.dart';
 import '../../../widgets/common/error_widget.dart';
 import '../../../widgets/common/loading_widget.dart';
+import '../../../widgets/notification/notification_detail_dialog.dart';
 import '../../../widgets/notification/notification_item_widget.dart';
 
 class NotificationsPage extends StatefulWidget {
@@ -29,7 +30,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
       backgroundColor: Colors.black,
       appBar: CustomAppBar(
         title: 'Notifications',
-        backgroundColor: Colors.black,
+        // backgroundColor: Colors.black,
         actions: [
           BlocBuilder<NotificationBloc, NotificationState>(
             builder: (context, state) {
@@ -129,11 +130,22 @@ class _NotificationsPageState extends State<NotificationsPage> {
           return NotificationItemWidget(
             notification: notification,
             onTap: () {
+              // Mark as read if not already read
               if (!notification.isRead) {
                 context.read<NotificationBloc>().add(
                       MarkAsReadEvent(notification.id),
                     );
               }
+
+              // Show the dialog
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return NotificationDetailDialog(
+                    notification: notification,
+                  );
+                },
+              );
             },
           );
         },

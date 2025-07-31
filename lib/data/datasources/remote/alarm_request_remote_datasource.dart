@@ -97,6 +97,7 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
   Future<void> deleteAlarmRequest(int requestId) async {
     try {
       await apiClient.delete('${ApiConstants.sentRequestsEndpoint}$requestId/');
+      return;
     } catch (e) {
       throw ServerException('Failed to delete alarm request');
     }

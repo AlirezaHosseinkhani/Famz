@@ -41,6 +41,7 @@ class MainView extends StatelessWidget {
         }
 
         return Scaffold(
+          backgroundColor: Colors.black,
           body: IndexedStack(
             index: currentIndex,
             children: _pages,

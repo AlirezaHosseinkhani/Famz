@@ -134,7 +134,7 @@ class RequestItemWidget extends StatelessWidget {
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: onAccept,
-                icon: const Icon(Icons.check),
+                icon: const Icon(Icons.check, color: Colors.white70),
                 label: const Text('Accept'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
@@ -143,9 +143,9 @@ class RequestItemWidget extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: OutlinedButton.icon(
+              child: ElevatedButton.icon(
                 onPressed: onReject,
-                icon: const Icon(Icons.close),
+                icon: const Icon(Icons.close, color: Colors.white70),
                 label: const Text('Reject'),
               ),
             ),
@@ -170,11 +170,12 @@ class RequestItemWidget extends StatelessWidget {
         );
       }
     }
-    // For sent requests
+    // For sent requests - UPDATED LOGIC
     else {
-      return Row(
-        children: [
-          if (request.status == 'pending') ...[
+      // Only show edit and delete buttons if status is 'pending'
+      if (request.status == 'pending') {
+        return Row(
+          children: [
             Expanded(
               child: OutlinedButton.icon(
                 onPressed: onEdit,
@@ -183,19 +184,63 @@ class RequestItemWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 8),
-          ],
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: onDelete,
-              icon: const Icon(Icons.delete),
-              label: const Text('Delete'),
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
+            Expanded(
+              child: OutlinedButton.icon(
+                onPressed: onDelete,
+                icon: const Icon(Icons.delete),
+                label: const Text('Delete'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red,
+                ),
               ),
             ),
+          ],
+        );
+      }
+      // For recording_pending or complete status, show status info only
+      else if (request.status == 'recording_pending' ||
+          request.status == 'complete') {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          decoration: BoxDecoration(
+            color: request.status == 'recording_pending'
+                ? Colors.orange.withOpacity(0.1)
+                : Colors.green.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: request.status == 'recording_pending'
+                  ? Colors.orange
+                  : Colors.green,
+            ),
           ),
-        ],
-      );
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                request.status == 'recording_pending'
+                    ? Icons.pending
+                    : Icons.check_circle,
+                color: request.status == 'recording_pending'
+                    ? Colors.orange
+                    : Colors.green,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                request.status == 'recording_pending'
+                    ? 'Recording Pending'
+                    : 'Completed',
+                style: TextStyle(
+                  color: request.status == 'recording_pending'
+                      ? Colors.orange
+                      : Colors.green,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
     }
 
     return const SizedBox();

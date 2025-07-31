@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="40dp"
+    android:viewportWidth="120"
+    android:viewportHeight="40">
+
+    <text
+        android:text="famz"
+        android:textColor="#FF9500"
+        android:textStyle="bold"
+        android:gravity="center" />
+
+</vector>

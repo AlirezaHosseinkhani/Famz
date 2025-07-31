@@ -49,7 +49,7 @@ class FamzApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeConfig.lightTheme,
         darkTheme: ThemeConfig.darkTheme,
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.dark,
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,

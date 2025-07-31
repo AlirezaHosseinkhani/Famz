@@ -102,6 +102,9 @@ class ApiClient {
       final requestHeaders = await _buildHeaders(headers);
 
       final response = await client.delete(uri, headers: requestHeaders);
+      if (response.statusCode == 204) {
+        return {};
+      }
       return _handleResponse(response);
     } catch (e) {
       throw _handleError(e);

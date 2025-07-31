@@ -49,14 +49,14 @@ class ShareLinkWidget extends StatelessWidget {
                   child: Text(
                     shareLink,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontFamily: 'monospace',
-                        ),
+                        fontFamily: 'monospace', color: Colors.black54),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 IconButton(
                   onPressed: () => _copyToClipboard(context, shareLink),
                   icon: const Icon(Icons.copy),
+                  color: Colors.black54,
                   tooltip: 'Copy to clipboard',
                 ),
               ],
@@ -69,14 +69,17 @@ class ShareLinkWidget extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () => _copyToClipboard(context, shareLink),
                   icon: const Icon(Icons.copy),
-                  label: const Text('Copy Link'),
+                  label: const Text('Copy'),
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: ElevatedButton.icon(
                   onPressed: () => _shareLink(shareLink),
-                  icon: const Icon(Icons.share),
+                  icon: const Icon(
+                    Icons.share,
+                    color: Colors.white70,
+                  ),
                   label: const Text('Share'),
                 ),
               ),

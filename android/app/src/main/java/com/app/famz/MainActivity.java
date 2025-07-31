@@ -35,6 +35,9 @@ public class MainActivity extends FlutterActivity {
                                 case "cancelAlarm":
                                     cancelAlarm(call, result);
                                     break;
+                                case "scheduleSnoozeAlarm":
+                                    scheduleSnoozeAlarm(call, result);
+                                    break;
                                 default:
                                     result.notImplemented();
                                     break;
@@ -132,6 +135,53 @@ public class MainActivity extends FlutterActivity {
         } catch (Exception e) {
             Log.e(TAG, "Error canceling alarm", e);
             result.error("CANCEL_ERROR", e.getMessage(), null);
+        }
+    }
+
+    private void scheduleSnoozeAlarm(MethodCall call, MethodChannel.Result result) {
+        String alarmId = call.argument("alarmId");
+        Long timestamp = call.argument("timestamp");
+        String videoPath = call.argument("videoPath");
+
+        if (alarmId == null || timestamp == null || videoPath == null) {
+            result.error("INVALID_ARGUMENT", "Missing required argument", null);
+            return;
+        }
+
+        try {
+            AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+            Intent intent = new Intent(this, AlarmReceiver.class);
+            intent.setAction(AlarmReceiver.ACTION_ALARM);
+            intent.putExtra("alarmId", alarmId);
+            intent.putExtra("videoPath", videoPath);
+            intent.putExtra("timestamp", timestamp);
+            intent.putExtra("isSnooze", true);
+
+            int requestCode = alarmId.hashCode();
+
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                    this,
+                    requestCode,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                alarmManager.setExactAndAllowWhileIdle(
+                        AlarmManager.RTC_WAKEUP,
+                        timestamp,
+                        pendingIntent);
+            } else {
+                alarmManager.setExact(
+                        AlarmManager.RTC_WAKEUP,
+                        timestamp,
+                        pendingIntent);
+            }
+
+            Log.d(TAG, "Snooze alarm scheduled: " + alarmId + " at " + timestamp);
+            result.success(true);
+        } catch (Exception e) {
+            Log.e(TAG, "Error scheduling snooze alarm", e);
+            result.error("SCHEDULE_ERROR", e.getMessage(), null);
         }
     }
 }

@@ -163,8 +163,7 @@ class _MediaSelectorWidgetState extends State<MediaSelectorWidget> {
   Widget _buildRecordingItem(AlarmRecording recording) {
     final isSelected = widget.selectedRecording?.id == recording.id;
     final isCurrentlyPlaying = _currentlyPlaying?.id == recording.id;
-    final userName =
-        'Hafez'; // You might want to get this from the recording data
+    final userName = 'Username ${recording.id.toString()}';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),

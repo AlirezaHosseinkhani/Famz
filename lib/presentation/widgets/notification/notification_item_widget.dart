@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-// import 'package:timeago/timeago.dart' as timeago;
+import 'package:timeago/timeago.dart' as time_ago;
 
 import '../../../domain/entities/notification.dart';
 
@@ -75,8 +74,7 @@ class NotificationItemWidget extends StatelessWidget {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      // "timeago.format(notification.createdAt)",
-                      notification.alarmRequest.toString(),
+                      time_ago.format(notification.createdAt),
                       style: TextStyle(
                         color: Colors.grey[600],
                         fontSize: 12,
@@ -119,7 +117,7 @@ class NotificationItemWidget extends StatelessWidget {
         break;
       default:
         iconData = Icons.info;
-        iconColor = Colors.grey;
+        iconColor = Colors.orange;
     }
 
     return Container(

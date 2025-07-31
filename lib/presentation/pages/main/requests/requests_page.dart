@@ -7,6 +7,7 @@ import '../../../../injection_container.dart' as di;
 import '../../../bloc/alarm_request/alarm_request_bloc.dart';
 import '../../../bloc/alarm_request/alarm_request_event.dart';
 import '../../../bloc/alarm_request/alarm_request_state.dart';
+import '../../../widgets/common/custom_app_bar.dart';
 import '../../../widgets/common/error_widget.dart';
 import '../../../widgets/common/loading_widget.dart';
 import '../../../widgets/request/request_item_widget.dart';
@@ -68,8 +69,9 @@ class _RequestsPageState extends State<RequestsPage>
           }
         },
         child: Scaffold(
-          appBar: AppBar(
-            title: const Text('Requests'),
+          backgroundColor: Colors.black54,
+          appBar: CustomAppBar(
+            title: 'Requests',
             bottom: TabBar(
               controller: _tabController,
               tabs: const [
@@ -83,14 +85,15 @@ class _RequestsPageState extends State<RequestsPage>
                 ),
               ],
             ),
+            centerTitle: true,
             actions: [
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                tooltip: 'Refresh',
-                onPressed: () {
-                  context.read<AlarmRequestBloc>().add(RefreshRequestsEvent());
-                },
-              ),
+              // IconButton(
+              //   icon: const Icon(Icons.refresh),
+              //   tooltip: 'Refresh',
+              //   onPressed: () {
+              //     context.read<AlarmRequestBloc>().add(RefreshRequestsEvent());
+              //   },
+              // ),
               IconButton(
                 icon: const Icon(Icons.share),
                 tooltip: 'Share Link',

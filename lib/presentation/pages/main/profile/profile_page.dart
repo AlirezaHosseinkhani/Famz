@@ -7,9 +7,9 @@ import '../../../bloc/profile/profile_bloc.dart';
 import '../../../bloc/profile/profile_event.dart';
 import '../../../bloc/profile/profile_state.dart';
 import '../../../routes/route_names.dart';
+import '../../../widgets/common/custom_app_bar.dart';
 import '../../../widgets/common/error_widget.dart';
 import '../../../widgets/common/loading_widget.dart';
-import '../../../widgets/profile/profile_avatar_widget.dart';
 import '../../../widgets/profile/profile_info_widget.dart';
 import 'edit_profile_page.dart';
 
@@ -30,17 +30,18 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profile'),
+      backgroundColor: Colors.black,
+      appBar: CustomAppBar(
+        title: 'Profile',
         centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () {
-              context.read<ProfileBloc>().add(const GetProfileEvent());
-            },
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     onPressed: () {
+        //       context.read<ProfileBloc>().add(const GetProfileEvent());
+        //     },
+        //     icon: const Icon(Icons.refresh),
+        //   ),
+        // ],
       ),
       body: BlocConsumer<ProfileBloc, ProfileState>(
         listener: (context, state) {
@@ -86,13 +87,13 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   children: [
                     const SizedBox(height: 20),
-                    // Profile Avatar
-                    ProfileAvatarWidget(
-                      imageUrl: profile.profilePicture,
-                      size: 120,
-                      isEditable: true,
-                      onTap: () => _navigateToEditProfile(context),
-                    ),
+                    // // Profile Avatar
+                    // ProfileAvatarWidget(
+                    //   imageUrl: profile.profilePicture,
+                    //   size: 120,
+                    //   isEditable: true,
+                    //   onTap: () => _navigateToEditProfile(context),
+                    // ),
                     const SizedBox(height: 16),
                     // Profile Name
                     Text(
@@ -125,7 +126,7 @@ class _ProfilePageState extends State<ProfilePage> {
                       profile: profile,
                       onEditTap: () => _navigateToEditProfile(context),
                     ),
-                    const SizedBox(height: 20),
+                    // const SizedBox(height: 20),
                     // Action Buttons
                     _buildActionButtons(context),
                     const SizedBox(height: 20),
@@ -147,31 +148,31 @@ class _ProfilePageState extends State<ProfilePage> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
+          // SizedBox(
+          //   width: double.infinity,
+          //   child: ElevatedButton.icon(
+          //     onPressed: () => _navigateToEditProfile(context),
+          //     icon: const Icon(Icons.edit),
+          //     label: const Text('Edit Profile'),
+          //     style: ElevatedButton.styleFrom(
+          //       padding: const EdgeInsets.symmetric(vertical: 12),
+          //     ),
+          //   ),
+          // ),
+          // const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () => _navigateToEditProfile(context),
-              icon: const Icon(Icons.edit),
-              label: const Text('Edit Profile'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-              ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
               onPressed: () => _showLogoutDialog(context),
-              icon: const Icon(Icons.logout, color: Colors.red),
+              icon: const Icon(Icons.logout, color: Colors.white),
               label: const Text(
                 'Logout',
-                style: TextStyle(color: Colors.red),
+                style: TextStyle(color: Colors.white),
               ),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                side: const BorderSide(color: Colors.red),
-              ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  side: const BorderSide(color: Colors.red),
+                  backgroundColor: Colors.red),
             ),
           ),
         ],
