@@ -205,12 +205,12 @@ class RequestItemWidget extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
           decoration: BoxDecoration(
             color: request.status == 'recording_pending'
-                ? Colors.orange.withOpacity(0.1)
+                ? Colors.orange.withOpacity(0.01)
                 : Colors.green.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
               color: request.status == 'recording_pending'
-                  ? Colors.orange
+                  ? Colors.transparent
                   : Colors.green,
             ),
           ),
