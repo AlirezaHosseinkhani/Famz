@@ -1,3 +1,5 @@
+import 'package:famz/presentation/pages/auth/register_otp_verification_page.dart';
+import 'package:famz/presentation/pages/auth/welcome_page.dart';
 import 'package:famz/presentation/pages/main/alarms/set_alarm_page.dart';
 import 'package:flutter/material.dart';
 
@@ -40,6 +42,23 @@ class AppRouter {
       case RouteNames.phoneVerification:
         return MaterialPageRoute(
           builder: (_) => const PhoneVerificationPage(),
+          settings: settings,
+        );
+
+      case RouteNames.registerOtpVerification:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => RegisterOtpVerificationPage(
+              phoneNumber: args?['phoneNumber'] ?? ''),
+          settings: settings,
+        );
+
+      case RouteNames.welcome:
+        final args = settings.arguments as Map<String, dynamic>?;
+        return MaterialPageRoute(
+          builder: (_) => WelcomePage(
+              name: args?['name'] ?? '',
+              phoneNumber: args?['phoneNumber'] ?? ''),
           settings: settings,
         );
 

@@ -60,24 +60,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               TokenModel(access: accessToken!, refresh: refreshToken!);
 
           emit(AuthAuthenticated(token: token));
-          // final userResult = await authRepository.getCurrentUser();
-          // userResult.fold(
-          //   (failure) {
-          //     if (failure is AuthFailure) {
-          //       // Token might be expired, try refreshing
-          //       add(AuthRefreshTokenEvent());
-          //     } else {
-          //       emit(AuthUnauthenticated());
-          //     }
-          //   },
-          //   (token) {
-          //     if (token != null) {
-          //       emit(AuthAuthenticated(token: token));
-          //     } else {
-          //       emit(AuthUnauthenticated());
-          //     }
-          //   },
-          // );
         } else {
           emit(AuthUnauthenticated());
         }
@@ -91,22 +73,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
 
-    // final result = await loginUseCase(event.phoneNumber);
-    // result.fold(
-    //   (failure) {
-    //     if (failure is NetworkFailure) {
-    //       emit(AuthNetworkError(message: failure.message));
-    //     } else {
-    //       emit(AuthError(message: failure.message, code: failure.code));
-    //     }
-    //   },
-    // (message) {
     emit(AuthVerificationCodeSent(
-      message: "message",
+      message: "Verification code sent",
       phoneNumber: event.phoneNumber,
     ));
-    // },
-    // );
   }
 
   Future<void> _onLogin(
@@ -124,12 +94,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthError(message: failure.message, code: failure.code));
         }
       },
-      // (message) {
-      //   emit(AuthVerificationCodeSent(
-      //     message: "message",
-      //     phoneNumber: event.phoneNumber,
-      //   ));
-      // },
       (token) {
         emit(AuthAuthenticated(token: token));
       },
@@ -155,8 +119,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           emit(AuthError(message: failure.message, code: failure.code));
         }
       },
-      (token) {
-        emit(AuthAuthenticated(token: token));
+      (user) {
+        // For now, create a mock token since verifyPhoneUseCase returns User
+        final mockToken = TokenModel(
+          access: 'mock_access_token',
+          refresh: 'mock_refresh_token',
+        );
+        emit(AuthAuthenticated(token: mockToken));
       },
     );
   }
@@ -167,24 +136,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
 
-    // final result = await registerUseCase(RegisterParams(
-    //   phoneNumber: event.phoneNumber,
-    //   name: event.name,
-    //   otpCode: event.otpCode,
-    // ));
-    //
-    // result.fold(
-    //   (failure) {
-    //     if (failure is NetworkFailure) {
-    //       emit(AuthNetworkError(message: failure.message));
-    //     } else {
-    //       emit(AuthError(message: failure.message, code: failure.code));
-    //     }
-    //   },
-    //   (user) {
-    //     emit(AuthAuthenticated(token: token));
-    //   },
-    // );
+    final result = await registerUseCase(RegisterParams(
+      phoneNumber: event.phoneNumber,
+      name: event.name,
+      otpCode: event.otpCode,
+    ));
+
+    result.fold(
+      (failure) {
+        if (failure is NetworkFailure) {
+          emit(AuthNetworkError(message: failure.message));
+        } else {
+          emit(AuthError(message: failure.message, code: failure.code));
+        }
+      },
+      (token) {
+        emit(AuthAuthenticated(token: token));
+      },
+    );
   }
 
   Future<void> _onLogout(
@@ -209,15 +178,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     AuthRefreshTokenEvent event,
     Emitter<AuthState> emit,
   ) async {
-    // final result = await refreshTokenUseCase();
-    // result.fold(
-    //   (failure) {
-    //     emit(AuthUnauthenticated());
-    //   },
-    //   (user) {
-    //     emit(AuthAuthenticated(token: token));
-    //   },
-    // );
+    // Implementation for refresh token
   }
 
   void _onClearError(

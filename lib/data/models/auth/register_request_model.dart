@@ -1,25 +1,25 @@
 class RegisterRequestModel {
-  final String phoneNumber;
-  final String name;
-  final String otpCode;
-  final String? deviceId;
-  final String? fcmToken;
+  final String email;
+  final String username;
+  final String password;
+  final String password2;
+  // final String? phoneNumber;
 
   const RegisterRequestModel({
-    required this.phoneNumber,
-    required this.name,
-    required this.otpCode,
-    this.deviceId,
-    this.fcmToken,
+    required this.email,
+    required this.username,
+    required this.password,
+    required this.password2,
+    // this.phoneNumber,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'phone_number': phoneNumber,
-      'name': name,
-      'otp_code': otpCode,
-      if (deviceId != null) 'device_id': deviceId,
-      if (fcmToken != null) 'fcm_token': fcmToken,
+      'email': email,
+      'username': username,
+      'password': password,
+      'password2': password2,
+      // if (phoneNumber != null) 'phone_number': phoneNumber,
     };
   }
 }

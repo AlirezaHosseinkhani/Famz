@@ -13,7 +13,7 @@ abstract class AuthRemoteDataSource {
 
   Future<TokenModel> login(String phoneNumber, String password);
 
-  Future<UserModel> register(RegisterRequestModel request);
+  Future<TokenModel> register(RegisterRequestModel request);
 
   Future<void> logout();
 
@@ -63,12 +63,12 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<UserModel> register(RegisterRequestModel request) async {
+  Future<TokenModel> register(RegisterRequestModel request) async {
     final response = await apiClient.post(
       ApiConstants.registerEndpoint,
       body: request.toJson(),
     );
-    return UserModel.fromJson(response['user']);
+    return TokenModel.fromJson(response);
   }
 
   @override

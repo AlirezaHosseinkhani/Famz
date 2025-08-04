@@ -13,7 +13,7 @@ abstract class AuthRepository {
   Future<Either<Failure, TokenModel>> login(
       String phoneNumber, String password);
 
-  Future<Either<Failure, User>> register(
+  Future<Either<Failure, TokenModel>> register(
       String phoneNumber, String name, String otpCode);
 
   Future<Either<Failure, void>> logout();

@@ -1,6 +1,6 @@
 class ApiConstants {
   // static const String baseUrl = 'http://192.168.0.142:8000';
-  static const String baseUrl = 'http://192.168.28.23:8000';
+  static const String baseUrl = 'http://192.168.9.23:8000';
   static const String apiVersion = 'api';
 
   // static const String baseUrl = 'https://api.famz.app/v1';
@@ -13,7 +13,7 @@ class ApiConstants {
 
   // Auth endpoints
   static const String loginEndpoint = '/$apiVersion/$authEndpoint/login/';
-  static const String registerEndpoint = '$apiVersion/$authEndpoint/register';
+  static const String registerEndpoint = '/$apiVersion/$authEndpoint/register/';
   static const String verifyPhoneEndpoint =
       '$apiVersion/$authEndpoint/verify-phone';
   static const String verifyOtpEndpoint =

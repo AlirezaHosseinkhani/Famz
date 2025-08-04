@@ -30,7 +30,7 @@ class IntroPage extends StatelessWidget {
                       child: Icon(
                         Icons.people_alt_rounded,
                         size: 120,
-                        color: theme.primaryColor,
+                        color: theme.hintColor,
                       ),
                     ),
                     const SizedBox(height: 48),
@@ -38,7 +38,7 @@ class IntroPage extends StatelessWidget {
                       'Welcome to famz',
                       style: theme.textTheme.displaySmall?.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: theme.primaryColor,
+                        color: theme.hintColor,
                       ),
                       textAlign: TextAlign.center,
                     ),

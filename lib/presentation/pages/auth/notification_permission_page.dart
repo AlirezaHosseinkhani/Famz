@@ -77,7 +77,7 @@ class _NotificationPermissionPageState
                       child: Icon(
                         Icons.notifications_active,
                         size: 120,
-                        color: theme.primaryColor,
+                        color: theme.hintColor,
                       ),
                     ),
                     const SizedBox(height: 48),

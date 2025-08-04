@@ -74,24 +74,14 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<Either<Failure, TokenModel>> login(
       String phoneNumber, String password) async {
-    // User userResponse = User(
-    //     id: 123,
-    //     email: "user@example.com",
-    //     username: "Alireza",
-    //     phoneNumber: "09126198846",
-    //     isActive: true);
-
     if (await networkInfo.isConnected) {
       try {
         final tokenResponse =
             await remoteDataSource.login(phoneNumber, password);
-        await localDataSource.saveTokens(tokenResponse);
 
-        // final userResponse = await remoteDataSource.getCurrentUser();
-        // await localDataSource.saveUser(userResponse);
+        await localDataSource.saveTokens(tokenResponse);
         await localDataSource.setLoggedIn(true);
 
-        // return Right(userResponse);
         return Right(tokenResponse);
       } on AuthException catch (e) {
         return Left(AuthFailure(e.message, code: e.code));
@@ -108,20 +98,28 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, User>> register(
+  Future<Either<Failure, TokenModel>> register(
       String phoneNumber, String name, String otpCode) async {
     if (await networkInfo.isConnected) {
       try {
+        // Create the register request with the correct parameters
         final request = RegisterRequestModel(
-          phoneNumber: phoneNumber,
-          name: name,
-          otpCode: otpCode,
+          email: phoneNumber, // Using phoneNumber as email
+          username: name,
+          password: otpCode, // You might want to generate a random password
+          password2: otpCode, // Same as password
+          // phoneNumber: phoneNumber,
         );
-        final userResponse = await remoteDataSource.register(request);
-        await localDataSource.saveUser(userResponse);
+
+        final tokenResponse = await remoteDataSource.register(request);
+
+        await localDataSource.saveTokens(tokenResponse);
         await localDataSource.setLoggedIn(true);
 
-        return Right(userResponse.toEntity());
+        // await localDataSource.saveUser(userResponse);
+        // await localDataSource.setLoggedIn(true);
+
+        return Right(tokenResponse);
       } on AuthException catch (e) {
         return Left(AuthFailure(e.message, code: e.code));
       } on NetworkException catch (e) {

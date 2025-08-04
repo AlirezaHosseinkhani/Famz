@@ -74,6 +74,24 @@ class Validators {
     return digitsOnly.length >= 10 && digitsOnly.length <= 15;
   }
 
+  static String? validateEmailOrPhone(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Email or phone number is required';
+    }
+
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
+
+    final isEmail = emailRegex.hasMatch(value);
+    final isPhone = digitsOnly.length >= 10 && digitsOnly.length <= 15;
+
+    if (!isEmail && !isPhone) {
+      return 'Please enter a valid email or phone number';
+    }
+
+    return null;
+  }
+
   static bool isValidOtp(String otp) {
     return RegExp(r'^\d{6}$').hasMatch(otp);
   }

@@ -126,14 +126,15 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
         },
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(24),
+            padding:
+                const EdgeInsets.only(left: 16, right: 16, top: 16, bottom: 4),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Enter verification code',
+                    'Enter verification',
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -156,10 +157,10 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 32),
                   CustomTextField(
-                    label: 'Verification Code',
-                    hint: 'Enter 6-digit code',
+                    label: 'Password',
+                    hint: 'Enter password',
                     controller: _otpController,
                     keyboardType: TextInputType.text,
                     focusNode: _focusNode,
