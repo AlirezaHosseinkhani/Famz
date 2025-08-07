@@ -100,6 +100,7 @@ class _OtpVerificationPageState extends State<OtpVerificationPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: const CustomAppBar(title: 'Verification'),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {

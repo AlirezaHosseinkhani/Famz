@@ -128,6 +128,7 @@ class _RegisterOtpVerificationPageState
     final theme = Theme.of(context);
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: const CustomAppBar(title: 'Verification'),
       body: SafeArea(
         child: Padding(

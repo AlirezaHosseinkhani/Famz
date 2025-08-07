@@ -1,6 +1,22 @@
+import '../../data/datasources/local/dev_config_service.dart';
+
 class ApiConstants {
-  // static const String baseUrl = 'http://192.168.0.142:8000';
-  static const String baseUrl = 'http://192.168.9.23:8000';
+  static String? _cachedBaseUrl;
+
+  static Future<String> get baseUrl async {
+    if (_cachedBaseUrl == null) {
+      final ip = await DevConfigService.getIpAddress();
+      _cachedBaseUrl = 'http://$ip';
+    }
+    return _cachedBaseUrl!;
+  }
+
+  // Call this when IP changes to refresh the cached URL
+  static void refreshBaseUrl() {
+    _cachedBaseUrl = null;
+  }
+
+  // static const String baseUrl = 'http://192.168.9.23:8000';
   static const String apiVersion = 'api';
 
   // static const String baseUrl = 'https://api.famz.app/v1';

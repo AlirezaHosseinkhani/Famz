@@ -22,7 +22,9 @@ class ApiClient {
     bool expectList = false,
   }) async {
     try {
-      final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
+      final baseUrl = await ApiConstants.baseUrl;
+      final uri = Uri.parse('$baseUrl$endpoint');
+      // final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       final requestHeaders = await _buildHeaders(headers);
 
       final response = await client.get(uri, headers: requestHeaders);
@@ -38,7 +40,9 @@ class ApiClient {
     Map<String, String>? headers,
   }) async {
     try {
-      final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
+      final baseUrl = await ApiConstants.baseUrl;
+      final uri = Uri.parse('$baseUrl$endpoint');
+      // final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       final requestHeaders = await _buildHeaders(headers);
 
       final response = await client.post(
@@ -59,7 +63,9 @@ class ApiClient {
     Map<String, String>? headers,
   }) async {
     try {
-      final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
+      final baseUrl = await ApiConstants.baseUrl;
+      final uri = Uri.parse('$baseUrl$endpoint');
+      // final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       final requestHeaders = await _buildHeaders(headers);
 
       final response = await client.put(
@@ -79,7 +85,9 @@ class ApiClient {
     Map<String, String>? headers,
   }) async {
     try {
-      final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
+      final baseUrl = await ApiConstants.baseUrl;
+      final uri = Uri.parse('$baseUrl$endpoint');
+      // final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       final requestHeaders = await _buildHeaders(headers);
 
       final response = await client.patch(
@@ -98,7 +106,9 @@ class ApiClient {
     Map<String, String>? headers,
   }) async {
     try {
-      final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
+      final baseUrl = await ApiConstants.baseUrl;
+      final uri = Uri.parse('$baseUrl$endpoint');
+      // final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       final requestHeaders = await _buildHeaders(headers);
 
       final response = await client.delete(uri, headers: requestHeaders);
@@ -119,7 +129,9 @@ class ApiClient {
     Map<String, String>? headers,
   }) async {
     try {
-      final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
+      final baseUrl = await ApiConstants.baseUrl;
+      final uri = Uri.parse('$baseUrl$endpoint');
+      // final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       final request = http.MultipartRequest(method, uri);
 
       // Add headers
