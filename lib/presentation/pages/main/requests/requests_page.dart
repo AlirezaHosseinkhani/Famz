@@ -298,7 +298,8 @@ class _ReceivedRequestsTab extends StatelessWidget {
               },
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
                 itemCount: receivedRequests.length,
                 itemBuilder: (context, index) {
                   final request = receivedRequests[index];

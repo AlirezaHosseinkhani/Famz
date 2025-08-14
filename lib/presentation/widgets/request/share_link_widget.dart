@@ -48,6 +48,7 @@ class ShareLinkWidget extends StatelessWidget {
                 Expanded(
                   child: Text(
                     shareLink,
+                    maxLines: 2,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontFamily: 'monospace', color: Colors.black54),
                     overflow: TextOverflow.ellipsis,
@@ -66,7 +67,7 @@ class ShareLinkWidget extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: OutlinedButton.icon(
+                child: TextButton.icon(
                   onPressed: () => _copyToClipboard(context, shareLink),
                   icon: const Icon(Icons.copy),
                   label: const Text('Copy'),

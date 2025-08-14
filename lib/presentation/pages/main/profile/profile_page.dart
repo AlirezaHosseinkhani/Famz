@@ -140,7 +140,7 @@ class _ProfilePageState extends State<ProfilePage> {
           SizedBox(
             width: double.infinity,
             child: TextButton(
-              onPressed: () => _navigateToEditProfile(context),
+              onPressed: () => null,
               // icon: const Icon(Icons.edit),
               // label: const Text('Edit Profile'),
               style: ElevatedButton.styleFrom(

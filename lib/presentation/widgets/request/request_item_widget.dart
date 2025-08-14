@@ -20,49 +20,122 @@ class RequestItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [
+            Color(0xFF2C1A0F), // Deep brown at top
+            Color(0xFF000000), // Black at bottom
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFFFF6B35).withOpacity(0.6), // Soft orange
+          width: 1,
+        ),
+        boxShadow: [
+          // Outer glow effect
+          BoxShadow(
+            color: const Color(0xFFFF6B35).withOpacity(0.3),
+            blurRadius: 10,
+            spreadRadius: 1,
+          ),
+          // Soft drop shadow
+          BoxShadow(
+            color: Color(0xFFFF6B35).withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // CircleAvatar(
-                //   backgroundImage: _getProfileImage(),
-                //   child: _getProfileImage() == null
-                //       ? const Icon(Icons.person)
-                //       : null,
-                // ),
-                const SizedBox(width: 12),
+                Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.09),
+                        ),
+                      ),
+                    ),
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.08),
+                        ),
+                        child: _getProfileImage() != null
+                            ? CircleAvatar(
+                                backgroundImage: _getProfileImage(),
+                                radius: 25,
+                              )
+                            : const Icon(
+                                Icons.person,
+                                color: Colors.white70,
+                                size: 25,
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        _getUsername(),
-                        style: Theme.of(context).textTheme.titleMedium,
+                        '${_getUsername()} is waiting for your medal!',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
+                      const SizedBox(height: 4),
                       Text(
                         _getStatusText(),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: _getStatusColor(),
-                            ),
+                        style: TextStyle(
+                          color: _getStatusColor(),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Text(
                   _getTimeAgo(),
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 12,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
             Text(
               request.message,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: const TextStyle(
+                color: Colors.white60,
+                fontSize: 15,
+                height: 1.4,
+              ),
             ),
             const SizedBox(height: 16),
             _buildActionButtons(context),
@@ -73,8 +146,9 @@ class RequestItemWidget extends StatelessWidget {
   }
 
   ImageProvider? _getProfileImage() {
-    final profilePicture = _getProfilePictureUrl();
-    return profilePicture != null ? NetworkImage(profilePicture) : null;
+    // final profilePicture = _getProfilePictureUrl();
+    // return profilePicture != null ? NetworkImage(profilePicture) : null;
+    return null;
   }
 
   String? _getProfilePictureUrl() {
@@ -87,9 +161,9 @@ class RequestItemWidget extends StatelessWidget {
 
   String _getUsername() {
     if (request.runtimeType.toString().contains('Received')) {
-      return request.fromUser.email ?? 'Unknown User';
+      return request.fromUser.email?.split('@')[0] ?? 'Unknown User';
     } else {
-      return request.toUser.email ?? 'Unknown User';
+      return request.toUser.email?.split('@')[0] ?? 'Unknown User';
     }
   }
 
@@ -100,13 +174,13 @@ class RequestItemWidget extends StatelessWidget {
   Color _getStatusColor() {
     switch (request.status.toLowerCase()) {
       case 'pending':
-        return Colors.orange;
+        return const Color(0xFFFFB74D); // Orange
       case 'accepted':
-        return Colors.green;
+        return const Color(0xFF81C784); // Green
       case 'rejected':
-        return Colors.red;
+        return const Color(0xFFE57373); // Red
       default:
-        return Colors.grey;
+        return Colors.white70;
     }
   }
 
@@ -132,86 +206,150 @@ class RequestItemWidget extends StatelessWidget {
         return Row(
           children: [
             Expanded(
-              child: ElevatedButton.icon(
-                onPressed: onAccept,
-                icon: const Icon(Icons.check, color: Colors.white70),
-                label: const Text('Accept'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
+              child: Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5E6D3), // Light beige like in Figma
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: TextButton(
+                  onPressed: onAccept,
+                  style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                  ),
+                  child: const Text(
+                    'Record Now',
+                    style: TextStyle(
+                      color: Color(0xFF3E2723),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: onReject,
-                icon: const Icon(Icons.close, color: Colors.white70),
-                label: const Text('Reject'),
+            const SizedBox(width: 16),
+            TextButton(
+              onPressed: onReject,
+              child: const Text(
+                'Skip for now',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
         );
       } else if (request.status == 'accepted' ||
           request.status == 'recording_pending') {
-        return SizedBox(
+        return Container(
           width: double.infinity,
-          child: ElevatedButton.icon(
+          height: 48,
+          decoration: BoxDecoration(
+            color: request.status == 'recording_pending'
+                ? const Color(0xFFFFB74D)
+                : const Color(0xFFF5E6D3),
+            borderRadius: BorderRadius.circular(25),
+          ),
+          child: TextButton(
             onPressed: onRecord,
-            icon: const Icon(Icons.mic),
-            label: Text(request.status == 'recording_pending'
-                ? 'Continue Recording'
-                : 'Record Alarm'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: request.status == 'recording_pending'
-                  ? Colors.orange
-                  : Colors.blue,
+            style: TextButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(25),
+              ),
+            ),
+            child: Text(
+              request.status == 'recording_pending'
+                  ? 'Continue Recording'
+                  : 'Record Now',
+              style: TextStyle(
+                color: request.status == 'recording_pending'
+                    ? Colors.white
+                    : const Color(0xFF3E2723),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
         );
       }
     }
-    // For sent requests - UPDATED LOGIC
+    // For sent requests
     else {
-      // Only show edit and delete buttons if status is 'pending'
       if (request.status == 'pending') {
         return Row(
           children: [
             Expanded(
-              child: OutlinedButton.icon(
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit),
-                label: const Text('Edit'),
+              child: Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.white70),
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: TextButton(
+                  onPressed: onEdit,
+                  style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                  ),
+                  child: const Text(
+                    'Edit',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 12),
             Expanded(
-              child: OutlinedButton.icon(
-                onPressed: onDelete,
-                icon: const Icon(Icons.delete),
-                label: const Text('Delete'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.red,
+              child: Container(
+                height: 48,
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFFE57373)),
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                child: TextButton(
+                  onPressed: onDelete,
+                  style: TextButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                  ),
+                  child: const Text(
+                    'Delete',
+                    style: TextStyle(
+                      color: Color(0xFFE57373),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ),
             ),
           ],
         );
-      }
-      // For recording_pending or complete status, show status info only
-      else if (request.status == 'recording_pending' ||
+      } else if (request.status == 'recording_pending' ||
           request.status == 'complete') {
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
           decoration: BoxDecoration(
             color: request.status == 'recording_pending'
-                ? Colors.orange.withOpacity(0.01)
-                : Colors.green.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
+                ? const Color(0xFFFFB74D).withOpacity(0.2)
+                : const Color(0xFF81C784).withOpacity(0.2),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: request.status == 'recording_pending'
-                  ? Colors.transparent
-                  : Colors.green,
+                  ? const Color(0xFFFFB74D)
+                  : const Color(0xFF81C784),
             ),
           ),
           child: Row(
@@ -222,8 +360,8 @@ class RequestItemWidget extends StatelessWidget {
                     ? Icons.pending
                     : Icons.check_circle,
                 color: request.status == 'recording_pending'
-                    ? Colors.orange
-                    : Colors.green,
+                    ? const Color(0xFFFFB74D)
+                    : const Color(0xFF81C784),
               ),
               const SizedBox(width: 8),
               Text(
@@ -232,9 +370,10 @@ class RequestItemWidget extends StatelessWidget {
                     : 'Completed',
                 style: TextStyle(
                   color: request.status == 'recording_pending'
-                      ? Colors.orange
-                      : Colors.green,
-                  fontWeight: FontWeight.w500,
+                      ? const Color(0xFFFFB74D)
+                      : const Color(0xFF81C784),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
                 ),
               ),
             ],
