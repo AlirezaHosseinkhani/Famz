@@ -34,14 +34,14 @@ class _ProfilePageState extends State<ProfilePage> {
       appBar: CustomAppBar(
         title: 'Profile',
         centerTitle: true,
-        // actions: [
-        //   IconButton(
-        //     onPressed: () {
-        //       context.read<ProfileBloc>().add(const GetProfileEvent());
-        //     },
-        //     icon: const Icon(Icons.refresh),
-        //   ),
-        // ],
+        actions: [
+          TextButton.icon(
+              onPressed: () {
+                // context.read<ProfileBloc>().add(const GetProfileEvent());
+              },
+              icon: Icon(Icons.support_agent),
+              label: Text("Support")),
+        ],
       ),
       body: BlocConsumer<ProfileBloc, ProfileState>(
         listener: (context, state) {
@@ -82,56 +82,45 @@ class _ProfilePageState extends State<ProfilePage> {
               onRefresh: () async {
                 context.read<ProfileBloc>().add(const GetProfileEvent());
               },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
-                    // // Profile Avatar
-                    // ProfileAvatarWidget(
-                    //   imageUrl: profile.profilePicture,
-                    //   size: 120,
-                    //   isEditable: true,
-                    //   onTap: () => _navigateToEditProfile(context),
-                    // ),
-                    const SizedBox(height: 16),
-                    // Profile Name
-                    Text(
-                      profile.username,
-                      style:
-                          Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                    ),
-                    if (profile.bio != null && profile.bio!.isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 32,
-                          vertical: 8,
-                        ),
-                        child: Text(
-                          profile.bio!,
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Colors.grey[600],
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 8.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                TextButton.icon(
+                                  onPressed: () =>
+                                      _navigateToEditProfile(context),
+                                  icon: const Icon(Icons.edit),
+                                  label: const Text('Edit Profile'),
+                                  style: ElevatedButton.styleFrom(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
                                   ),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Profile Information Card
+                          ProfileInfoWidget(
+                            profile: profile,
+                            onEditTap: () => _navigateToEditProfile(context),
+                          ),
+                        ],
                       ),
-                    const SizedBox(height: 20),
-                    // Profile Information Card
-                    ProfileInfoWidget(
-                      profile: profile,
-                      onEditTap: () => _navigateToEditProfile(context),
                     ),
-                    // const SizedBox(height: 20),
-                    // Action Buttons
-                    _buildActionButtons(context),
-                    const SizedBox(height: 20),
-                  ],
-                ),
+                  ),
+                  // Action Buttons at bottom
+                  _buildActionButtons(context),
+                  const SizedBox(height: 16), // Bottom padding
+                ],
               ),
             );
           }
@@ -148,18 +137,22 @@ class _ProfilePageState extends State<ProfilePage> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Column(
         children: [
-          // SizedBox(
-          //   width: double.infinity,
-          //   child: ElevatedButton.icon(
-          //     onPressed: () => _navigateToEditProfile(context),
-          //     icon: const Icon(Icons.edit),
-          //     label: const Text('Edit Profile'),
-          //     style: ElevatedButton.styleFrom(
-          //       padding: const EdgeInsets.symmetric(vertical: 12),
-          //     ),
-          //   ),
-          // ),
-          // const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              onPressed: () => _navigateToEditProfile(context),
+              // icon: const Icon(Icons.edit),
+              // label: const Text('Edit Profile'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+              child: Text(
+                'Terms of Service',
+                style: TextStyle(color: Colors.white38),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
