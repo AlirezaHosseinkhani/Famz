@@ -93,7 +93,7 @@ class _ProfilePageState extends State<ProfilePage> {
                             padding:
                                 const EdgeInsets.symmetric(horizontal: 8.0),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.start,
                               children: [
                                 TextButton.icon(
                                   onPressed: () =>

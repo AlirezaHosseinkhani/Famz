@@ -21,19 +21,20 @@ class RequestItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
           colors: [
-            Color(0xFF2C1A0F), // Deep brown at top
+            Color(0xFF2C1A0F).withOpacity(0.99), // Deep brown at top
             Color(0xFF000000), // Black at bottom
+            Color(0xFF2C1A0F).withOpacity(0.99), // Deep brown at top
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFFFF6B35).withOpacity(0.6), // Soft orange
+          color: const Color(0xFFFF6B35).withOpacity(0.4), // Soft orange
           width: 1,
         ),
         boxShadow: [
@@ -86,7 +87,7 @@ class RequestItemWidget extends StatelessWidget {
                                 radius: 25,
                               )
                             : const Icon(
-                                Icons.person,
+                                Icons.wifi_tethering,
                                 color: Colors.white70,
                                 size: 25,
                               ),

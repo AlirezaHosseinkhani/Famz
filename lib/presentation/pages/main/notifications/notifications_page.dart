@@ -43,7 +43,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   child: const Text(
                     'Mark all read',
                     style: TextStyle(
-                      color: Colors.orange,
+                      color: Color(0xFFFF6B35),
                       fontSize: 14,
                     ),
                   ),
@@ -121,7 +121,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
         context.read<NotificationBloc>().add(RefreshNotificationsEvent());
       },
       backgroundColor: Colors.grey[900],
-      color: Colors.orange,
+      color: const Color(0xFFFF6B35),
       child: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: notifications.length,

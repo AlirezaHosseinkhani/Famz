@@ -113,11 +113,11 @@ class NotificationItemWidget extends StatelessWidget {
         break;
       case 'reminder':
         iconData = Icons.notifications;
-        iconColor = Colors.orange;
+        iconColor = const Color(0xFFFF6B35);
         break;
       default:
         iconData = Icons.info;
-        iconColor = Colors.orange;
+        iconColor = const Color(0xFFFF6B35);
     }
 
     return Container(

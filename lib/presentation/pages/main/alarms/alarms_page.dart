@@ -90,39 +90,33 @@ class _AlarmsPageState extends State<AlarmsPage>
     return Container(
       padding: const EdgeInsets.all(20),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Logo
           Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.orange,
+                  color: Colors.transparent,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  'famz',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Image.asset(
+                  'assets/images/app_logo.png',
+                  height: 50,
                 ),
+                //     Text(
+                //   'famz',
+                //   style: TextStyle(
+                //     color: Colors.black,
+                //     fontSize: 16,
+                //     fontWeight: FontWeight.bold,
+                //   ),
+                // ),
               ),
             ],
-          ),
-          const SizedBox(height: 24),
-
-          // Today section
-          const Text(
-            'Today',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-            ),
           ),
         ],
       ),

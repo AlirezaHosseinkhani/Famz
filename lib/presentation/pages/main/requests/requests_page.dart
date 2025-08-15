@@ -69,7 +69,7 @@ class _RequestsPageState extends State<RequestsPage>
           }
         },
         child: Scaffold(
-          backgroundColor: Colors.black54,
+          backgroundColor: Colors.black,
           appBar: CustomAppBar(
             title: 'Requests',
             bottom: TabBar(
@@ -77,11 +77,11 @@ class _RequestsPageState extends State<RequestsPage>
               tabs: const [
                 Tab(
                   text: 'Received',
-                  icon: Icon(Icons.inbox),
+                  icon: Icon(Icons.inbox_outlined),
                 ),
                 Tab(
                   text: 'Sent',
-                  icon: Icon(Icons.send),
+                  icon: Icon(Icons.send_outlined),
                 ),
               ],
             ),
@@ -95,7 +95,7 @@ class _RequestsPageState extends State<RequestsPage>
               //   },
               // ),
               IconButton(
-                icon: const Icon(Icons.share),
+                icon: const Icon(Icons.ios_share),
                 tooltip: 'Share Link',
                 onPressed: () => _showShareDialog(context),
               ),
@@ -108,11 +108,11 @@ class _RequestsPageState extends State<RequestsPage>
               _SentRequestsTab(),
             ],
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () => _showCreateRequestDialog(context),
-            tooltip: 'Create New Request',
-            child: const Icon(Icons.add),
-          ),
+          // floatingActionButton: FloatingActionButton(
+          //   onPressed: () => _showCreateRequestDialog(context),
+          //   tooltip: 'Create New Request',
+          //   child: const Icon(Icons.add),
+          // ),
         ),
       ),
     );
@@ -137,6 +137,186 @@ class _RequestsPageState extends State<RequestsPage>
           },
         ),
       ),
+    );
+  }
+}
+
+class _ReceivedRequestsTab extends StatelessWidget {
+  const _ReceivedRequestsTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AlarmRequestBloc, AlarmRequestState>(
+      builder: (context, state) {
+        // Handle loading state
+        if (state is AlarmRequestLoading && !state.preserveData) {
+          return const LoadingWidget();
+        }
+
+        // Handle error state
+        if (state is AlarmRequestError) {
+          return CustomErrorWidget(
+            message: state.message,
+            onRetry: () {
+              context.read<AlarmRequestBloc>().add(LoadAllRequestsEvent());
+            },
+          );
+        }
+
+        // Extract received requests from loaded state
+        List<ReceivedRequest> receivedRequests = [];
+        if (state is AlarmRequestsLoaded) {
+          receivedRequests = state.receivedRequests;
+        }
+
+        // Handle empty state
+        if (receivedRequests.isEmpty) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.inbox_outlined,
+                  size: 64,
+                  color: Colors.grey,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'No received requests',
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 8),
+                Text(
+                  'Requests from other users will appear here',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          );
+        }
+        // Build list with loading overlay
+        return Stack(
+          children: [
+            RefreshIndicator(
+              onRefresh: () async {
+                context.read<AlarmRequestBloc>().add(RefreshRequestsEvent());
+                // Wait for the refresh to complete
+                await Future.delayed(const Duration(milliseconds: 500));
+              },
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
+                itemCount: receivedRequests.length + 1,
+                // Add 1 for the extra item
+                itemBuilder: (context, index) {
+                  // Check if this is the last item (extra item)
+                  if (index == receivedRequests.length) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 16, bottom: 8),
+                      child: Column(
+                        children: [
+                          const Text(
+                            'Let them wake you up...',
+                            maxLines: 1,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 12),
+                          TextButton(
+                            onPressed: () => _showCreateRequestDialog(context),
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.white24,
+                              // Your desired background color
+                              disabledBackgroundColor: Colors.black54,
+                            ),
+                            child: const Text(
+                              ' Request for an alarm media ',
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 16,
+                                // fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  // Regular list items
+                  final request = receivedRequests[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: RequestItemWidget(
+                      request: request,
+                      onAccept: () {
+                        _showConfirmationDialog(
+                          context,
+                          'Accept Request',
+                          'Are you sure you want to accept this request from ${request.fromUser.username ?? 'Unknown User'}?',
+                          () {
+                            context.read<AlarmRequestBloc>().add(
+                                  AcceptRequestEvent(requestId: request.id),
+                                );
+                          },
+                          confirmButtonColor: Colors.green,
+                        );
+                      },
+                      onReject: () {
+                        _showConfirmationDialog(
+                          context,
+                          'Reject Request',
+                          'Are you sure you want to reject this request from ${request.fromUser.username ?? 'Unknown User'}?',
+                          () {
+                            context.read<AlarmRequestBloc>().add(
+                                  RejectRequestEvent(requestId: request.id),
+                                );
+                          },
+                          confirmButtonColor: Colors.red,
+                        );
+                      },
+                      onRecord: () => _navigateToRecording(context, request),
+                    ),
+                  );
+                },
+              ),
+            ),
+            // Show loading overlay during operations
+            if (state is AlarmRequestLoading && state.preserveData)
+              Container(
+                color: Colors.black.withOpacity(0.3),
+                child: const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16),
+                      Text(
+                        'Processing request...',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -221,148 +401,6 @@ class _RequestsPageState extends State<RequestsPage>
           ),
         ],
       ),
-    );
-  }
-}
-
-class _ReceivedRequestsTab extends StatelessWidget {
-  const _ReceivedRequestsTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<AlarmRequestBloc, AlarmRequestState>(
-      builder: (context, state) {
-        // Handle loading state
-        if (state is AlarmRequestLoading && !state.preserveData) {
-          return const LoadingWidget();
-        }
-
-        // Handle error state
-        if (state is AlarmRequestError) {
-          return CustomErrorWidget(
-            message: state.message,
-            onRetry: () {
-              context.read<AlarmRequestBloc>().add(LoadAllRequestsEvent());
-            },
-          );
-        }
-
-        // Extract received requests from loaded state
-        List<ReceivedRequest> receivedRequests = [];
-        if (state is AlarmRequestsLoaded) {
-          receivedRequests = state.receivedRequests;
-        }
-
-        // Handle empty state
-        if (receivedRequests.isEmpty) {
-          return const Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.inbox_outlined,
-                  size: 64,
-                  color: Colors.grey,
-                ),
-                SizedBox(height: 16),
-                Text(
-                  'No received requests',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  'Requests from other users will appear here',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          );
-        }
-
-        // Build list with loading overlay
-        return Stack(
-          children: [
-            RefreshIndicator(
-              onRefresh: () async {
-                context.read<AlarmRequestBloc>().add(RefreshRequestsEvent());
-                // Wait for the refresh to complete
-                await Future.delayed(const Duration(milliseconds: 500));
-              },
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 16),
-                itemCount: receivedRequests.length,
-                itemBuilder: (context, index) {
-                  final request = receivedRequests[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: RequestItemWidget(
-                      request: request,
-                      onAccept: () {
-                        _showConfirmationDialog(
-                          context,
-                          'Accept Request',
-                          'Are you sure you want to accept this request from ${request.fromUser.username ?? 'Unknown User'}?',
-                          () {
-                            context.read<AlarmRequestBloc>().add(
-                                  AcceptRequestEvent(requestId: request.id),
-                                );
-                          },
-                          confirmButtonColor: Colors.green,
-                        );
-                      },
-                      onReject: () {
-                        _showConfirmationDialog(
-                          context,
-                          'Reject Request',
-                          'Are you sure you want to reject this request from ${request.fromUser.username ?? 'Unknown User'}?',
-                          () {
-                            context.read<AlarmRequestBloc>().add(
-                                  RejectRequestEvent(requestId: request.id),
-                                );
-                          },
-                          confirmButtonColor: Colors.red,
-                        );
-                      },
-                      onRecord: () => _navigateToRecording(context, request),
-                    ),
-                  );
-                },
-              ),
-            ),
-            // Show loading overlay during operations
-            if (state is AlarmRequestLoading && state.preserveData)
-              Container(
-                color: Colors.black.withOpacity(0.3),
-                child: const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text(
-                        'Processing request...',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        );
-      },
     );
   }
 
