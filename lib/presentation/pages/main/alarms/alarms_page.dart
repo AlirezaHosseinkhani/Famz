@@ -34,6 +34,8 @@ class _AlarmsPageState extends State<AlarmsPage>
       backgroundColor: Colors.black,
       body: SafeArea(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             _buildHeader(),
             Expanded(
@@ -174,31 +176,28 @@ class _AlarmsPageState extends State<AlarmsPage>
       itemCount: state.alarms.length,
       itemBuilder: (context, index) {
         final alarm = state.alarms[index];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: AlarmItemWidget(
-            alarm: alarm,
-            onToggle: (isActive) {
-              context.read<AlarmBloc>().add(
-                    ToggleAlarmEvent(
-                      alarmId: alarm.id!,
-                      isActive: isActive,
-                    ),
-                  );
-            },
-            onEdit: () {
-              Navigator.pushNamed(
-                context,
-                RouteNames.setAlarm,
-                arguments: alarm,
-              );
-            },
-            onDelete: () {
-              context.read<AlarmBloc>().add(
-                    DeleteAlarmEvent(alarmId: alarm.id!),
-                  );
-            },
-          ),
+        return AlarmItemWidget(
+          alarm: alarm,
+          onToggle: (isActive) {
+            context.read<AlarmBloc>().add(
+                  ToggleAlarmEvent(
+                    alarmId: alarm.id!,
+                    isActive: isActive,
+                  ),
+                );
+          },
+          onEdit: () {
+            Navigator.pushNamed(
+              context,
+              RouteNames.setAlarm,
+              arguments: alarm,
+            );
+          },
+          onDelete: () {
+            context.read<AlarmBloc>().add(
+                  DeleteAlarmEvent(alarmId: alarm.id!),
+                );
+          },
         );
       },
     );
@@ -207,44 +206,40 @@ class _AlarmsPageState extends State<AlarmsPage>
   Widget _buildAddAlarmButton() {
     return Container(
       padding: const EdgeInsets.all(20),
-      child: Row(
-        children: [
-          Expanded(
-            child: ElevatedButton(
-              onPressed: () async {
-                final result =
-                    await Navigator.pushNamed(context, RouteNames.setAlarm);
-                if (result == true) {
-                  context.read<AlarmBloc>().add(LoadAlarmsEvent());
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.transparent,
-                foregroundColor: Colors.orange,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: Colors.orange),
+      child: Center(
+        child: ElevatedButton(
+          onPressed: () async {
+            final result =
+                await Navigator.pushNamed(context, RouteNames.setAlarm);
+            if (result == true) {
+              context.read<AlarmBloc>().add(LoadAlarmsEvent());
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.grey[800],
+            foregroundColor: Colors.white70,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
+            elevation: 0,
+          ),
+          child: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.add, color: Colors.white70, size: 18),
+              SizedBox(width: 8),
+              Text(
+                'Add Alarm',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.add, color: Colors.orange),
-                  SizedBox(width: 8),
-                  Text(
-                    'Add Alarm',
-                    style: TextStyle(
-                      color: Colors.orange,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

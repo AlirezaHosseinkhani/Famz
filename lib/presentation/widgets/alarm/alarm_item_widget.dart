@@ -33,96 +33,120 @@ class AlarmItemWidget extends StatelessWidget {
       },
       background: _buildDismissBackground(),
       child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Column(
           children: [
-            // Time display
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
+            Row(
+              children: [
+                // Time and repeat info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Time display
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.baseline,
+                        textBaseline: TextBaseline.alphabetic,
+                        children: [
+                          Text(
+                            timeFormat.format(alarm.scheduledTime),
+                            style: TextStyle(
+                              color: alarm.isActive
+                                  ? Colors.white
+                                  : Colors.grey[600],
+                              fontSize: 36,
+                              fontWeight: FontWeight.w300,
+                              letterSpacing: -1,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            amPm,
+                            style: TextStyle(
+                              color: alarm.isActive
+                                  ? Colors.white
+                                  : Colors.grey[600],
+                              fontSize: 18,
+                              fontWeight: FontWeight.w300,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      // Repeat days text
+                      const SizedBox(height: 1),
                       Text(
-                        timeFormat.format(alarm.scheduledTime),
+                        alarm.getWeekdaysText(),
                         style: TextStyle(
-                          color: alarm.isActive ? Colors.white : Colors.grey,
-                          fontSize: 28,
-                          fontWeight: FontWeight.w300,
+                          color: alarm.isActive
+                              ? Colors.grey[400]
+                              : Colors.grey[600],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      Text(
-                        amPm,
-                        style: TextStyle(
-                          color: alarm.isActive ? Colors.white70 : Colors.grey,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w300,
+                      // Date for one-time alarms
+                      if (!alarm.isRecurring) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          DateFormat('EEE, MMM d, yyyy')
+                              .format(alarm.scheduledTime),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: alarm.isActive
+                                ? Colors.grey[400]
+                                : Colors.grey[600],
+                            fontWeight: FontWeight.w400,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
-                  const SizedBox(height: 4),
-
-                  // Repeat info
-                  Text(
-                    alarm.getWeekdaysText(),
-                    style: TextStyle(
-                      color: alarm.isActive ? Colors.white70 : Colors.grey,
-                      fontSize: 14,
-                    ),
-                  ),
-
-                  // Date for one-time alarms
-                  if (!alarm.isRecurring)
-                    Text(
-                      DateFormat('EEE, MMM d, yyyy')
-                          .format(alarm.scheduledTime),
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: alarm.isActive ? Colors.white70 : Colors.grey,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-
-            // Actions
-            Column(
-              children: [
-                // Toggle switch
-                Switch(
-                  value: alarm.isActive,
-                  onChanged: onToggle,
-                  activeColor: Colors.orange,
-                  inactiveThumbColor: Colors.grey,
-                  inactiveTrackColor: Colors.grey[800],
                 ),
-                const SizedBox(height: 8),
 
-                // Edit button
+                // Change button
                 GestureDetector(
                   onTap: onEdit,
                   child: Container(
-                    padding: const EdgeInsets.all(8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white10,
+                      borderRadius: BorderRadius.circular(25),
+                    ),
                     child: Text(
                       'Change',
                       style: TextStyle(
-                        color: alarm.isActive ? Colors.orange : Colors.grey,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        color: alarm.isActive
+                            ? Colors.grey[400]
+                            : Colors.grey[600],
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                // Toggle switch
+                Transform.scale(
+                  scale: 0.9,
+                  child: Switch(
+                    value: alarm.isActive,
+                    onChanged: onToggle,
+                    activeColor: Colors.white,
+                    activeTrackColor: Colors.green,
+                    inactiveThumbColor: Colors.grey[600],
+                    inactiveTrackColor: Colors.grey[800],
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
               ],
             ),
+            Divider(
+              color: Colors.white10,
+            )
           ],
         ),
       ),
@@ -133,7 +157,6 @@ class AlarmItemWidget extends StatelessWidget {
     return Container(
       alignment: Alignment.centerRight,
       padding: const EdgeInsets.only(right: 20),
-      margin: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
         color: Colors.red,
         borderRadius: BorderRadius.circular(12),
@@ -213,7 +236,7 @@ class AlarmItemWidget extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      alarm.isRecurring ? 'Recurring' : 'One-time',
+                      alarm.getWeekdaysText(),
                       style: TextStyle(
                         color: Colors.grey[400],
                         fontSize: 14,
