@@ -36,6 +36,8 @@ class ApiConstants {
       '$apiVersion/$authEndpoint/verify-otp';
   static const String refreshTokenEndpoint =
       '$apiVersion/$authEndpoint/refresh';
+  static const String validateTokenEndpoint = '/api/auth/token/refresh/';
+
   static const String logoutEndpoint = '$apiVersion/$authEndpoint/logout';
 
   // Alarm recording endpoints

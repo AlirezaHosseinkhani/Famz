@@ -24,6 +24,15 @@ class SecureStorage {
     return await _storage.read(key: StorageKeys.refreshToken);
   }
 
+  Future<void> deleteAccessToken() async {
+    await _storage.delete(key: StorageKeys.accessToken);
+  }
+
+  Future<void> deleteRefreshToken() async {
+    await _storage.delete(key: StorageKeys.refreshToken);
+  }
+
+  // Clear both tokens
   Future<void> clearTokens() async {
     await _storage.delete(key: StorageKeys.accessToken);
     await _storage.delete(key: StorageKeys.refreshToken);
@@ -36,6 +45,10 @@ class SecureStorage {
 
   Future<String?> getDeviceId() async {
     return await _storage.read(key: StorageKeys.deviceId);
+  }
+
+  Future<void> deleteDeviceId() async {
+    await _storage.delete(key: StorageKeys.deviceId);
   }
 
   // Clear all data

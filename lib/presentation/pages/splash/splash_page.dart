@@ -22,6 +22,10 @@ class _SplashPageState extends State<SplashPage>
   void initState() {
     super.initState();
     _setupAnimations();
+    // Trigger auth check when splash screen loads
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   context.read<AuthBloc>().add(AuthCheckStatusEvent());
+    // });
   }
 
   void _setupAnimations() {
@@ -55,6 +59,22 @@ class _SplashPageState extends State<SplashPage>
     super.dispose();
   }
 
+  void _navigateToMain() {
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed(RouteNames.main);
+      }
+    });
+  }
+
+  void _navigateToIntro() {
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed(RouteNames.intro);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -62,11 +82,12 @@ class _SplashPageState extends State<SplashPage>
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
         if (state is AuthAuthenticated) {
-          Future.delayed(const Duration(milliseconds: 1000), () {
-            Navigator.of(context).pushReplacementNamed(RouteNames.main);
-          });
+          _navigateToMain();
         } else if (state is AuthUnauthenticated) {
-          Navigator.of(context).pushReplacementNamed(RouteNames.intro);
+          _navigateToIntro();
+        } else if (state is AuthError || state is AuthNetworkError) {
+          // Handle errors by logging out the user
+          _navigateToIntro();
         }
       },
       child: Scaffold(
@@ -82,24 +103,8 @@ class _SplashPageState extends State<SplashPage>
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 20,
-                              offset: const Offset(0, 10),
-                            ),
-                          ],
-                        ),
-                        child: Icon(
-                          Icons.alarm,
-                          size: 80,
-                          color: theme.primaryColor,
-                        ),
+                      Image.asset(
+                        'assets/images/app_logo.png',
                       ),
                       const SizedBox(height: 32),
                       Text(
@@ -112,11 +117,24 @@ class _SplashPageState extends State<SplashPage>
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Personal Alarm App',
+                        'Wake up smiling not snoozing',
                         style: theme.textTheme.bodyLarge?.copyWith(
                           color: Colors.white.withOpacity(0.8),
                           letterSpacing: 1,
                         ),
+                      ),
+                      const SizedBox(height: 24),
+                      // Show loading indicator during auth check
+                      BlocBuilder<AuthBloc, AuthState>(
+                        builder: (context, state) {
+                          if (state is AuthLoading) {
+                            return const CircularProgressIndicator(
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(Colors.white),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
                       ),
                     ],
                   ),

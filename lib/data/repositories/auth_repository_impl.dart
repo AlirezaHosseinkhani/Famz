@@ -28,7 +28,7 @@ class AuthRepositoryImpl implements AuthRepository {
       try {
         final request = LoginRequestModel(email: email, password: "123456");
         final response = await remoteDataSource.sendVerificationCode(request);
-        return Right("response.message");
+        return Right("Verification code sent successfully");
       } on AuthException catch (e) {
         return Left(AuthFailure(e.message, code: e.code));
       } on NetworkException catch (e) {
@@ -36,7 +36,7 @@ class AuthRepositoryImpl implements AuthRepository {
       } on ServerException catch (e) {
         return Left(ServerFailure(e.message, code: e.code));
       } catch (e) {
-        return Left(ServerFailure('Unexpected error occurred'));
+        return Left(ServerFailure('Failed to send verification code'));
       }
     } else {
       return const Left(NetworkFailure('No internet connection'));
@@ -64,7 +64,7 @@ class AuthRepositoryImpl implements AuthRepository {
       } on ServerException catch (e) {
         return Left(ServerFailure(e.message, code: e.code));
       } catch (e) {
-        return Left(ServerFailure('Unexpected error occurred'));
+        return Left(ServerFailure('OTP verification failed'));
       }
     } else {
       return const Left(NetworkFailure('No internet connection'));
@@ -90,7 +90,7 @@ class AuthRepositoryImpl implements AuthRepository {
       } on ServerException catch (e) {
         return Left(ServerFailure(e.message, code: e.code));
       } catch (e) {
-        return Left(ServerFailure('Unexpected error occurred'));
+        return Left(ServerFailure('Login failed'));
       }
     } else {
       return const Left(NetworkFailure('No internet connection'));
@@ -102,22 +102,17 @@ class AuthRepositoryImpl implements AuthRepository {
       String phoneNumber, String name, String otpCode) async {
     if (await networkInfo.isConnected) {
       try {
-        // Create the register request with the correct parameters
         final request = RegisterRequestModel(
-          email: phoneNumber, // Using phoneNumber as email
+          email: phoneNumber,
           username: name,
-          password: otpCode, // You might want to generate a random password
-          password2: otpCode, // Same as password
-          // phoneNumber: phoneNumber,
+          password: otpCode,
+          password2: otpCode,
         );
 
         final tokenResponse = await remoteDataSource.register(request);
 
         await localDataSource.saveTokens(tokenResponse);
         await localDataSource.setLoggedIn(true);
-
-        // await localDataSource.saveUser(userResponse);
-        // await localDataSource.setLoggedIn(true);
 
         return Right(tokenResponse);
       } on AuthException catch (e) {
@@ -127,7 +122,7 @@ class AuthRepositoryImpl implements AuthRepository {
       } on ServerException catch (e) {
         return Left(ServerFailure(e.message, code: e.code));
       } catch (e) {
-        return Left(ServerFailure('Unexpected error occurred'));
+        return Left(ServerFailure('Registration failed'));
       }
     } else {
       return const Left(NetworkFailure('No internet connection'));
@@ -140,56 +135,14 @@ class AuthRepositoryImpl implements AuthRepository {
       if (await networkInfo.isConnected) {
         await remoteDataSource.logout();
       }
-      await localDataSource.clearTokens();
-      await localDataSource.clearUser();
-      await localDataSource.setLoggedIn(false);
+
+      await _clearLocalAuthData();
       return const Right(null);
-    } on AuthException catch (e) {
-      // Even if logout fails on server, clear local data
-      await localDataSource.clearTokens();
-      await localDataSource.clearUser();
-      await localDataSource.setLoggedIn(false);
-      return Left(AuthFailure(e.message, code: e.code));
     } catch (e) {
-      // Even if logout fails, clear local data
-      await localDataSource.clearTokens();
-      await localDataSource.clearUser();
-      await localDataSource.setLoggedIn(false);
-      return const Right(null);
-    }
-  }
-
-  @override
-  Future<Either<Failure, User>> refreshToken() async {
-    if (await networkInfo.isConnected) {
       try {
-        final currentRefreshToken = await localDataSource.getRefreshToken();
-        if (currentRefreshToken == null) {
-          return const Left(AuthFailure('No refresh token found'));
-        }
-
-        final tokenResponse =
-            await remoteDataSource.refreshToken(currentRefreshToken);
-        await localDataSource.saveTokens(tokenResponse);
-
-        final userResponse = await remoteDataSource.getCurrentUser();
-        await localDataSource.saveUser(userResponse);
-
-        return Right(userResponse.toEntity());
-      } on AuthException catch (e) {
-        await localDataSource.clearTokens();
-        await localDataSource.clearUser();
-        await localDataSource.setLoggedIn(false);
-        return Left(AuthFailure(e.message, code: e.code));
-      } on NetworkException catch (e) {
-        return Left(NetworkFailure(e.message, code: e.code));
-      } on ServerException catch (e) {
-        return Left(ServerFailure(e.message, code: e.code));
-      } catch (e) {
-        return Left(ServerFailure('Unexpected error occurred'));
-      }
-    } else {
-      return const Left(NetworkFailure('No internet connection'));
+        await _clearLocalAuthData();
+      } catch (_) {}
+      return Left(ServerFailure('Logout failed'));
     }
   }
 
@@ -209,13 +162,16 @@ class AuthRepositoryImpl implements AuthRepository {
         return const Right(null);
       }
     } on AuthException catch (e) {
+      if (e.code == '401' || e.code == '403') {
+        await _clearLocalAuthData();
+      }
       return Left(AuthFailure(e.message, code: e.code));
     } on NetworkException catch (e) {
       return Left(NetworkFailure(e.message, code: e.code));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message, code: e.code));
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred'));
+      return Left(ServerFailure('Failed to get current user'));
     }
   }
 
@@ -223,9 +179,20 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, bool>> isLoggedIn() async {
     try {
       final isLoggedIn = await localDataSource.isLoggedIn();
-      return Right(isLoggedIn);
+      final accessToken = await localDataSource.getAccessToken();
+
+      return Right(isLoggedIn && accessToken != null);
     } catch (e) {
       return Left(CacheFailure('Failed to check login status'));
     }
+  }
+
+  /// Helper method to clear all local authentication data
+  Future<void> _clearLocalAuthData() async {
+    try {
+      await localDataSource.clearTokens();
+      await localDataSource.clearUser();
+      await localDataSource.setLoggedIn(false);
+    } catch (e) {}
   }
 }

@@ -9,6 +9,8 @@ abstract class AuthEvent extends Equatable {
 
 class AuthCheckStatusEvent extends AuthEvent {}
 
+class AuthValidateTokenEvent extends AuthEvent {}
+
 class AuthSendVerificationCodeEvent extends AuthEvent {
   final String phoneNumber;
 
