@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:famz/presentation/widgets/common/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,8 +9,6 @@ import 'package:image_picker/image_picker.dart';
 import '../../../bloc/profile/profile_bloc.dart';
 import '../../../bloc/profile/profile_event.dart';
 import '../../../bloc/profile/profile_state.dart';
-import '../../../widgets/common/custom_button.dart';
-import '../../../widgets/common/custom_text_field.dart';
 import '../../../widgets/profile/profile_avatar_widget.dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -54,29 +53,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Profile'),
-        centerTitle: true,
-        actions: [
-          BlocBuilder<ProfileBloc, ProfileState>(
-            builder: (context, state) {
-              if (state is ProfileUpdating) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                );
-              }
-              return TextButton(
-                onPressed: _hasChanges ? _saveProfile : null,
-                child: const Text('Save'),
-              );
-            },
-          ),
-        ],
+      backgroundColor: const Color(0xFF1A1A1A), // Dark background
+      appBar: CustomAppBar(
+        title: "Edit Profile",
+        backgroundColor: Colors.black,
       ),
       body: BlocListener<ProfileBloc, ProfileState>(
         listener: (context, state) {
@@ -87,89 +67,281 @@ class _EditProfilePageState extends State<EditProfilePage> {
               SnackBar(
                 content: Text(state.message),
                 backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
               ),
             );
           }
         },
-        child: Form(
-          key: _formKey,
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                // Profile Image
-                ProfileAvatarWidget(
-                  imageUrl: _profileImagePath,
-                  size: 120,
-                  isEditable: true,
-                  onTap: _pickImage,
-                ),
-                const SizedBox(height: 8),
-                TextButton(
-                  onPressed: _pickImage,
-                  child: const Text('Change Profile Picture'),
-                ),
-                const SizedBox(height: 32),
-                // Phone Number Field
-                CustomTextField(
-                  controller: _phoneController,
-                  label: 'Phone Number',
-                  hint: 'Enter your phone number',
-                  keyboardType: TextInputType.phone,
-                  // prefixIcon: Icons.phone,
-                  onChanged: (_) => _markAsChanged(),
-                  validator: (value) {
-                    if (value != null && value.isNotEmpty) {
-                      if (!RegExp(r'^\+?[1-9]\d{1,14}$').hasMatch(value)) {
-                        return 'Please enter a valid phone number';
-                      }
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                // Bio Field
-                CustomTextField(
-                  controller: _bioController,
-                  label: 'Bio',
-                  hint: 'Tell us about yourself',
-                  prefixIcon: Icon(Icons.info),
-                  maxLines: 3,
-                  maxLength: 150,
-                  onChanged: (_) => _markAsChanged(),
-                  validator: (value) {
-                    if (value != null && value.length > 150) {
-                      return 'Bio must be 150 characters or less';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 32),
-                // Save Button
-                SizedBox(
-                  width: double.infinity,
-                  child: CustomButton(
-                    text: 'Save Changes',
-                    onPressed: _hasChanges ? _saveProfile : null,
-                    isLoading:
-                        context.watch<ProfileBloc>().state is ProfileUpdating,
+        child: Container(
+          color: Colors.black,
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  // Profile Image Section
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2A2A2A),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      children: [
+                        Stack(
+                          children: [
+                            ProfileAvatarWidget(
+                              imageUrl: _profileImagePath,
+                              size: 100,
+                              isEditable: false,
+                            ),
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: GestureDetector(
+                                onTap: _pickImage,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFFF6B35),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Change Profile Picture',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                // Cancel Button
-                SizedBox(
-                  width: double.infinity,
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
+                  const SizedBox(height: 24),
+
+                  // Profile Information Section
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2A2A2A),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Profile Information',
+                          style: TextStyle(
+                            color: Colors.grey[300],
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Phone Number Field
+                        _buildInputField(
+                          label: 'Phone Number',
+                          controller: _phoneController,
+                          icon: Icons.phone,
+                          keyboardType: TextInputType.phone,
+                          validator: (value) {
+                            if (value != null && value.isNotEmpty) {
+                              if (!RegExp(r'^\+?[1-9]\d{1,14}$')
+                                  .hasMatch(value)) {
+                                return 'Please enter a valid phone number';
+                              }
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Bio Field
+                        _buildInputField(
+                          label: 'Bio',
+                          controller: _bioController,
+                          icon: Icons.info_outline,
+                          maxLines: 3,
+                          maxLength: 150,
+                          validator: (value) {
+                            if (value != null && value.length > 150) {
+                              return 'Bio must be 150 characters or less';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 32),
+
+                  // Action Buttons
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _hasChanges ? _saveProfile : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _hasChanges
+                                ? const Color(0xFFFF6B35)
+                                : Colors.grey[700],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: BlocBuilder<ProfileBloc, ProfileState>(
+                            builder: (context, state) {
+                              if (state is ProfileUpdating) {
+                                return const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white),
+                                  ),
+                                );
+                              }
+                              return const Text(
+                                'Save Changes',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: Colors.grey[600]!),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: Colors.grey[300],
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildInputField({
+    required String label,
+    required TextEditingController controller,
+    required IconData icon,
+    TextInputType? keyboardType,
+    int maxLines = 1,
+    int? maxLength,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.grey[400],
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          keyboardType: keyboardType,
+          maxLines: maxLines,
+          maxLength: maxLength,
+          onChanged: (_) => _markAsChanged(),
+          validator: validator,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+          ),
+          decoration: InputDecoration(
+            prefixIcon: Icon(
+              icon,
+              color: Colors.grey[500],
+              size: 20,
+            ),
+            filled: true,
+            fillColor: const Color(0xFF3A3A3A),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(
+                color: Color(0xFFFF6B35),
+                width: 2,
+              ),
+            ),
+            errorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(
+                color: Colors.red,
+                width: 1,
+              ),
+            ),
+            focusedErrorBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(
+                color: Colors.red,
+                width: 2,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            counterStyle: TextStyle(
+              color: Colors.grey[500],
+              fontSize: 12,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -205,6 +377,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
         SnackBar(
           content: Text('Failed to pick image: $e'),
           backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
         ),
       );
     }

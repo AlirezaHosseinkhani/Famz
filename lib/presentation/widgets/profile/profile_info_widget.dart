@@ -114,7 +114,7 @@ class ProfileInfoWidget extends StatelessWidget {
         const SizedBox(height: 8),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             color: Colors.white10, // Light white background
             borderRadius: BorderRadius.circular(8), // Rounded border

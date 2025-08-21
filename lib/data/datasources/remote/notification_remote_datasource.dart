@@ -27,7 +27,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
           .map((json) => NotificationModel.fromJson(json))
           .toList();
     } catch (e) {
-      throw ServerException('Failed to fetch notifications');
+      throw ServerException(e.toString());
     }
   }
 
@@ -48,7 +48,7 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
       );
       return NotificationModel.fromJson(response);
     } catch (e) {
-      throw ServerException('Failed to mark notification as read');
+      throw ServerException(e.toString());
     }
   }
 }

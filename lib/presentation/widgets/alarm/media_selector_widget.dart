@@ -78,6 +78,7 @@ class _MediaSelectorWidgetState extends State<MediaSelectorWidget> {
   Widget build(BuildContext context) {
     if (widget.recordings.isEmpty) {
       return Container(
+        width: MediaQuery.of(context).size.width,
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
           color: Colors.grey[900],

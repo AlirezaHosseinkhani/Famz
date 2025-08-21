@@ -1,3 +1,4 @@
+import 'package:famz/presentation/widgets/common/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -156,17 +157,9 @@ class _SetAlarmPageState extends State<SetAlarmPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
+      appBar: CustomAppBar(
         backgroundColor: Colors.black,
-        title: Text(
-          _isEditing ? 'Edit Alarm' : 'Add Alarm',
-          style: const TextStyle(color: Colors.white),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white),
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pop(context),
-        ),
+        title: _isEditing ? 'Edit Alarm' : 'Add Alarm',
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -404,7 +397,8 @@ class _SetAlarmPageState extends State<SetAlarmPage> {
   Widget _buildActionButtons() {
     return Row(
       children: [
-        Expanded(
+        Flexible(
+          flex: 1,
           child: CustomButton(
             text: 'Back',
             onPressed: () => Navigator.pop(context),
@@ -413,7 +407,8 @@ class _SetAlarmPageState extends State<SetAlarmPage> {
           ),
         ),
         const SizedBox(width: 16),
-        Expanded(
+        Flexible(
+          flex: 2,
           child: CustomButton(
             text: _isEditing ? 'Update alarm' : 'Create alarm',
             onPressed: _saveAlarm,

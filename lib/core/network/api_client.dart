@@ -24,12 +24,14 @@ class ApiClient {
     try {
       final baseUrl = await ApiConstants.baseUrl;
       final uri = Uri.parse('$baseUrl$endpoint');
-      // final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       final requestHeaders = await _buildHeaders(headers);
 
       final response = await client.get(uri, headers: requestHeaders);
       return _handleResponse(response, expectList: expectList);
     } catch (e) {
+      if (e is AppException) {
+        rethrow;
+      }
       throw _handleError(e);
     }
   }
@@ -42,17 +44,18 @@ class ApiClient {
     try {
       final baseUrl = await ApiConstants.baseUrl;
       final uri = Uri.parse('$baseUrl$endpoint');
-      // final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       final requestHeaders = await _buildHeaders(headers);
 
       final response = await client.post(
         uri,
-        // headers: headers,
         headers: requestHeaders,
         body: body != null ? json.encode(body) : null,
       );
       return _handleResponse(response);
     } catch (e) {
+      if (e is AppException) {
+        rethrow;
+      }
       throw _handleError(e);
     }
   }
@@ -65,7 +68,6 @@ class ApiClient {
     try {
       final baseUrl = await ApiConstants.baseUrl;
       final uri = Uri.parse('$baseUrl$endpoint');
-      // final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       final requestHeaders = await _buildHeaders(headers);
 
       final response = await client.put(
@@ -75,6 +77,9 @@ class ApiClient {
       );
       return _handleResponse(response);
     } catch (e) {
+      if (e is AppException) {
+        rethrow;
+      }
       throw _handleError(e);
     }
   }
@@ -87,7 +92,6 @@ class ApiClient {
     try {
       final baseUrl = await ApiConstants.baseUrl;
       final uri = Uri.parse('$baseUrl$endpoint');
-      // final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       final requestHeaders = await _buildHeaders(headers);
 
       final response = await client.patch(
@@ -97,6 +101,9 @@ class ApiClient {
       );
       return _handleResponse(response);
     } catch (e) {
+      if (e is AppException) {
+        rethrow;
+      }
       throw _handleError(e);
     }
   }
@@ -108,7 +115,6 @@ class ApiClient {
     try {
       final baseUrl = await ApiConstants.baseUrl;
       final uri = Uri.parse('$baseUrl$endpoint');
-      // final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       final requestHeaders = await _buildHeaders(headers);
 
       final response = await client.delete(uri, headers: requestHeaders);
@@ -117,6 +123,9 @@ class ApiClient {
       }
       return _handleResponse(response);
     } catch (e) {
+      if (e is AppException) {
+        rethrow;
+      }
       throw _handleError(e);
     }
   }
@@ -131,7 +140,6 @@ class ApiClient {
     try {
       final baseUrl = await ApiConstants.baseUrl;
       final uri = Uri.parse('$baseUrl$endpoint');
-      // final uri = Uri.parse('${ApiConstants.baseUrl}$endpoint');
       final request = http.MultipartRequest(method, uri);
 
       // Add headers
@@ -159,6 +167,9 @@ class ApiClient {
 
       return _handleResponse(response);
     } catch (e) {
+      if (e is AppException) {
+        rethrow;
+      }
       throw _handleError(e);
     }
   }
@@ -167,7 +178,6 @@ class ApiClient {
       Map<String, String>? headers) async {
     final Map<String, String> requestHeaders = {
       'Content-Type': ApiConstants.contentType,
-      // 'Accept': ApiConstants.contentType,
     };
 
     // Add custom headers
@@ -205,7 +215,54 @@ class ApiClient {
         throw const ServerException('Invalid response format');
       }
     } else {
-      throw _mapStatusCodeToException(response.statusCode, response.body);
+      // Handle error response with server message
+      throw _handleErrorResponse(response);
+    }
+  }
+
+  Exception _handleErrorResponse(http.Response response) {
+    final statusCode = response.statusCode;
+    String message = 'An error occurred';
+
+    // Try to extract error message from response body
+    try {
+      final jsonResponse = jsonDecode(response.body);
+      message = jsonResponse['detail'] ?? jsonResponse['message'] ?? message;
+    } catch (e) {
+      // If JSON parsing fails, use default message or raw body if it's short
+      if (response.body.isNotEmpty && response.body.length < 200) {
+        message = response.body;
+      }
+    }
+
+    // Map status codes to appropriate exceptions
+    switch (statusCode) {
+      case 400:
+        return ValidationException(message);
+      case 401:
+        return AuthException(message);
+      case 403:
+        return AuthException(message);
+      case 404:
+        return ServerException(message);
+      case 422:
+        return ValidationException(message);
+      case 429:
+        return ServerException('Too many requests. Please try again later.');
+      case 500:
+        return ServerException(message);
+      case 502:
+        return ServerException('Server temporarily unavailable');
+      case 503:
+        return ServerException('Service unavailable');
+      default:
+        if (statusCode >= 400 && statusCode < 500) {
+          return ValidationException(message);
+        } else if (statusCode >= 500) {
+          return ServerException(message);
+        } else {
+          return ServerException(message);
+        }
     }
   }
 
@@ -220,38 +277,6 @@ class ApiClient {
       return error;
     } else {
       return ServerException('Unexpected error: ${error.toString()}');
-    }
-  }
-
-  Exception _mapStatusCodeToException(int statusCode, String body) {
-    String message = 'Request failed';
-
-    try {
-      final responseBody = json.decode(body) as Map<String, dynamic>;
-      message = responseBody['message'] ?? message;
-    } catch (e) {
-      // If can't parse response body, use default message
-    }
-
-    switch (statusCode) {
-      case 400:
-        return ValidationException(message);
-      case 401:
-        return AuthException(message);
-      case 403:
-        return AuthException(message);
-      case 404:
-        return ServerException(message);
-      case 422:
-        return ValidationException(message);
-      case 500:
-        return ServerException(message);
-      case 502:
-        return ServerException('Server temporarily unavailable');
-      case 503:
-        return ServerException('Service unavailable');
-      default:
-        return ServerException(message);
     }
   }
 }

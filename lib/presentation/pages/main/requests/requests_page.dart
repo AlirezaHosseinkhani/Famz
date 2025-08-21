@@ -10,6 +10,8 @@ import '../../../bloc/alarm_request/alarm_request_state.dart';
 import '../../../widgets/common/custom_app_bar.dart';
 import '../../../widgets/common/error_widget.dart';
 import '../../../widgets/common/loading_widget.dart';
+import '../../../widgets/request/confirmation_dialog_widget.dart';
+import '../../../widgets/request/create_request_dialog_widget.dart';
 import '../../../widgets/request/request_item_widget.dart';
 import '../../../widgets/request/share_link_widget.dart';
 
@@ -69,6 +71,7 @@ class _RequestsPageState extends State<RequestsPage>
           }
         },
         child: Scaffold(
+          resizeToAvoidBottomInset: false,
           backgroundColor: Colors.black,
           appBar: CustomAppBar(
             title: 'Requests',
@@ -171,17 +174,17 @@ class _ReceivedRequestsTab extends StatelessWidget {
 
         // Handle empty state
         if (receivedRequests.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.inbox_outlined,
                   size: 64,
                   color: Colors.grey,
                 ),
-                SizedBox(height: 16),
-                Text(
+                const SizedBox(height: 16),
+                const Text(
                   'No received requests',
                   style: TextStyle(
                     fontSize: 18,
@@ -189,8 +192,8 @@ class _ReceivedRequestsTab extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
+                const SizedBox(height: 8),
+                const Text(
                   'Requests from other users will appear here',
                   style: TextStyle(
                     fontSize: 14,
@@ -235,10 +238,9 @@ class _ReceivedRequestsTab extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           TextButton(
-                            onPressed: () => _showCreateRequestDialog(context),
+                            onPressed: () => createRequestDialog(context),
                             style: TextButton.styleFrom(
                               backgroundColor: Colors.white24,
-                              // Your desired background color
                               disabledBackgroundColor: Colors.black54,
                             ),
                             child: const Text(
@@ -262,7 +264,7 @@ class _ReceivedRequestsTab extends StatelessWidget {
                     child: RequestItemWidget(
                       request: request,
                       onAccept: () {
-                        _showConfirmationDialog(
+                        confirmationDialog(
                           context,
                           'Accept Request',
                           'Are you sure you want to accept this request from ${request.fromUser.username ?? 'Unknown User'}?',
@@ -275,7 +277,7 @@ class _ReceivedRequestsTab extends StatelessWidget {
                         );
                       },
                       onReject: () {
-                        _showConfirmationDialog(
+                        confirmationDialog(
                           context,
                           'Reject Request',
                           'Are you sure you want to reject this request from ${request.fromUser.username ?? 'Unknown User'}?',
@@ -320,125 +322,6 @@ class _ReceivedRequestsTab extends StatelessWidget {
     );
   }
 
-  void _showCreateRequestDialog(BuildContext context) {
-    final messageController = TextEditingController();
-    final userIdController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        title: const Text('Create New Request'),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextFormField(
-                controller: userIdController,
-                decoration: const InputDecoration(
-                  labelText: 'User ID',
-                  hintText: 'Enter user ID',
-                  prefixIcon: Icon(Icons.person),
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.number,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter a user ID';
-                  }
-                  if (int.tryParse(value) == null) {
-                    return 'Please enter a valid number';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: messageController,
-                decoration: const InputDecoration(
-                  labelText: 'Message',
-                  hintText: 'Enter request message',
-                  prefixIcon: Icon(Icons.message),
-                  border: OutlineInputBorder(),
-                ),
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a message';
-                  }
-                  if (value.trim().length < 3) {
-                    return 'Message must be at least 3 characters';
-                  }
-                  return null;
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (formKey.currentState?.validate() ?? false) {
-                final userId = int.parse(userIdController.text);
-                context.read<AlarmRequestBloc>().add(
-                      CreateAlarmRequestEvent(
-                        toUserId: userId,
-                        message: messageController.text.trim(),
-                      ),
-                    );
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('Create'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showConfirmationDialog(
-    BuildContext context,
-    String title,
-    String message,
-    VoidCallback onConfirm, {
-    Color? confirmButtonColor,
-  }) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: confirmButtonColor,
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-              onConfirm();
-            },
-            child: const Text('Confirm'),
-          ),
-        ],
-      ),
-    );
-  }
-
   void _navigateToRecording(BuildContext context, ReceivedRequest request) {
     Navigator.pushNamed(
       context,
@@ -478,17 +361,17 @@ class _SentRequestsTab extends StatelessWidget {
 
         // Handle empty state
         if (sentRequests.isEmpty) {
-          return const Center(
+          return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
+                const Icon(
                   Icons.send_outlined,
                   size: 64,
                   color: Colors.grey,
                 ),
-                SizedBox(height: 16),
-                Text(
+                const SizedBox(height: 16),
+                const Text(
                   'No sent requests',
                   style: TextStyle(
                     fontSize: 18,
@@ -496,14 +379,40 @@ class _SentRequestsTab extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                SizedBox(height: 8),
-                Text(
-                  'Tap the + button to create your first request',
+                const SizedBox(height: 8),
+                const Text(
+                  'Tap the below button to create your first request',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.grey,
                   ),
                   textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 26),
+                const Text(
+                  'Let them wake you up...',
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => createRequestDialog(context),
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    disabledBackgroundColor: Colors.black54,
+                  ),
+                  child: const Text(
+                    ' Request for an alarm media ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      // fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ),
               ],
             ),

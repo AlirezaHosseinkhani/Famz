@@ -39,7 +39,7 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
       // return response.map((json) => SentRequestModel.fromJson(json)).toList();
       return (response).map((item) => SentRequestModel.fromJson(item)).toList();
     } catch (e) {
-      throw ServerException('Failed to get sent requests');
+      throw ServerException(e.toString());
     }
   }
 
@@ -52,7 +52,7 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
           .map((item) => ReceivedRequestModel.fromJson(item))
           .toList();
     } catch (e) {
-      throw ServerException('Failed to get received requests');
+      throw ServerException(e.toString());
     }
   }
 
@@ -71,7 +71,7 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
       );
       return SentRequestModel.fromJson(response);
     } catch (e) {
-      throw ServerException('Failed to create alarm request');
+      throw ServerException(e.toString());
     }
   }
 
@@ -89,7 +89,7 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
       );
       return SentRequestModel.fromJson(response);
     } catch (e) {
-      throw ServerException('Failed to update alarm request');
+      throw ServerException(e.toString());
     }
   }
 
@@ -99,7 +99,7 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
       await apiClient.delete('${ApiConstants.sentRequestsEndpoint}$requestId/');
       return;
     } catch (e) {
-      throw ServerException('Failed to delete alarm request');
+      throw ServerException(e.toString());
     }
   }
 
@@ -109,7 +109,7 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
       await apiClient
           .post('${ApiConstants.receivedRequestsEndpoint}$requestId/accept/');
     } catch (e) {
-      throw ServerException('Failed to accept alarm request');
+      throw ServerException(e.toString());
     }
   }
 
@@ -119,7 +119,7 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
       await apiClient
           .post('${ApiConstants.receivedRequestsEndpoint}/$requestId/reject/');
     } catch (e) {
-      throw ServerException('Failed to reject alarm request');
+      throw ServerException(e.toString());
     }
   }
 }

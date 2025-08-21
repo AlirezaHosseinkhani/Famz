@@ -11,14 +11,18 @@ import '../../models/alarm/alarm_recording_model.dart';
 
 abstract class AlarmRecordingRemoteDataSource {
   Future<List<AlarmRecordingModel>> getRecordings();
+
   Future<AlarmRecordingModel> uploadRecording({
     required int requestId,
     String? audioPath,
     String? videoPath,
     required String duration,
   });
+
   Future<AlarmRecordingModel> updateRecording(AlarmRecordingModel recording);
-  Future<void> deleteRecording(int id);
+
+  Future<void> deleteRecording(int recordingId);
+
   Future<String> downloadFile(String url, String fileName,
       {Function(double)? onProgress});
 }
@@ -27,9 +31,7 @@ class AlarmRecordingRemoteDataSourceImpl
     implements AlarmRecordingRemoteDataSource {
   final ApiClient apiClient;
 
-  AlarmRecordingRemoteDataSourceImpl({
-    required this.apiClient,
-  });
+  AlarmRecordingRemoteDataSourceImpl({required this.apiClient});
 
   @override
   Future<List<AlarmRecordingModel>> getRecordings() async {
@@ -37,13 +39,13 @@ class AlarmRecordingRemoteDataSourceImpl
       final response = await apiClient.get(
         ApiConstants.alarmRecordingsEndpoint,
         expectList: true,
-      );
+      ) as List;
 
-      return (response as List<dynamic>)
+      return response
           .map((item) => AlarmRecordingModel.fromJson(item))
           .toList();
     } catch (e) {
-      throw ServerException(e.toString());
+      throw ServerException('Failed to get recordings');
     }
   }
 
@@ -82,8 +84,7 @@ class AlarmRecordingRemoteDataSourceImpl
         request.files.add(videoFile);
       }
 
-      // Add headers if your ApiClient has authentication
-      // You might need to get headers from your ApiClient
+      // Add headers from ApiClient if available
       // request.headers.addAll(await apiClient.getHeaders());
 
       final streamedResponse = await request.send();
@@ -93,7 +94,7 @@ class AlarmRecordingRemoteDataSourceImpl
         final jsonData = json.decode(response.body);
         return AlarmRecordingModel.fromJson(jsonData);
       } else {
-        throw ServerException('Upload failed: ${response.statusCode}');
+        throw ServerException('Failed to upload recording');
       }
     } catch (e) {
       throw ServerException(e.toString());
@@ -111,14 +112,15 @@ class AlarmRecordingRemoteDataSourceImpl
 
       return AlarmRecordingModel.fromJson(response);
     } catch (e) {
-      throw ServerException(e.toString());
+      throw ServerException('Failed to update recording');
     }
   }
 
   @override
-  Future<void> deleteRecording(int id) async {
+  Future<void> deleteRecording(int recordingId) async {
     try {
-      await apiClient.delete('${ApiConstants.alarmRecordingsEndpoint}$id/');
+      await apiClient
+          .delete('${ApiConstants.alarmRecordingsEndpoint}$recordingId/');
     } catch (e) {
       throw ServerException(e.toString());
     }
@@ -139,8 +141,7 @@ class AlarmRecordingRemoteDataSourceImpl
       final streamedResponse = await request.send();
 
       if (streamedResponse.statusCode != 200) {
-        throw ServerException(
-            'Failed to download file: ${streamedResponse.statusCode}');
+        throw ServerException('Failed to download file');
       }
 
       final contentLength = streamedResponse.contentLength ?? -1;

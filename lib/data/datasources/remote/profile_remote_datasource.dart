@@ -23,7 +23,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       final response = await apiClient.get(ApiConstants.profileEndpoint);
       return ProfileModel.fromJson(response);
     } catch (e) {
-      throw ServerException('Failed to get profile');
+      throw ServerException(e.toString());
     }
   }
 
@@ -36,7 +36,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       );
       return ProfileModel.fromJson(response);
     } catch (e) {
-      throw ServerException('Failed to update profile');
+      throw ServerException(e.toString());
     }
   }
 
@@ -49,7 +49,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       );
       return ProfileModel.fromJson(response);
     } catch (e) {
-      throw ServerException('Failed to patch profile');
+      throw ServerException(e.toString());
     }
   }
 }
