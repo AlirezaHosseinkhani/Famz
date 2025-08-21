@@ -66,72 +66,121 @@ class _IntroPageState extends State<IntroPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
+      backgroundColor: Colors.black,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             children: [
-              const SizedBox(height: 16),
-
               // Dev Configuration Section (only in debug mode)
-              if (_showDevConfig) _buildDevConfigSection(theme),
+              if (_showDevConfig)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0, bottom: 24.0),
+                  child: _buildDevConfigSection(theme),
+                ),
 
+              // Main content - centered
               Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const SizedBox(height: 48),
-                    Text(
-                      'Welcome to famz',
-                      style: theme.textTheme.displaySmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: theme.hintColor,
+                    // Alarm clock icon
+                    SizedBox(
+                      width: screenWidth,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            Icons.alarm_on_outlined,
+                            size: 80,
+                            color: Colors.red,
+                          ),
+                        ],
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Create personalized alarms with voices and videos from your friends and family',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color:
-                            theme.textTheme.bodyLarge?.color?.withOpacity(0.7),
-                        height: 1.5,
+
+                    SizedBox(height: screenHeight * 0.03),
+
+                    // Main heading with emojis
+                    RichText(
+                      textAlign: TextAlign.start,
+                      text: TextSpan(
+                        style: const TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          height: 1.2,
+                        ),
+                        children: [
+                          const TextSpan(text: 'Wake up smiling '),
+                          const TextSpan(text: '😊'),
+                          const TextSpan(text: ',\nnot snoozing '),
+                          const TextSpan(text: '😴'),
+                          const TextSpan(text: '!'),
+                        ],
                       ),
-                      textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 48),
-                    _buildFeatureItem(
-                      context,
-                      Icons.record_voice_over,
-                      'Voice Alarms',
-                      'Wake up to personal messages from loved ones',
-                    ),
-                    const SizedBox(height: 24),
-                    _buildFeatureItem(
-                      context,
-                      Icons.videocam,
-                      'Video Alarms',
-                      'Start your day with personalized video messages',
-                    ),
-                    const SizedBox(height: 24),
-                    _buildFeatureItem(
-                      context,
-                      Icons.share,
-                      'Easy Sharing',
-                      'Share requests and receive custom recordings',
+
+                    SizedBox(height: screenHeight * 0.04),
+
+                    // Subtitle with emojis
+                    RichText(
+                      textAlign: TextAlign.start,
+                      text: TextSpan(
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.grey[400],
+                          height: 1.5,
+                        ),
+                        children: [
+                          const TextSpan(text: 'Replace boring alarms '),
+                          const TextSpan(text: '😴'),
+                          const TextSpan(
+                              text:
+                                  ' with fun videos\nand voice messages from your favorite\npeople '),
+                          const TextSpan(text: '❤️'),
+                          const TextSpan(text: '.'),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
-              CustomButton(
-                text: 'Get Started',
-                onPressed: () {
-                  Navigator.of(context).pushNamed(RouteNames.emailPhoneInput);
-                },
+
+              // Continue button at bottom
+              Padding(
+                padding: const EdgeInsets.only(bottom: 40.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: CustomButton(
+                    text: 'Continue',
+                    backgroundColor: Colors.white,
+                    fontSize: 16,
+                    textColor: Colors.black,
+                    borderRadius: BorderRadius.circular(12),
+                    onPressed: () {
+                      Navigator.of(context)
+                          .pushNamed(RouteNames.emailPhoneInput);
+                    },
+                  ),
+                ),
               ),
+
+              // Home indicator
+              Container(
+                width: 134,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(2.5),
+                ),
+              ),
+              const SizedBox(height: 8),
             ],
           ),
         ),
@@ -141,7 +190,6 @@ class _IntroPageState extends State<IntroPage> {
 
   Widget _buildDevConfigSection(ThemeData theme) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.orange.withOpacity(0.1),
@@ -217,53 +265,6 @@ class _IntroPageState extends State<IntroPage> {
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildFeatureItem(
-    BuildContext context,
-    IconData icon,
-    String title,
-    String description,
-  ) {
-    final theme = Theme.of(context);
-
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: theme.primaryColor,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: 24,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

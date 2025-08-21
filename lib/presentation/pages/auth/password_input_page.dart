@@ -10,7 +10,6 @@ import '../../routes/route_names.dart';
 import '../../widgets/common/custom_app_bar.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
-import '../../widgets/common/error_widget.dart';
 
 class PasswordInputPage extends StatefulWidget {
   final String emailOrPhone;
@@ -73,7 +72,11 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: const CustomAppBar(title: ''),
+      resizeToAvoidBottomInset: false,
+      appBar: const CustomAppBar(
+        title: '',
+        backgroundColor: Colors.black,
+      ),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthAuthenticated) {
@@ -98,13 +101,19 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
           }
         },
         child: SafeArea(
-          child: Padding(
+          child: Container(
+            color: Colors.black,
             padding: const EdgeInsets.all(24),
             child: Form(
               key: _formKey,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  Image.asset(
+                    'assets/images/app_logo.png',
+                    height: 60,
+                  ),
+                  const SizedBox(height: 40),
                   Text(
                     widget.isExistingUser ? 'Welcome back!' : 'Create password',
                     style: theme.textTheme.headlineMedium?.copyWith(
@@ -150,16 +159,17 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
                       if (state is AuthError || state is AuthNetworkError) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: CustomErrorWidget(
-                            message: state is AuthError
-                                ? state.message
-                                : (state as AuthNetworkError).message,
-                            onRetry: _submitPassword,
-                            retryText: 'Retry',
-                          ),
-                        );
+                        // return Padding(
+                        //   padding: const EdgeInsets.only(bottom: 16),
+                        //   child: CustomErrorWidget(
+                        //     message: state is AuthError
+                        //         ? state.message
+                        //         : (state as AuthNetworkError).message,
+                        //     onRetry: _submitPassword,
+                        //     retryText: 'Retry',
+                        //   ),
+                        // );
+                        return Text('Try again');
                       }
                       return const SizedBox.shrink();
                     },
@@ -169,6 +179,10 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
                     builder: (context, state) {
                       return CustomButton(
                         text: widget.isExistingUser ? 'Login' : 'Continue',
+                        backgroundColor: Colors.white,
+                        fontSize: 16,
+                        textColor: Colors.black,
+                        borderRadius: BorderRadius.circular(12),
                         onPressed: _submitPassword,
                         isLoading: state is AuthLoading,
                       );

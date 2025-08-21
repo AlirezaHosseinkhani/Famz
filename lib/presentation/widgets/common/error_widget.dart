@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../bloc/auth/auth_bloc.dart';
+import '../../bloc/auth/auth_event.dart';
+import '../../routes/route_names.dart';
 import 'custom_button.dart';
 
 class CustomErrorWidget extends StatelessWidget {
@@ -57,6 +61,23 @@ class CustomErrorWidget extends StatelessWidget {
                 text: retryText ?? 'Try Again',
                 onPressed: onRetry,
                 width: 150,
+                backgroundColor: Colors.transparent,
+                fontSize: 16,
+                textColor: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              const SizedBox(height: 8),
+              CustomButton(
+                text: 'Logout',
+                onPressed: () {
+                  context.read<AuthBloc>().add(AuthLogoutEvent());
+                  Navigator.of(context).pushReplacementNamed(RouteNames.intro);
+                },
+                width: 150,
+                backgroundColor: Colors.white,
+                fontSize: 16,
+                textColor: Colors.black,
+                borderRadius: BorderRadius.circular(12),
               ),
             ],
           ],

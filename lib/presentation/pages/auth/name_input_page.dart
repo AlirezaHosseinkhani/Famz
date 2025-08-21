@@ -9,7 +9,6 @@ import '../../routes/route_names.dart';
 import '../../widgets/common/custom_app_bar.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
-import '../../widgets/common/error_widget.dart';
 
 class NameInputPage extends StatefulWidget {
   final String emailOrPhone;
@@ -60,7 +59,8 @@ class _NameInputPageState extends State<NameInputPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: const CustomAppBar(title: ''),
+      resizeToAvoidBottomInset: false,
+      appBar: const CustomAppBar(title: '', backgroundColor: Colors.black),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthRegistrationSuccess) {
@@ -88,13 +88,19 @@ class _NameInputPageState extends State<NameInputPage> {
           }
         },
         child: SafeArea(
-          child: Padding(
+          child: Container(
+            color: Colors.black,
             padding: const EdgeInsets.all(24),
             child: Form(
               key: _formKey,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  Image.asset(
+                    'assets/images/app_logo.png',
+                    height: 60,
+                  ),
+                  const SizedBox(height: 40),
                   Text(
                     'Enter your name',
                     style: theme.textTheme.headlineMedium?.copyWith(
@@ -103,6 +109,7 @@ class _NameInputPageState extends State<NameInputPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
+                    textAlign: TextAlign.center,
                     'The name you choose is what others see when you send or receive recording requests.',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.textTheme.bodyLarge?.color?.withOpacity(0.7),
@@ -135,16 +142,17 @@ class _NameInputPageState extends State<NameInputPage> {
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
                       if (state is AuthError || state is AuthNetworkError) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: CustomErrorWidget(
-                            message: state is AuthError
-                                ? state.message
-                                : (state as AuthNetworkError).message,
-                            onRetry: _submitName,
-                            retryText: 'Retry',
-                          ),
-                        );
+                        // return Padding(
+                        //   padding: const EdgeInsets.only(bottom: 16),
+                        //   child: CustomErrorWidget(
+                        //     message: state is AuthError
+                        //         ? state.message
+                        //         : (state as AuthNetworkError).message,
+                        //     onRetry: _submitName,
+                        //     retryText: 'Retry',
+                        //   ),
+                        // );
+                        return Text('Try again');
                       }
                       return const SizedBox.shrink();
                     },
@@ -154,6 +162,10 @@ class _NameInputPageState extends State<NameInputPage> {
                     builder: (context, state) {
                       return CustomButton(
                         text: 'Next',
+                        backgroundColor: Colors.white,
+                        fontSize: 16,
+                        textColor: Colors.black,
+                        borderRadius: BorderRadius.circular(12),
                         onPressed: _submitName,
                         isLoading: state is AuthLoading,
                       );

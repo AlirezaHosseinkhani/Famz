@@ -10,7 +10,6 @@ import '../../routes/route_names.dart';
 import '../../widgets/common/custom_app_bar.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
-import '../../widgets/common/error_widget.dart';
 
 class EmailPhoneInputPage extends StatefulWidget {
   const EmailPhoneInputPage({Key? key}) : super(key: key);
@@ -51,7 +50,11 @@ class _EmailPhoneInputPageState extends State<EmailPhoneInputPage> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: const CustomAppBar(title: ''),
+      resizeToAvoidBottomInset: false,
+      appBar: const CustomAppBar(
+        title: '',
+        backgroundColor: Colors.black,
+      ),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthExistenceChecked) {
@@ -79,20 +82,26 @@ class _EmailPhoneInputPageState extends State<EmailPhoneInputPage> {
           }
         },
         child: SafeArea(
-          child: Padding(
+          child: Container(
+            color: Colors.black,
             padding: const EdgeInsets.all(24),
             child: Form(
               key: _formKey,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  Image.asset(
+                    'assets/images/app_logo.png',
+                    height: 60,
+                  ),
+                  const SizedBox(height: 40),
                   Text(
                     'Add Email or Phone Number',
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 20),
                   Text(
                     'Link your phone number to connect with your friends who also use this app',
                     style: theme.textTheme.bodyLarge?.copyWith(
@@ -118,16 +127,17 @@ class _EmailPhoneInputPageState extends State<EmailPhoneInputPage> {
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
                       if (state is AuthError || state is AuthNetworkError) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: CustomErrorWidget(
-                            message: state is AuthError
-                                ? state.message
-                                : (state as AuthNetworkError).message,
-                            onRetry: _checkExistence,
-                            retryText: 'Retry',
-                          ),
-                        );
+                        // return Padding(
+                        //   padding: const EdgeInsets.only(bottom: 16),
+                        //   child: CustomErrorWidget(
+                        //     message: state is AuthError
+                        //         ? state.message
+                        //         : (state as AuthNetworkError).message,
+                        //     onRetry: _checkExistence,
+                        //     retryText: 'Retry',
+                        //   ),
+                        // );
+                        return Text('Try again');
                       }
                       return const SizedBox.shrink();
                     },
@@ -136,7 +146,11 @@ class _EmailPhoneInputPageState extends State<EmailPhoneInputPage> {
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
                       return CustomButton(
-                        text: 'Continue',
+                        text: 'Next',
+                        backgroundColor: Colors.white,
+                        fontSize: 16,
+                        textColor: Colors.black,
+                        borderRadius: BorderRadius.circular(12),
                         onPressed: _checkExistence,
                         isLoading: state is AuthLoading,
                       );

@@ -59,8 +59,10 @@ class _NotificationPermissionPageState
     final theme = Theme.of(context);
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: SafeArea(
-        child: Padding(
+        child: Container(
+          color: Colors.black,
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
@@ -68,21 +70,14 @@ class _NotificationPermissionPageState
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(
-                        color: theme.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(32),
-                      ),
-                      child: Icon(
-                        Icons.notifications_active,
-                        size: 120,
-                        color: theme.hintColor,
-                      ),
+                    Icon(
+                      Icons.notifications_active,
+                      size: 120,
+                      color: Colors.orange,
                     ),
                     const SizedBox(height: 48),
                     Text(
-                      'Enable Notifications',
+                      'Turn on Notifications?',
                       style: theme.textTheme.headlineMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -98,41 +93,26 @@ class _NotificationPermissionPageState
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 48),
-                    _buildBenefitItem(
-                      context,
-                      Icons.schedule,
-                      'Never miss your alarms',
-                    ),
-                    const SizedBox(height: 16),
-                    _buildBenefitItem(
-                      context,
-                      Icons.group,
-                      'Get notified of new requests',
-                    ),
-                    const SizedBox(height: 16),
-                    _buildBenefitItem(
-                      context,
-                      Icons.volume_up,
-                      'Receive recording updates',
-                    ),
                   ],
                 ),
               ),
               CustomButton(
                 text: 'Allow Notifications',
+                backgroundColor: Colors.white,
+                fontSize: 16,
+                textColor: Colors.black,
+                borderRadius: BorderRadius.circular(12),
                 onPressed: _requestPermission,
-                isLoading: _isLoading,
+                // isLoading: _isLoading,
               ),
               const SizedBox(height: 12),
-              TextButton(
+              CustomButton(
+                text: 'Skip for now',
+                backgroundColor: Colors.grey.shade900,
+                fontSize: 16,
+                textColor: Colors.white,
+                borderRadius: BorderRadius.circular(12),
                 onPressed: _skipPermission,
-                child: Text(
-                  'Skip for now',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
-                  ),
-                ),
               ),
             ],
           ),

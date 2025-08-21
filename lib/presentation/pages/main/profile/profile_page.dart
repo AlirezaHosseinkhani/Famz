@@ -119,7 +119,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                   // Action Buttons at bottom
                   _buildActionButtons(context),
-                  const SizedBox(height: 16), // Bottom padding
+                  const SizedBox(height: 4), // Bottom padding
                 ],
               ),
             );
@@ -148,11 +148,15 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
               child: Text(
                 'Terms of Service',
-                style: TextStyle(color: Colors.white38),
+                style: TextStyle(color: Colors.white54),
               ),
             ),
           ),
-          const SizedBox(height: 12),
+          Text(
+            "1.0.0",
+            style: TextStyle(color: Colors.white38),
+          ),
+          const SizedBox(height: 8),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(

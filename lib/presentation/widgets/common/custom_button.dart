@@ -7,6 +7,7 @@ class CustomButton extends StatelessWidget {
   final bool isEnabled;
   final Color? backgroundColor;
   final Color? textColor;
+  final double? fontSize;
   final double? width;
   final double? height;
   final EdgeInsetsGeometry? padding;
@@ -21,6 +22,7 @@ class CustomButton extends StatelessWidget {
     this.isEnabled = true,
     this.backgroundColor,
     this.textColor,
+    this.fontSize,
     this.width,
     this.height,
     this.padding,
@@ -69,9 +71,9 @@ class CustomButton extends StatelessWidget {
                   Text(
                     text,
                     style: theme.textTheme.titleMedium?.copyWith(
-                      color: textColor ?? Colors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
+                        color: textColor ?? Colors.white,
+                        fontWeight: FontWeight.w600,
+                        fontSize: fontSize ?? 16),
                   ),
                 ],
               ),
