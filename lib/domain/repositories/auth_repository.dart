@@ -1,24 +1,24 @@
+// lib/domain/repositories/auth_repository.dart
 import 'package:dartz/dartz.dart';
 
 import '../../core/errors/failures.dart';
+import '../../data/models/auth/check_existence_response_model.dart';
 import '../../data/models/auth/token_model.dart';
 import '../entities/user.dart';
 
 abstract class AuthRepository {
-  Future<Either<Failure, String>> sendVerificationCode(String phoneNumber);
-
-  Future<Either<Failure, User>> verifyOtpAndLogin(
-      String phoneNumber, String otpCode);
+  Future<Either<Failure, CheckExistenceResponseModel>> checkExistence(
+      String emailOrPhone);
 
   Future<Either<Failure, TokenModel>> login(
-      String phoneNumber, String password);
+      String emailOrPhone, String password);
 
   Future<Either<Failure, TokenModel>> register(
-      String phoneNumber, String name, String otpCode);
+      String emailOrPhone, String password, String username);
 
   Future<Either<Failure, void>> logout();
 
-  // Future<Either<Failure, TokenModel>> refreshToken();
+  Future<Either<Failure, TokenModel>> refreshToken(String refreshToken);
 
   Future<Either<Failure, User?>> getCurrentUser();
 

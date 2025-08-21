@@ -1,3 +1,4 @@
+// lib/presentation/pages/auth/welcome_page.dart
 import 'package:flutter/material.dart';
 
 import '../../routes/route_names.dart';
@@ -5,12 +6,12 @@ import '../../widgets/common/custom_button.dart';
 
 class WelcomePage extends StatelessWidget {
   final String name;
-  final String phoneNumber;
+  final String emailOrPhone;
 
   const WelcomePage({
     Key? key,
     required this.name,
-    required this.phoneNumber,
+    required this.emailOrPhone,
   }) : super(key: key);
 
   @override

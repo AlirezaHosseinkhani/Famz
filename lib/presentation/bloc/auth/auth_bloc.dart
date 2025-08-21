@@ -1,20 +1,21 @@
-import 'package:famz/data/models/auth/token_model.dart';
+// lib/presentation/bloc/auth/auth_bloc.dart
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/errors/failures.dart';
 import '../../../core/storage/secure_storage.dart';
+import '../../../data/models/auth/token_model.dart';
 import '../../../domain/repositories/auth_repository.dart';
+import '../../../domain/usecases/auth/check_existence_usecase.dart';
 import '../../../domain/usecases/auth/login_usecase.dart';
 import '../../../domain/usecases/auth/logout_usecase.dart';
 import '../../../domain/usecases/auth/refresh_token_usecase.dart';
 import '../../../domain/usecases/auth/register_usecase.dart';
-import '../../../domain/usecases/auth/verify_phone_usecase.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  final CheckExistenceUseCase checkExistenceUseCase;
   final LoginUseCase loginUseCase;
-  final VerifyPhoneUseCase verifyPhoneUseCase;
   final RegisterUseCase registerUseCase;
   final LogoutUseCase logoutUseCase;
   final RefreshTokenUseCase refreshTokenUseCase;
@@ -22,8 +23,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SecureStorage secureStorage;
 
   AuthBloc({
+    required this.checkExistenceUseCase,
     required this.loginUseCase,
-    required this.verifyPhoneUseCase,
     required this.registerUseCase,
     required this.logoutUseCase,
     required this.refreshTokenUseCase,
@@ -31,9 +32,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required this.secureStorage,
   }) : super(AuthInitial()) {
     on<AuthCheckStatusEvent>(_onCheckStatus);
-    on<AuthSendVerificationCodeEvent>(_onSendVerificationCode);
+    on<AuthCheckExistenceEvent>(_onCheckExistence);
     on<AuthLoginEvent>(_onLogin);
-    on<AuthVerifyOtpEvent>(_onVerifyOtp);
     on<AuthRegisterEvent>(_onRegister);
     on<AuthLogoutEvent>(_onLogout);
     on<AuthRefreshTokenEvent>(_onRefreshToken);
@@ -55,10 +55,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         emit(AuthUnauthenticated());
       },
       (isLoggedIn) async {
-        if (isLoggedIn) {
-          final token =
-              TokenModel(access: accessToken!, refresh: refreshToken!);
-
+        if (isLoggedIn && accessToken != null && refreshToken != null) {
+          final token = TokenModel(access: accessToken, refresh: refreshToken);
           emit(AuthAuthenticated(token: token));
         } else {
           emit(AuthUnauthenticated());
@@ -67,16 +65,28 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
   }
 
-  Future<void> _onSendVerificationCode(
-    AuthSendVerificationCodeEvent event,
+  Future<void> _onCheckExistence(
+    AuthCheckExistenceEvent event,
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
 
-    emit(AuthVerificationCodeSent(
-      message: "Verification code sent",
-      phoneNumber: event.phoneNumber,
-    ));
+    final result = await checkExistenceUseCase(event.emailOrPhone);
+    result.fold(
+      (failure) {
+        if (failure is NetworkFailure) {
+          emit(AuthNetworkError(message: failure.message));
+        } else {
+          emit(AuthError(message: failure.message, code: failure.code));
+        }
+      },
+      (existenceResult) {
+        emit(AuthExistenceChecked(
+          result: existenceResult,
+          emailOrPhone: event.emailOrPhone,
+        ));
+      },
+    );
   }
 
   Future<void> _onLogin(
@@ -85,7 +95,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
 
-    final result = await loginUseCase(event.phoneNumber, event.password);
+    final result = await loginUseCase(event.emailOrPhone, event.password);
     result.fold(
       (failure) {
         if (failure is NetworkFailure) {
@@ -96,36 +106,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       },
       (token) {
         emit(AuthAuthenticated(token: token));
-      },
-    );
-  }
-
-  Future<void> _onVerifyOtp(
-    AuthVerifyOtpEvent event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(AuthLoading());
-
-    final result = await verifyPhoneUseCase(VerifyPhoneParams(
-      phoneNumber: event.phoneNumber,
-      otpCode: event.otpCode,
-    ));
-
-    result.fold(
-      (failure) {
-        if (failure is NetworkFailure) {
-          emit(AuthNetworkError(message: failure.message));
-        } else {
-          emit(AuthError(message: failure.message, code: failure.code));
-        }
-      },
-      (user) {
-        // For now, create a mock token since verifyPhoneUseCase returns User
-        final mockToken = TokenModel(
-          access: 'mock_access_token',
-          refresh: 'mock_refresh_token',
-        );
-        emit(AuthAuthenticated(token: mockToken));
       },
     );
   }
@@ -137,9 +117,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
 
     final result = await registerUseCase(RegisterParams(
-      phoneNumber: event.phoneNumber,
-      name: event.name,
-      otpCode: event.otpCode,
+      emailOrPhone: event.emailOrPhone,
+      password: event.password,
+      username: event.username,
     ));
 
     result.fold(
@@ -151,7 +131,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         }
       },
       (token) {
-        emit(AuthAuthenticated(token: token));
+        emit(AuthRegistrationSuccess(token: token));
       },
     );
   }
@@ -179,6 +159,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     // Implementation for refresh token
+    final refreshToken = await secureStorage.getRefreshToken();
+    if (refreshToken != null) {
+      final result = await authRepository.refreshToken(refreshToken);
+      result.fold(
+        (failure) => emit(AuthUnauthenticated()),
+        (token) => emit(AuthAuthenticated(token: token)),
+      );
+    } else {
+      emit(AuthUnauthenticated());
+    }
   }
 
   void _onClearError(

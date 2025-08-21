@@ -2,12 +2,17 @@ class RouteNames {
   static const String splash = '/';
 
   static const String intro = '/intro';
-  static const String phoneVerification = '/phone-verification';
-  static const String otpVerification = '/otp-verification';
+
+  // static const String phoneVerification = '/phone-verification';
+  // static const String otpVerification = '/otp-verification';
+
+  static const String emailPhoneInput = '/email-phone-input';
+  static const String passwordInput = '/password-input';
+
   static const String nameInput = '/name-input';
   static const String notificationPermission = '/notification-permission';
 
-  static const String registerOtpVerification = '/register-otp-verification';
+  // static const String registerOtpVerification = '/register-otp-verification';
   static const String welcome = '/welcome';
 
   static const String main = '/main';

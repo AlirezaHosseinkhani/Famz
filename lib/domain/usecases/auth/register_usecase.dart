@@ -1,18 +1,19 @@
+// lib/domain/usecases/auth/register_usecase.dart
 import 'package:dartz/dartz.dart';
-import 'package:famz/data/models/auth/token_model.dart';
 
 import '../../../core/errors/failures.dart';
+import '../../../data/models/auth/token_model.dart';
 import '../../repositories/auth_repository.dart';
 
 class RegisterParams {
-  final String phoneNumber;
-  final String name;
-  final String otpCode;
+  final String emailOrPhone;
+  final String password;
+  final String username;
 
   RegisterParams({
-    required this.phoneNumber,
-    required this.name,
-    required this.otpCode,
+    required this.emailOrPhone,
+    required this.password,
+    required this.username,
   });
 }
 
@@ -23,9 +24,9 @@ class RegisterUseCase {
 
   Future<Either<Failure, TokenModel>> call(RegisterParams params) async {
     return await repository.register(
-      params.phoneNumber,
-      params.name,
-      params.otpCode,
+      params.emailOrPhone,
+      params.password,
+      params.username,
     );
   }
 }

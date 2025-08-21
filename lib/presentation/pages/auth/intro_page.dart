@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+// lib/presentation/pages/auth/intro_page.dart
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/api_constants.dart';
@@ -23,7 +23,8 @@ class _IntroPageState extends State<IntroPage> {
     super.initState();
     _loadCurrentIp();
     // Only show dev config in debug mode
-    _showDevConfig = kDebugMode;
+    // _showDevConfig = kDebugMode;
+    _showDevConfig = false;
   }
 
   Future<void> _loadCurrentIp() async {
@@ -82,18 +83,6 @@ class _IntroPageState extends State<IntroPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Container(
-                    //   padding: const EdgeInsets.all(32),
-                    //   decoration: BoxDecoration(
-                    //     color: theme.primaryColor.withOpacity(0.1),
-                    //     borderRadius: BorderRadius.circular(32),
-                    //   ),
-                    //   child: Icon(
-                    //     Icons.people_alt_rounded,
-                    //     size: 120,
-                    //     color: theme.hintColor,
-                    //   ),
-                    // ),
                     const SizedBox(height: 48),
                     Text(
                       'Welcome to famz',
@@ -140,7 +129,7 @@ class _IntroPageState extends State<IntroPage> {
               CustomButton(
                 text: 'Get Started',
                 onPressed: () {
-                  Navigator.of(context).pushNamed(RouteNames.phoneVerification);
+                  Navigator.of(context).pushNamed(RouteNames.emailPhoneInput);
                 },
               ),
             ],

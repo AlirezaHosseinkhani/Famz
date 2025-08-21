@@ -1,3 +1,4 @@
+// lib/presentation/bloc/auth/auth_event.dart
 import 'package:equatable/equatable.dart';
 
 abstract class AuthEvent extends Equatable {
@@ -9,53 +10,41 @@ abstract class AuthEvent extends Equatable {
 
 class AuthCheckStatusEvent extends AuthEvent {}
 
-class AuthValidateTokenEvent extends AuthEvent {}
+class AuthCheckExistenceEvent extends AuthEvent {
+  final String emailOrPhone;
 
-class AuthSendVerificationCodeEvent extends AuthEvent {
-  final String phoneNumber;
-
-  const AuthSendVerificationCodeEvent({required this.phoneNumber});
+  const AuthCheckExistenceEvent({required this.emailOrPhone});
 
   @override
-  List<Object?> get props => [phoneNumber];
+  List<Object?> get props => [emailOrPhone];
 }
 
 class AuthLoginEvent extends AuthEvent {
-  final String phoneNumber;
+  final String emailOrPhone;
   final String password;
 
-  const AuthLoginEvent({required this.phoneNumber, required this.password});
-
-  @override
-  List<Object?> get props => [phoneNumber, password];
-}
-
-class AuthVerifyOtpEvent extends AuthEvent {
-  final String phoneNumber;
-  final String otpCode;
-
-  const AuthVerifyOtpEvent({
-    required this.phoneNumber,
-    required this.otpCode,
+  const AuthLoginEvent({
+    required this.emailOrPhone,
+    required this.password,
   });
 
   @override
-  List<Object?> get props => [phoneNumber, otpCode];
+  List<Object?> get props => [emailOrPhone, password];
 }
 
 class AuthRegisterEvent extends AuthEvent {
-  final String phoneNumber;
-  final String name;
-  final String otpCode;
+  final String emailOrPhone;
+  final String password;
+  final String username;
 
   const AuthRegisterEvent({
-    required this.phoneNumber,
-    required this.name,
-    required this.otpCode,
+    required this.emailOrPhone,
+    required this.password,
+    required this.username,
   });
 
   @override
-  List<Object?> get props => [phoneNumber, name, otpCode];
+  List<Object?> get props => [emailOrPhone, password, username];
 }
 
 class AuthLogoutEvent extends AuthEvent {}

@@ -1,19 +1,4 @@
 class Validators {
-  static String? validatePhoneNumber(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Phone number is required';
-    }
-
-    // Remove any non-digit characters
-    final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
-
-    if (digitsOnly.length < 10 || digitsOnly.length > 15) {
-      return 'Please enter a valid phone number';
-    }
-
-    return null;
-  }
-
   static String? validateOtp(String? value) {
     if (value == null || value.isEmpty) {
       return 'OTP is required';
@@ -30,42 +15,10 @@ class Validators {
     return null;
   }
 
-  static String? validateName(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Name is required';
-    }
-
-    if (value.trim().length < 2) {
-      return 'Name must be at least 2 characters';
-    }
-
-    if (value.trim().length > 50) {
-      return 'Name must be less than 50 characters';
-    }
-
-    if (!RegExp(r'^[a-zA-Z\s]+$').hasMatch(value.trim())) {
-      return 'Name can only contain letters and spaces';
-    }
-
-    return null;
-  }
-
   static String? validateRequired(String? value, String fieldName) {
     if (value == null || value.isEmpty) {
       return '$fieldName is required';
     }
-    return null;
-  }
-
-  static String? validateEmail(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Email is required';
-    }
-
-    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-      return 'Please enter a valid email';
-    }
-
     return null;
   }
 
@@ -76,17 +29,78 @@ class Validators {
 
   static String? validateEmailOrPhone(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Email or phone number is required';
+      return 'Please enter email or phone number';
     }
 
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    final digitsOnly = value.replaceAll(RegExp(r'\D'), '');
+    // Check if it's an email
+    if (value.contains('@')) {
+      return validateEmail(value);
+    } else {
+      return validatePhoneNumber(value);
+    }
+  }
 
-    final isEmail = emailRegex.hasMatch(value);
-    final isPhone = digitsOnly.length >= 10 && digitsOnly.length <= 15;
+  static String? validateEmail(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter an email address';
+    }
 
-    if (!isEmail && !isPhone) {
-      return 'Please enter a valid email or phone number';
+    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    if (!emailRegExp.hasMatch(value)) {
+      return 'Please enter a valid email address';
+    }
+
+    return null;
+  }
+
+  static String? validatePhoneNumber(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a phone number';
+    }
+
+    final phoneRegExp = RegExp(r'^[\+]?[1-9][\d]{0,15}$');
+    if (!phoneRegExp.hasMatch(value.replaceAll(RegExp(r'[\s\-\(\)]'), ''))) {
+      return 'Please enter a valid phone number';
+    }
+
+    return null;
+  }
+
+  static String? validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter your password';
+    }
+
+    return null;
+  }
+
+  static String? validateNewPassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter a password';
+    }
+
+    if (value.length < 6) {
+      return 'Password must be at least 8 characters long';
+    }
+
+    if (!RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)').hasMatch(value)) {
+      return 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+    }
+
+    return null;
+  }
+
+  static String? validateName(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter your name';
+    }
+
+    if (value.trim().length < 2) {
+      return 'Name must be at least 2 characters';
+    }
+
+    if (RegExp(r'[0-9@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
+      return 'Names cannot include numbers, symbols (e.g., @, #) or special characters';
     }
 
     return null;

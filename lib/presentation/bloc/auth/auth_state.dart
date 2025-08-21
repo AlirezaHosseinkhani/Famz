@@ -1,7 +1,8 @@
+// lib/presentation/bloc/auth/auth_state.dart
 import 'package:equatable/equatable.dart';
 
+import '../../../data/models/auth/check_existence_response_model.dart';
 import '../../../data/models/auth/token_model.dart';
-import '../../../domain/entities/user.dart';
 
 abstract class AuthState extends Equatable {
   const AuthState();
@@ -16,30 +17,17 @@ class AuthLoading extends AuthState {}
 
 class AuthUnauthenticated extends AuthState {}
 
-class AuthVerificationCodeSent extends AuthState {
-  final String message;
-  final String phoneNumber;
+class AuthExistenceChecked extends AuthState {
+  final CheckExistenceResponseModel result;
+  final String emailOrPhone;
 
-  const AuthVerificationCodeSent({
-    required this.message,
-    required this.phoneNumber,
+  const AuthExistenceChecked({
+    required this.result,
+    required this.emailOrPhone,
   });
 
   @override
-  List<Object?> get props => [message, phoneNumber];
-}
-
-class AuthLogin extends AuthState {
-  final String phoneNumber;
-  final String password;
-
-  const AuthLogin({
-    required this.phoneNumber,
-    required this.password,
-  });
-
-  @override
-  List<Object?> get props => [phoneNumber, password];
+  List<Object?> get props => [result, emailOrPhone];
 }
 
 class AuthAuthenticated extends AuthState {
@@ -52,12 +40,12 @@ class AuthAuthenticated extends AuthState {
 }
 
 class AuthRegistrationSuccess extends AuthState {
-  final User user;
+  final TokenModel token;
 
-  const AuthRegistrationSuccess({required this.user});
+  const AuthRegistrationSuccess({required this.token});
 
   @override
-  List<Object?> get props => [user];
+  List<Object?> get props => [token];
 }
 
 class AuthError extends AuthState {

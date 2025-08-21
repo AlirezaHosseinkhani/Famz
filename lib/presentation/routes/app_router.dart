@@ -1,14 +1,13 @@
-import 'package:famz/presentation/pages/auth/register_otp_verification_page.dart';
 import 'package:famz/presentation/pages/auth/welcome_page.dart';
 import 'package:famz/presentation/pages/main/alarms/set_alarm_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../domain/entities/received_request.dart';
+import '../pages/auth/email_phone_input_page.dart';
 import '../pages/auth/intro_page.dart';
 import '../pages/auth/name_input_page.dart';
 import '../pages/auth/notification_permission_page.dart';
-import '../pages/auth/otp_verification_page.dart';
-import '../pages/auth/phone_verification_page.dart';
+import '../pages/auth/password_input_page.dart';
 // import '../pages/main/alarms/alarm_details_page.dart';
 // import '../pages/main/alarms/set_alarm_page.dart';
 import '../pages/main/main_page.dart';
@@ -34,59 +33,41 @@ class AppRouter {
         );
 
       case RouteNames.intro:
-        return MaterialPageRoute(
-          builder: (_) => const IntroPage(),
-          settings: settings,
-        );
+        return MaterialPageRoute(builder: (_) => const IntroPage());
 
-      case RouteNames.phoneVerification:
-        return MaterialPageRoute(
-          builder: (_) => const PhoneVerificationPage(),
-          settings: settings,
-        );
+      case RouteNames.emailPhoneInput:
+        return MaterialPageRoute(builder: (_) => const EmailPhoneInputPage());
 
-      case RouteNames.registerOtpVerification:
-        final args = settings.arguments as Map<String, dynamic>?;
+      case RouteNames.passwordInput:
+        final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
-          builder: (_) => RegisterOtpVerificationPage(
-              phoneNumber: args?['phoneNumber'] ?? ''),
-          settings: settings,
-        );
-
-      case RouteNames.welcome:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (_) => WelcomePage(
-              name: args?['name'] ?? '',
-              phoneNumber: args?['phoneNumber'] ?? ''),
-          settings: settings,
-        );
-
-      case RouteNames.otpVerification:
-        final args = settings.arguments as Map<String, dynamic>?;
-        return MaterialPageRoute(
-          builder: (_) => OtpVerificationPage(
-            phoneNumber: args?['phoneNumber'] ?? '',
-            isNewUser: args?['isNewUser'] ?? false,
+          builder: (_) => PasswordInputPage(
+            emailOrPhone: args['email'] as String,
+            isExistingUser: args['isExistingUser'] as bool,
           ),
-          settings: settings,
         );
 
       case RouteNames.nameInput:
-        final args = settings.arguments as Map<String, dynamic>?;
+        final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
           builder: (_) => NameInputPage(
-            phoneNumber: args?['phoneNumber'] ?? '',
-            otpCode: args?['otpCode'] ?? '',
+            emailOrPhone: args['email'] as String,
+            password: args['password'] as String,
           ),
-          settings: settings,
+        );
+
+      case RouteNames.welcome:
+        final args = settings.arguments as Map<String, dynamic>;
+        return MaterialPageRoute(
+          builder: (_) => WelcomePage(
+            name: args['name'] as String,
+            emailOrPhone: args['email'] as String,
+          ),
         );
 
       case RouteNames.notificationPermission:
         return MaterialPageRoute(
-          builder: (_) => const NotificationPermissionPage(),
-          settings: settings,
-        );
+            builder: (_) => const NotificationPermissionPage());
 
       case RouteNames.main:
         return MaterialPageRoute(

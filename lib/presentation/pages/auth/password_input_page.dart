@@ -1,7 +1,8 @@
-// lib/presentation/pages/auth/name_input_page.dart
+// lib/presentation/pages/auth/password_input_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/validators.dart';
 import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/auth/auth_event.dart';
 import '../../bloc/auth/auth_state.dart';
@@ -11,24 +12,25 @@ import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/error_widget.dart';
 
-class NameInputPage extends StatefulWidget {
+class PasswordInputPage extends StatefulWidget {
   final String emailOrPhone;
-  final String password;
+  final bool isExistingUser;
 
-  const NameInputPage({
+  const PasswordInputPage({
     Key? key,
     required this.emailOrPhone,
-    required this.password,
+    required this.isExistingUser,
   }) : super(key: key);
 
   @override
-  State<NameInputPage> createState() => _NameInputPageState();
+  State<PasswordInputPage> createState() => _PasswordInputPageState();
 }
 
-class _NameInputPageState extends State<NameInputPage> {
+class _PasswordInputPageState extends State<PasswordInputPage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _focusNode = FocusNode();
+  bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -38,20 +40,31 @@ class _NameInputPageState extends State<NameInputPage> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _passwordController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
-  void _submitName() {
+  void _submitPassword() {
     if (_formKey.currentState?.validate() ?? false) {
-      context.read<AuthBloc>().add(
-            AuthRegisterEvent(
-              emailOrPhone: widget.emailOrPhone,
-              password: widget.password,
-              username: _nameController.text.trim(),
-            ),
-          );
+      if (widget.isExistingUser) {
+        // Login existing user
+        context.read<AuthBloc>().add(
+              AuthLoginEvent(
+                emailOrPhone: widget.emailOrPhone,
+                password: _passwordController.text,
+              ),
+            );
+      } else {
+        // Navigate to name input for new user registration
+        Navigator.of(context).pushNamed(
+          RouteNames.nameInput,
+          arguments: {
+            'email': widget.emailOrPhone,
+            'password': _passwordController.text,
+          },
+        );
+      }
     }
   }
 
@@ -63,13 +76,10 @@ class _NameInputPageState extends State<NameInputPage> {
       appBar: const CustomAppBar(title: ''),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthRegistrationSuccess) {
-            Navigator.of(context).pushNamed(
-              RouteNames.welcome,
-              arguments: {
-                'name': _nameController.text.trim(),
-                'email': widget.emailOrPhone,
-              },
+          if (state is AuthAuthenticated) {
+            Navigator.of(context).pushNamedAndRemoveUntil(
+              RouteNames.notificationPermission,
+              (route) => false,
             );
           } else if (state is AuthError) {
             ScaffoldMessenger.of(context).showSnackBar(
@@ -96,40 +106,45 @@ class _NameInputPageState extends State<NameInputPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Enter your name',
+                    widget.isExistingUser ? 'Welcome back!' : 'Create password',
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'The name you choose is what others see when you send or receive recording requests.',
+                    widget.isExistingUser
+                        ? 'Enter your password to continue'
+                        : 'Create a secure password for your account',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.textTheme.bodyLarge?.color?.withOpacity(0.7),
                     ),
                   ),
                   const SizedBox(height: 48),
                   CustomTextField(
-                    label: '',
-                    hint: 'Enter your name',
-                    controller: _nameController,
-                    keyboardType: TextInputType.name,
+                    label: 'Password',
+                    hint: 'Enter your password',
+                    controller: _passwordController,
+                    keyboardType: TextInputType.visiblePassword,
                     focusNode: _focusNode,
                     textInputAction: TextInputAction.done,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Names cannot include numbers, symbols (e.g., @, #) or special characters';
-                      }
-                      if (value.trim().length < 2) {
-                        return 'Name must be at least 2 characters';
-                      }
-                      // Check for numbers and special characters
-                      if (RegExp(r'[0-9@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
-                        return 'Names cannot include numbers, symbols (e.g., @, #) or special characters';
-                      }
-                      return null;
-                    },
-                    onSubmitted: (_) => _submitName(),
+                    obscureText: _obscurePassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                    validator: widget.isExistingUser
+                        ? Validators.validatePassword
+                        : Validators.validateNewPassword,
+                    onSubmitted: (_) => _submitPassword(),
                   ),
                   const SizedBox(height: 24),
                   BlocBuilder<AuthBloc, AuthState>(
@@ -141,7 +156,7 @@ class _NameInputPageState extends State<NameInputPage> {
                             message: state is AuthError
                                 ? state.message
                                 : (state as AuthNetworkError).message,
-                            onRetry: _submitName,
+                            onRetry: _submitPassword,
                             retryText: 'Retry',
                           ),
                         );
@@ -153,8 +168,8 @@ class _NameInputPageState extends State<NameInputPage> {
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
                       return CustomButton(
-                        text: 'Next',
-                        onPressed: _submitName,
+                        text: widget.isExistingUser ? 'Login' : 'Continue',
+                        onPressed: _submitPassword,
                         isLoading: state is AuthLoading,
                       );
                     },

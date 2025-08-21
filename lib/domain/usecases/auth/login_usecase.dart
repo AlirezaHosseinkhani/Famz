@@ -1,3 +1,4 @@
+// lib/domain/usecases/auth/login_usecase.dart
 import 'package:dartz/dartz.dart';
 
 import '../../../core/errors/failures.dart';
@@ -10,7 +11,7 @@ class LoginUseCase {
   LoginUseCase(this.repository);
 
   Future<Either<Failure, TokenModel>> call(
-      String phoneNumber, String password) async {
-    return await repository.login(phoneNumber, password);
+      String emailOrPhone, String password) async {
+    return await repository.login(emailOrPhone, password);
   }
 }

@@ -1,15 +1,18 @@
+// lib/data/repositories/auth_repository_impl.dart
 import 'package:dartz/dartz.dart';
 
 import '../../core/errors/exceptions.dart';
 import '../../core/errors/failures.dart';
 import '../../core/network/network_info.dart';
-import '../../data/models/auth/token_model.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/local/auth_local_datasource.dart';
 import '../datasources/remote/auth_remote_datasource.dart';
+import '../models/auth/check_existence_request_model.dart';
+import '../models/auth/check_existence_response_model.dart';
 import '../models/auth/login_request_model.dart';
 import '../models/auth/register_request_model.dart';
+import '../models/auth/token_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
@@ -23,109 +26,79 @@ class AuthRepositoryImpl implements AuthRepository {
   });
 
   @override
-  Future<Either<Failure, String>> sendVerificationCode(String email) async {
+  Future<Either<Failure, CheckExistenceResponseModel>> checkExistence(
+      String emailOrPhone) async {
     if (await networkInfo.isConnected) {
       try {
-        final request = LoginRequestModel(email: email, password: "123456");
-        final response = await remoteDataSource.sendVerificationCode(request);
-        return Right("Verification code sent successfully");
+        final request = CheckExistenceRequestModel(email: emailOrPhone);
+        final result = await remoteDataSource.checkExistence(request);
+        return Right(result);
       } on AuthException catch (e) {
-        return Left(AuthFailure(e.message, code: e.code));
+        return Left(AuthFailure(e.message));
       } on NetworkException catch (e) {
-        return Left(NetworkFailure(e.message, code: e.code));
+        return Left(NetworkFailure(e.message));
       } on ServerException catch (e) {
-        return Left(ServerFailure(e.message, code: e.code));
-      } catch (e) {
-        return Left(ServerFailure('Failed to send verification code'));
+        return Left(ServerFailure(e.message));
       }
     } else {
-      return const Left(NetworkFailure('No internet connection'));
-    }
-  }
-
-  @override
-  Future<Either<Failure, User>> verifyOtpAndLogin(
-      String phoneNumber, String otpCode) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final tokenResponse =
-            await remoteDataSource.verifyOtpAndLogin(phoneNumber, otpCode);
-        await localDataSource.saveTokens(tokenResponse);
-
-        final userResponse = await remoteDataSource.getCurrentUser();
-        await localDataSource.saveUser(userResponse);
-        await localDataSource.setLoggedIn(true);
-
-        return Right(userResponse.toEntity());
-      } on AuthException catch (e) {
-        return Left(AuthFailure(e.message, code: e.code));
-      } on NetworkException catch (e) {
-        return Left(NetworkFailure(e.message, code: e.code));
-      } on ServerException catch (e) {
-        return Left(ServerFailure(e.message, code: e.code));
-      } catch (e) {
-        return Left(ServerFailure('OTP verification failed'));
-      }
-    } else {
-      return const Left(NetworkFailure('No internet connection'));
+      return Left(NetworkFailure('No internet connection'));
     }
   }
 
   @override
   Future<Either<Failure, TokenModel>> login(
-      String phoneNumber, String password) async {
+      String emailOrPhone, String password) async {
     if (await networkInfo.isConnected) {
       try {
-        final tokenResponse =
-            await remoteDataSource.login(phoneNumber, password);
+        final request =
+            LoginRequestModel(emailOrPhone: emailOrPhone, password: password);
+        final response = await remoteDataSource.login(request);
 
-        await localDataSource.saveTokens(tokenResponse);
+        // Save tokens and user data locally
+        await localDataSource.saveTokens(response);
+        // await localDataSource.saveUser(response.user);
         await localDataSource.setLoggedIn(true);
 
-        return Right(tokenResponse);
+        return Right(response);
       } on AuthException catch (e) {
-        return Left(AuthFailure(e.message, code: e.code));
+        return Left(AuthFailure(e.message));
       } on NetworkException catch (e) {
-        return Left(NetworkFailure(e.message, code: e.code));
+        return Left(NetworkFailure(e.message));
       } on ServerException catch (e) {
-        return Left(ServerFailure(e.message, code: e.code));
-      } catch (e) {
-        return Left(ServerFailure('Login failed'));
+        return Left(ServerFailure(e.message));
       }
     } else {
-      return const Left(NetworkFailure('No internet connection'));
+      return Left(NetworkFailure('No internet connection'));
     }
   }
 
   @override
   Future<Either<Failure, TokenModel>> register(
-      String phoneNumber, String name, String otpCode) async {
+      String emailOrPhone, String password, String username) async {
     if (await networkInfo.isConnected) {
       try {
         final request = RegisterRequestModel(
-          email: phoneNumber,
-          username: name,
-          password: otpCode,
-          password2: otpCode,
+          email: emailOrPhone,
+          password: password,
+          username: username,
+          password2: password,
         );
+        final tokens = await remoteDataSource.register(request);
 
-        final tokenResponse = await remoteDataSource.register(request);
-
-        await localDataSource.saveTokens(tokenResponse);
+        // Save tokens locally
+        await localDataSource.saveTokens(tokens);
         await localDataSource.setLoggedIn(true);
 
-        return Right(tokenResponse);
+        return Right(tokens);
       } on AuthException catch (e) {
-        return Left(AuthFailure(e.message, code: e.code));
+        return Left(AuthFailure(e.message));
       } on NetworkException catch (e) {
-        return Left(NetworkFailure(e.message, code: e.code));
+        return Left(NetworkFailure(e.message));
       } on ServerException catch (e) {
-        return Left(ServerFailure(e.message, code: e.code));
-      } catch (e) {
-        return Left(ServerFailure('Registration failed'));
+        return Left(ServerFailure(e.message));
       }
     } else {
-      return const Left(NetworkFailure('No internet connection'));
+      return Left(NetworkFailure('No internet connection'));
     }
   }
 
@@ -135,14 +108,33 @@ class AuthRepositoryImpl implements AuthRepository {
       if (await networkInfo.isConnected) {
         await remoteDataSource.logout();
       }
-
-      await _clearLocalAuthData();
-      return const Right(null);
     } catch (e) {
+      // Continue with local logout even if remote logout fails
+    }
+
+    await localDataSource.clearTokens();
+    await localDataSource.clearUser();
+    await localDataSource.setLoggedIn(false);
+
+    return const Right(null);
+  }
+
+  @override
+  Future<Either<Failure, TokenModel>> refreshToken(String refreshToken) async {
+    if (await networkInfo.isConnected) {
       try {
-        await _clearLocalAuthData();
-      } catch (_) {}
-      return Left(ServerFailure('Logout failed'));
+        final tokens = await remoteDataSource.refreshToken(refreshToken);
+        await localDataSource.saveTokens(tokens);
+        return Right(tokens);
+      } on AuthException catch (e) {
+        return Left(AuthFailure(e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(e.message));
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      }
+    } else {
+      return Left(NetworkFailure('No internet connection'));
     }
   }
 
@@ -155,23 +147,18 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       if (await networkInfo.isConnected) {
-        final userResponse = await remoteDataSource.getCurrentUser();
-        await localDataSource.saveUser(userResponse);
-        return Right(userResponse.toEntity());
+        final user = await remoteDataSource.getCurrentUser();
+        await localDataSource.saveUser(user);
+        return Right(user.toEntity());
       } else {
         return const Right(null);
       }
     } on AuthException catch (e) {
-      if (e.code == '401' || e.code == '403') {
-        await _clearLocalAuthData();
-      }
-      return Left(AuthFailure(e.message, code: e.code));
+      return Left(AuthFailure(e.message));
     } on NetworkException catch (e) {
-      return Left(NetworkFailure(e.message, code: e.code));
+      return Left(NetworkFailure(e.message));
     } on ServerException catch (e) {
-      return Left(ServerFailure(e.message, code: e.code));
-    } catch (e) {
-      return Left(ServerFailure('Failed to get current user'));
+      return Left(ServerFailure(e.message));
     }
   }
 
@@ -179,20 +166,9 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<Either<Failure, bool>> isLoggedIn() async {
     try {
       final isLoggedIn = await localDataSource.isLoggedIn();
-      final accessToken = await localDataSource.getAccessToken();
-
-      return Right(isLoggedIn && accessToken != null);
+      return Right(isLoggedIn);
     } catch (e) {
       return Left(CacheFailure('Failed to check login status'));
     }
-  }
-
-  /// Helper method to clear all local authentication data
-  Future<void> _clearLocalAuthData() async {
-    try {
-      await localDataSource.clearTokens();
-      await localDataSource.clearUser();
-      await localDataSource.setLoggedIn(false);
-    } catch (e) {}
   }
 }

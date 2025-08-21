@@ -1,7 +1,8 @@
-// lib/presentation/pages/auth/name_input_page.dart
+// lib/presentation/pages/auth/email_phone_input_page.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/validators.dart';
 import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/auth/auth_event.dart';
 import '../../bloc/auth/auth_state.dart';
@@ -11,23 +12,16 @@ import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_text_field.dart';
 import '../../widgets/common/error_widget.dart';
 
-class NameInputPage extends StatefulWidget {
-  final String emailOrPhone;
-  final String password;
-
-  const NameInputPage({
-    Key? key,
-    required this.emailOrPhone,
-    required this.password,
-  }) : super(key: key);
+class EmailPhoneInputPage extends StatefulWidget {
+  const EmailPhoneInputPage({Key? key}) : super(key: key);
 
   @override
-  State<NameInputPage> createState() => _NameInputPageState();
+  State<EmailPhoneInputPage> createState() => _EmailPhoneInputPageState();
 }
 
-class _NameInputPageState extends State<NameInputPage> {
+class _EmailPhoneInputPageState extends State<EmailPhoneInputPage> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  final _emailPhoneController = TextEditingController();
   final _focusNode = FocusNode();
 
   @override
@@ -38,19 +32,16 @@ class _NameInputPageState extends State<NameInputPage> {
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _emailPhoneController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
-  void _submitName() {
+  void _checkExistence() {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
-            AuthRegisterEvent(
-              emailOrPhone: widget.emailOrPhone,
-              password: widget.password,
-              username: _nameController.text.trim(),
-            ),
+            AuthCheckExistenceEvent(
+                emailOrPhone: _emailPhoneController.text.trim()),
           );
     }
   }
@@ -63,12 +54,12 @@ class _NameInputPageState extends State<NameInputPage> {
       appBar: const CustomAppBar(title: ''),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
-          if (state is AuthRegistrationSuccess) {
+          if (state is AuthExistenceChecked) {
             Navigator.of(context).pushNamed(
-              RouteNames.welcome,
+              RouteNames.passwordInput,
               arguments: {
-                'name': _nameController.text.trim(),
-                'email': widget.emailOrPhone,
+                'email': state.emailOrPhone,
+                'isExistingUser': state.result.exists,
               },
             );
           } else if (state is AuthError) {
@@ -96,40 +87,32 @@ class _NameInputPageState extends State<NameInputPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Enter your name',
+                    'Add Email or Phone Number',
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'The name you choose is what others see when you send or receive recording requests.',
+                    'Link your phone number to connect with your friends who also use this app',
                     style: theme.textTheme.bodyLarge?.copyWith(
                       color: theme.textTheme.bodyLarge?.color?.withOpacity(0.7),
                     ),
                   ),
                   const SizedBox(height: 48),
                   CustomTextField(
-                    label: '',
-                    hint: 'Enter your name',
-                    controller: _nameController,
-                    keyboardType: TextInputType.name,
+                    label: 'Email or Phone Number',
+                    hint: 'Enter a valid Email / Phone number',
+                    controller: _emailPhoneController,
+                    keyboardType: TextInputType.emailAddress,
                     focusNode: _focusNode,
                     textInputAction: TextInputAction.done,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Names cannot include numbers, symbols (e.g., @, #) or special characters';
-                      }
-                      if (value.trim().length < 2) {
-                        return 'Name must be at least 2 characters';
-                      }
-                      // Check for numbers and special characters
-                      if (RegExp(r'[0-9@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
-                        return 'Names cannot include numbers, symbols (e.g., @, #) or special characters';
-                      }
-                      return null;
-                    },
-                    onSubmitted: (_) => _submitName(),
+                    prefixIcon: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: const Icon(Icons.alternate_email),
+                    ),
+                    validator: Validators.validateEmailOrPhone,
+                    onSubmitted: (_) => _checkExistence(),
                   ),
                   const SizedBox(height: 24),
                   BlocBuilder<AuthBloc, AuthState>(
@@ -141,7 +124,7 @@ class _NameInputPageState extends State<NameInputPage> {
                             message: state is AuthError
                                 ? state.message
                                 : (state as AuthNetworkError).message,
-                            onRetry: _submitName,
+                            onRetry: _checkExistence,
                             retryText: 'Retry',
                           ),
                         );
@@ -153,8 +136,8 @@ class _NameInputPageState extends State<NameInputPage> {
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
                       return CustomButton(
-                        text: 'Next',
-                        onPressed: _submitName,
+                        text: 'Continue',
+                        onPressed: _checkExistence,
                         isLoading: state is AuthLoading,
                       );
                     },
