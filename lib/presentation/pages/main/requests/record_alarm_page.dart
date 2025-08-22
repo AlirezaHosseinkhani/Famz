@@ -6,12 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../../../domain/entities/received_request.dart';
 import '../../../../injection_container.dart' as di;
 import '../../../bloc/record_alarm/record_alarm_bloc.dart';
 import '../../../bloc/record_alarm/record_alarm_event.dart';
 import '../../../bloc/record_alarm/record_alarm_state.dart';
 import '../../../widgets/common/custom_button.dart';
+import '../../../widgets/common/custom_snackbar.dart';
 import '../../../widgets/common/loading_widget.dart';
 
 class RecordAlarmPage extends StatefulWidget {
@@ -152,19 +154,17 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
               _initializeVideoPlayer(state.videoFile!.path);
             }
           } else if (state is RecordAlarmSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.green,
-              ),
+            SnackbarUtils.showOverlaySnackbar(
+              context,
+              state.message,
+              SnackbarType.success,
             );
             Navigator.pop(context, true);
           } else if (state is RecordAlarmError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+            SnackbarUtils.showOverlaySnackbar(
+              context,
+              state.message,
+              SnackbarType.error,
             );
           }
         },

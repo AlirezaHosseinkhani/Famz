@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../../bloc/auth/auth_bloc.dart';
 import '../../../bloc/auth/auth_event.dart';
 import '../../../bloc/profile/profile_bloc.dart';
@@ -8,6 +9,7 @@ import '../../../bloc/profile/profile_event.dart';
 import '../../../bloc/profile/profile_state.dart';
 import '../../../routes/route_names.dart';
 import '../../../widgets/common/custom_app_bar.dart';
+import '../../../widgets/common/custom_snackbar.dart';
 import '../../../widgets/common/error_widget.dart';
 import '../../../widgets/common/loading_widget.dart';
 import '../../../widgets/profile/profile_info_widget.dart';
@@ -38,6 +40,11 @@ class _ProfilePageState extends State<ProfilePage> {
           TextButton.icon(
               onPressed: () {
                 // context.read<ProfileBloc>().add(const GetProfileEvent());
+                SnackbarUtils.showOverlaySnackbar(
+                  context,
+                  'Not available for now!!',
+                  SnackbarType.warning,
+                );
               },
               icon: Icon(Icons.support_agent),
               label: Text("Support")),
@@ -46,18 +53,16 @@ class _ProfilePageState extends State<ProfilePage> {
       body: BlocConsumer<ProfileBloc, ProfileState>(
         listener: (context, state) {
           if (state is ProfileError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-              ),
+            SnackbarUtils.showOverlaySnackbar(
+              context,
+              state.message,
+              SnackbarType.error,
             );
           } else if (state is ProfileUpdated) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Profile updated successfully'),
-                backgroundColor: Colors.green,
-              ),
+            SnackbarUtils.showOverlaySnackbar(
+              context,
+              'Profile updated successfully',
+              SnackbarType.success,
             );
             // Reload profile after update
             context.read<ProfileBloc>().add(const GetProfileEvent());

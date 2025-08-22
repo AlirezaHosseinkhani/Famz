@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../../../core/utils/snackbar_utils.dart';
 import '../../routes/route_names.dart';
 import '../../widgets/common/custom_button.dart';
+import '../../widgets/common/custom_snackbar.dart';
 
 class NotificationPermissionPage extends StatefulWidget {
   const NotificationPermissionPage({Key? key}) : super(key: key);
@@ -32,10 +34,10 @@ class _NotificationPermissionPageState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to request permission'),
-          ),
+        SnackbarUtils.showOverlaySnackbar(
+          context,
+          "Failed to request permission",
+          SnackbarType.warning,
         );
       }
     } finally {

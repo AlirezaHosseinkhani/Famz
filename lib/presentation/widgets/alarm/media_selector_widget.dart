@@ -147,7 +147,7 @@ class _MediaSelectorWidgetState extends State<MediaSelectorWidget> {
                 ),
               ),
               const SizedBox(height: 16),
-              _buildDefaultRingtoneItem('Radial (Default)'),
+              _buildDefaultRingtoneItem('Famz default Alarm'),
               // _buildDefaultRingtoneItem('Canopy'),
               // _buildDefaultRingtoneItem('Canopy'),
               // _buildDefaultRingtoneItem('Forest'),
@@ -164,7 +164,7 @@ class _MediaSelectorWidgetState extends State<MediaSelectorWidget> {
   Widget _buildRecordingItem(AlarmRecording recording) {
     final isSelected = widget.selectedRecording?.id == recording.id;
     final isCurrentlyPlaying = _currentlyPlaying?.id == recording.id;
-    final userName = 'Username ${recording.id.toString()}';
+    final userName = recording.username;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -315,11 +315,11 @@ class _MediaSelectorWidgetState extends State<MediaSelectorWidget> {
                   ),
                 ),
               ),
-              const Icon(
-                Icons.play_arrow,
-                color: Colors.orange,
-                size: 20,
-              ),
+              // const Icon(
+              //   Icons.play_arrow,
+              //   color: Colors.orange,
+              //   size: 20,
+              // ),
             ],
           ),
         ),

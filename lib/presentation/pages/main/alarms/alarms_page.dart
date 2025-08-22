@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../../bloc/alarm/alarm_bloc.dart';
 import '../../../bloc/alarm/alarm_event.dart';
 import '../../../bloc/alarm/alarm_state.dart';
 import '../../../routes/route_names.dart';
 import '../../../widgets/alarm/alarm_item_widget.dart';
+import '../../../widgets/common/custom_snackbar.dart';
 import '../../../widgets/common/loading_widget.dart';
 
 class AlarmsPage extends StatefulWidget {
@@ -42,25 +44,22 @@ class _AlarmsPageState extends State<AlarmsPage>
               child: BlocConsumer<AlarmBloc, AlarmState>(
                 listener: (context, state) {
                   if (state is AlarmError) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(state.message),
-                        backgroundColor: Colors.red,
-                      ),
+                    SnackbarUtils.showOverlaySnackbar(
+                      context,
+                      state.message,
+                      SnackbarType.error,
                     );
                   } else if (state is AlarmCreated) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Alarm created successfully'),
-                        backgroundColor: Colors.green,
-                      ),
+                    SnackbarUtils.showOverlaySnackbar(
+                      context,
+                      'Alarm created successfully',
+                      SnackbarType.success,
                     );
                   } else if (state is AlarmDeleted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Alarm deleted successfully'),
-                        backgroundColor: Colors.green,
-                      ),
+                    SnackbarUtils.showOverlaySnackbar(
+                      context,
+                      'Alarm deleted successfully',
+                      SnackbarType.success,
                     );
                   }
                 },

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../../../domain/entities/alarm.dart';
 import '../../../../domain/entities/alarm_recording.dart';
 import '../../../bloc/alarm/alarm_bloc.dart';
@@ -13,6 +14,7 @@ import '../../../bloc/alarm_recording/alarm_recording_event.dart';
 import '../../../bloc/alarm_recording/alarm_recording_state.dart';
 import '../../../widgets/alarm/media_selector_widget.dart';
 import '../../../widgets/common/custom_button.dart';
+import '../../../widgets/common/custom_snackbar.dart';
 
 class SetAlarmPage extends StatefulWidget {
   final Alarm? alarm;
@@ -113,16 +115,19 @@ class _SetAlarmPageState extends State<SetAlarmPage> {
 
   Future<void> _saveAlarm() async {
     if (!_isRecurring && _selectedDateTime.isBefore(DateTime.now())) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select a future time')),
+      SnackbarUtils.showOverlaySnackbar(
+        context,
+        'Please select a future time',
+        SnackbarType.warning,
       );
       return;
     }
 
     if (_isRecurring && !_selectedWeekdays.contains(true)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Please select at least one day of the week')),
+      SnackbarUtils.showOverlaySnackbar(
+        context,
+        'Please select at least one day of the week',
+        SnackbarType.warning,
       );
       return;
     }
@@ -144,11 +149,10 @@ class _SetAlarmPageState extends State<SetAlarmPage> {
 
       Navigator.pop(context, true);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content:
-              Text('Error ${_isEditing ? 'updating' : 'creating'} alarm: $e'),
-        ),
+      SnackbarUtils.showOverlaySnackbar(
+        context,
+        'Error ${_isEditing ? 'updating' : 'creating'} alarm: $e',
+        SnackbarType.error,
       );
     }
   }

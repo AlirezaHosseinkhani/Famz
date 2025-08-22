@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../../core/utils/snackbar_utils.dart';
+import '../common/custom_snackbar.dart';
+
 class ShareLinkWidget extends StatelessWidget {
   final Function(String) onShare;
 
@@ -99,11 +102,10 @@ class ShareLinkWidget extends StatelessWidget {
 
   void _copyToClipboard(BuildContext context, String link) {
     Clipboard.setData(ClipboardData(text: link));
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Link copied to clipboard'),
-        duration: Duration(seconds: 2),
-      ),
+    SnackbarUtils.showOverlaySnackbar(
+      context,
+      'Link copied to clipboard',
+      SnackbarType.info,
     );
     onShare(link);
   }

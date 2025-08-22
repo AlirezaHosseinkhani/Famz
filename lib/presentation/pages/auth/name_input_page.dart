@@ -2,12 +2,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/snackbar_utils.dart';
 import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/auth/auth_event.dart';
 import '../../bloc/auth/auth_state.dart';
 import '../../routes/route_names.dart';
 import '../../widgets/common/custom_app_bar.dart';
 import '../../widgets/common/custom_button.dart';
+import '../../widgets/common/custom_snackbar.dart';
 import '../../widgets/common/custom_text_field.dart';
 
 class NameInputPage extends StatefulWidget {
@@ -72,18 +74,16 @@ class _NameInputPageState extends State<NameInputPage> {
               },
             );
           } else if (state is AuthError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: theme.colorScheme.error,
-              ),
+            SnackbarUtils.showOverlaySnackbar(
+              context,
+              state.message,
+              SnackbarType.error,
             );
           } else if (state is AuthNetworkError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: theme.colorScheme.error,
-              ),
+            SnackbarUtils.showOverlaySnackbar(
+              context,
+              state.message,
+              SnackbarType.error,
             );
           }
         },

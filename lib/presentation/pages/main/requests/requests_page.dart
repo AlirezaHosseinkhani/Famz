@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/utils/snackbar_utils.dart';
 import '../../../../domain/entities/received_request.dart';
 import '../../../../domain/entities/sent_request.dart';
 import '../../../../injection_container.dart' as di;
@@ -8,6 +9,7 @@ import '../../../bloc/alarm_request/alarm_request_bloc.dart';
 import '../../../bloc/alarm_request/alarm_request_event.dart';
 import '../../../bloc/alarm_request/alarm_request_state.dart';
 import '../../../widgets/common/custom_app_bar.dart';
+import '../../../widgets/common/custom_snackbar.dart';
 import '../../../widgets/common/error_widget.dart';
 import '../../../widgets/common/loading_widget.dart';
 import '../../../widgets/request/confirmation_dialog_widget.dart';
@@ -51,22 +53,18 @@ class _RequestsPageState extends State<RequestsPage>
         listener: (context, state) {
           // Show success messages
           if (state is AlarmRequestOperationSuccess) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.green,
-                duration: const Duration(seconds: 2),
-              ),
+            SnackbarUtils.showOverlaySnackbar(
+              context,
+              state.message,
+              SnackbarType.success,
             );
           }
           // Show error messages
           else if (state is AlarmRequestError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 3),
-              ),
+            SnackbarUtils.showOverlaySnackbar(
+              context,
+              state.message,
+              SnackbarType.error,
             );
           }
         },
@@ -131,11 +129,10 @@ class _RequestsPageState extends State<RequestsPage>
         child: ShareLinkWidget(
           onShare: (link) {
             Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Link shared: $link'),
-                backgroundColor: Colors.blue,
-              ),
+            SnackbarUtils.showOverlaySnackbar(
+              context,
+              'Link shared: $link',
+              SnackbarType.info,
             );
           },
         ),
@@ -222,7 +219,7 @@ class _ReceivedRequestsTab extends StatelessWidget {
                     ' Request for an alarm media ',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
+                      fontSize: 14,
                       // fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -273,7 +270,7 @@ class _ReceivedRequestsTab extends StatelessWidget {
                               ' Request for an alarm media ',
                               style: TextStyle(
                                 color: Colors.white70,
-                                fontSize: 16,
+                                fontSize: 14,
                                 // fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -435,7 +432,7 @@ class _SentRequestsTab extends StatelessWidget {
                     ' Request for an alarm media ',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 16,
+                      fontSize: 14,
                       // fontWeight: FontWeight.w500,
                     ),
                   ),

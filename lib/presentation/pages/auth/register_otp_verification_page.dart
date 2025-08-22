@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../core/utils/snackbar_utils.dart';
 import '../../routes/route_names.dart';
 import '../../widgets/common/custom_app_bar.dart';
 import '../../widgets/common/custom_button.dart';
+import '../../widgets/common/custom_snackbar.dart';
 
 class RegisterOtpVerificationPage extends StatefulWidget {
   final String phoneNumber;
@@ -95,14 +97,6 @@ class _RegisterOtpVerificationPageState
           'otpCode': _otpCode,
         },
       );
-      // } else {
-      //   ScaffoldMessenger.of(context).showSnackBar(
-      //     const SnackBar(
-      //       content: Text('Invalid verification code'),
-      //       backgroundColor: Colors.red,
-      //     ),
-      //   );
-      // }
     }
   }
 
@@ -113,12 +107,10 @@ class _RegisterOtpVerificationPageState
       }
       _focusNodes[0].requestFocus();
       _startResendTimer();
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Verification code sent successfully'),
-          backgroundColor: Colors.green,
-        ),
+      SnackbarUtils.showOverlaySnackbar(
+        context,
+        'Verification code sent successfully',
+        SnackbarType.success,
       );
     }
   }

@@ -2,9 +2,11 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/api_constants.dart';
+import '../../../core/utils/snackbar_utils.dart';
 import '../../../data/datasources/local/dev_config_service.dart';
 import '../../routes/route_names.dart';
 import '../../widgets/common/custom_button.dart';
+import '../../widgets/common/custom_snackbar.dart';
 
 class IntroPage extends StatefulWidget {
   const IntroPage({Key? key}) : super(key: key);
@@ -34,7 +36,7 @@ class _IntroPageState extends State<IntroPage> {
 
   Future<void> _saveIpAddress() async {
     if (_ipController.text.trim().isEmpty) {
-      _showSnackBar('Please enter a valid IP address');
+      _showSnackBar('Please enter a valid IP address', SnackbarType.error);
       return;
     }
 
@@ -43,17 +45,19 @@ class _IntroPageState extends State<IntroPage> {
     try {
       await DevConfigService.setIpAddress(_ipController.text.trim());
       ApiConstants.refreshBaseUrl(); // Refresh the cached URL
-      _showSnackBar('IP address saved successfully!');
+      _showSnackBar('IP address saved successfully!', SnackbarType.success);
     } catch (e) {
-      _showSnackBar('Error saving IP address: $e');
+      _showSnackBar('Error saving IP address: $e', SnackbarType.error);
     } finally {
       setState(() => _isLoading = false);
     }
   }
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
+  void _showSnackBar(String message, SnackbarType type) {
+    SnackbarUtils.showOverlaySnackbar(
+      context,
+      message,
+      type,
     );
   }
 
@@ -256,7 +260,7 @@ class _IntroPageState extends State<IntroPage> {
                   await DevConfigService.clearIpAddress();
                   await _loadCurrentIp();
                   ApiConstants.refreshBaseUrl();
-                  _showSnackBar('IP reset to default');
+                  _showSnackBar('IP reset to default', SnackbarType.info);
                 },
                 icon: const Icon(Icons.refresh),
                 tooltip: 'Reset to default',

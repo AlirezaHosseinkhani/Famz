@@ -6,6 +6,7 @@ class AlarmRecording extends Equatable {
   final String? audioFile;
   final String? videoFile;
   final String duration;
+  final String username;
   final DateTime createdAt;
   final String? localPath; // For downloaded files
   final bool isDownloaded;
@@ -17,6 +18,7 @@ class AlarmRecording extends Equatable {
     this.audioFile,
     this.videoFile,
     required this.duration,
+    required this.username,
     required this.createdAt,
     this.localPath,
     this.isDownloaded = false,
@@ -25,12 +27,16 @@ class AlarmRecording extends Equatable {
 
   bool get hasAudio =>
       audioFile != null && audioFile!.isNotEmpty && audioFile != 'null';
+
   bool get hasVideo =>
       videoFile != null && videoFile!.isNotEmpty && videoFile != 'null';
+
   bool get isAudioOnly => hasAudio && !hasVideo;
+
   bool get isVideoOnly => hasVideo && !hasAudio;
 
   String get mediaUrl => hasVideo ? videoFile! : (hasAudio ? audioFile! : '');
+
   String get mediaType => hasVideo ? 'video' : (hasAudio ? 'audio' : 'unknown');
 
   AlarmRecording copyWith({
@@ -39,6 +45,7 @@ class AlarmRecording extends Equatable {
     String? audioFile,
     String? videoFile,
     String? duration,
+    String? username,
     DateTime? createdAt,
     String? localPath,
     bool? isDownloaded,
@@ -50,6 +57,7 @@ class AlarmRecording extends Equatable {
       audioFile: audioFile ?? this.audioFile,
       videoFile: videoFile ?? this.videoFile,
       duration: duration ?? this.duration,
+      username: username ?? this.username,
       createdAt: createdAt ?? this.createdAt,
       localPath: localPath ?? this.localPath,
       isDownloaded: isDownloaded ?? this.isDownloaded,
@@ -64,6 +72,7 @@ class AlarmRecording extends Equatable {
         audioFile,
         videoFile,
         duration,
+        username,
         createdAt,
         localPath,
         isDownloaded,
