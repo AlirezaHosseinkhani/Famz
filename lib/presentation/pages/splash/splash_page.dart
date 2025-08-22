@@ -91,7 +91,7 @@ class _SplashPageState extends State<SplashPage>
         }
       },
       child: Scaffold(
-        backgroundColor: theme.primaryColor,
+        backgroundColor: Colors.black,
         body: Center(
           child: AnimatedBuilder(
             animation: _animationController,
@@ -119,7 +119,7 @@ class _SplashPageState extends State<SplashPage>
                       Text(
                         'Wake up smiling not snoozing',
                         style: theme.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withOpacity(0.9),
                           letterSpacing: 1,
                         ),
                       ),

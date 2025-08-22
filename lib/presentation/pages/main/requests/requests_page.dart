@@ -201,6 +201,32 @@ class _ReceivedRequestsTab extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 26),
+                const Text(
+                  'Let them wake you up...',
+                  maxLines: 1,
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                TextButton(
+                  onPressed: () => createRequestDialog(context),
+                  style: TextButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    disabledBackgroundColor: Colors.black54,
+                  ),
+                  child: const Text(
+                    ' Request for an alarm media ',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      // fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
               ],
             ),
           );
