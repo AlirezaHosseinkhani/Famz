@@ -97,7 +97,7 @@ class ShareLinkWidget extends StatelessWidget {
   String _generateShareLink() {
     // Generate a unique share link for the user
     // This would typically include the user's ID or a unique token
-    return 'https://famz.app/request/user123';
+    return 'https://famz.app/request/username';
   }
 
   void _copyToClipboard(BuildContext context, String link) {

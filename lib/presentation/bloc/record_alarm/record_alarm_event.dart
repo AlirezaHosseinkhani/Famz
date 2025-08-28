@@ -63,15 +63,3 @@ class InitializeCameraEvent extends RecordAlarmEvent {
 
   InitializeCameraEvent({required this.cameraIndex});
 }
-
-class UpdateRecordingDurationEvent extends RecordAlarmEvent {
-  final Duration duration;
-
-  UpdateRecordingDurationEvent({required this.duration});
-}
-
-class UpdatePlaybackPositionEvent extends RecordAlarmEvent {
-  final Duration position;
-
-  UpdatePlaybackPositionEvent({required this.position});
-}

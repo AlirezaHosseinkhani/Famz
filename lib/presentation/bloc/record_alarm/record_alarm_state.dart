@@ -102,6 +102,8 @@ class RecordAlarmError extends RecordAlarmState {
   RecordAlarmError({required this.message});
 }
 
+class RecordingReset extends RecordAlarmState {}
+
 class RecordingTypeChanged extends RecordAlarmState {
   final String recordingType;
 

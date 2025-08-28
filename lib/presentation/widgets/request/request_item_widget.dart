@@ -101,7 +101,7 @@ class RequestItemWidget extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${_getUsername()} is waiting for your medal!',
+                        '${_getUsername()} is waiting for your media!',
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 17,

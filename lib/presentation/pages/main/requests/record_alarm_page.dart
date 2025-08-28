@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../../../core/utils/snackbar_utils.dart';
@@ -12,9 +13,7 @@ import '../../../../injection_container.dart' as di;
 import '../../../bloc/record_alarm/record_alarm_bloc.dart';
 import '../../../bloc/record_alarm/record_alarm_event.dart';
 import '../../../bloc/record_alarm/record_alarm_state.dart';
-import '../../../widgets/common/custom_button.dart';
 import '../../../widgets/common/custom_snackbar.dart';
-import '../../../widgets/common/loading_widget.dart';
 
 class RecordAlarmPage extends StatefulWidget {
   final ReceivedRequest request;
@@ -38,9 +37,10 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
   List<CameraDescription>? _cameras;
   int _selectedCameraIndex = 0;
 
-  // Timer related
+  // Timer related - Made these more explicit
   Timer? _recordingTimer;
   Duration _recordingDuration = Duration.zero;
+  bool _isTimerActive = false;
 
   // Video player related
   VideoPlayerController? _videoPlayerController;
@@ -48,6 +48,8 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
   // Animation controller for recording indicator
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
+  late AnimationController _pulseController;
+  late Animation<double> _pulseAnimation;
 
   @override
   void initState() {
@@ -55,6 +57,7 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
     _recordAlarmBloc = di.sl<RecordAlarmBloc>();
     _initializeCameras();
     _setupAnimations();
+    _checkPermissions();
   }
 
   void _setupAnimations() {
@@ -69,7 +72,60 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
       parent: _animationController,
       curve: Curves.easeInOut,
     ));
-    _animationController.repeat(reverse: true);
+
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    );
+    _pulseAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.3,
+    ).animate(CurvedAnimation(
+      parent: _pulseController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  Future<void> _checkPermissions() async {
+    // Check and request permissions with default notification
+    final microphoneStatus = await Permission.microphone.status;
+    final cameraStatus = await Permission.camera.status;
+
+    if (!microphoneStatus.isGranted || !cameraStatus.isGranted) {
+      _showPermissionDialog();
+    }
+  }
+
+  void _showPermissionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1C1C1E),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Permission Required',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+        ),
+        content: const Text(
+          'This app needs access to your camera and microphone to record videos and audio.',
+          style: TextStyle(color: Colors.grey),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await [Permission.microphone, Permission.camera].request();
+            },
+            child: const Text('Allow', style: TextStyle(color: Colors.orange)),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _initializeCameras() async {
@@ -83,18 +139,64 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
     }
   }
 
+  // Improved timer management methods
   void _startRecordingTimer() {
+    // Always stop any existing timer first
+    _stopRecordingTimer();
+
+    // Reset duration and start fresh
     _recordingDuration = Duration.zero;
+    _isTimerActive = true;
+
     _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!_isTimerActive || !mounted) {
+        timer.cancel();
+        return;
+      }
+
       setState(() {
         _recordingDuration = Duration(seconds: timer.tick);
       });
+
+      // Auto-stop at 30 seconds
+      if (_recordingDuration.inSeconds >= 30) {
+        _recordAlarmBloc.add(StopRecordingEvent());
+      }
     });
   }
 
   void _stopRecordingTimer() {
+    _isTimerActive = false;
     _recordingTimer?.cancel();
     _recordingTimer = null;
+  }
+
+  void _resetTimer() {
+    _stopRecordingTimer();
+    setState(() {
+      _recordingDuration = Duration.zero;
+    });
+  }
+
+  // Method to handle recording type switching
+  void _onRecordingTypeChanged(String newType) {
+    if (_selectedRecordingType != newType) {
+      // Stop any ongoing recording and timer
+      if (_isTimerActive) {
+        _recordAlarmBloc.add(StopRecordingEvent());
+      }
+      _resetTimer();
+
+      // Stop animations
+      _pulseController.stop();
+      _pulseController.reset();
+
+      setState(() {
+        _selectedRecordingType = newType;
+      });
+
+      _recordAlarmBloc.add(SwitchRecordingTypeEvent(recordingType: newType));
+    }
   }
 
   Future<void> _switchCamera() async {
@@ -124,6 +226,7 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
   void dispose() {
     _stopRecordingTimer();
     _animationController.dispose();
+    _pulseController.dispose();
     _videoPlayerController?.dispose();
     _recordAlarmBloc.close();
     super.dispose();
@@ -138,21 +241,23 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
           if (state is RecordingInProgress) {
             if (!state.isPaused) {
               _startRecordingTimer();
-              if (_selectedRecordingType == 'audio') {
-                _animationController.repeat(reverse: true);
-              }
+              _pulseController.repeat(reverse: true);
             } else {
               _stopRecordingTimer();
-              _animationController.stop();
+              _pulseController.stop();
             }
           } else if (state is RecordingCompleted) {
             _stopRecordingTimer();
-            _animationController.stop();
+            _pulseController.stop();
 
-            // Initialize video player if video was recorded
             if (state.videoFile != null) {
               _initializeVideoPlayer(state.videoFile!.path);
             }
+          } else if (state is RecordAlarmInitial || state is RecordingReset) {
+            // Handle reset state
+            _resetTimer();
+            _pulseController.stop();
+            _pulseController.reset();
           } else if (state is RecordAlarmSuccess) {
             SnackbarUtils.showOverlaySnackbar(
               context,
@@ -166,6 +271,9 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
               state.message,
               SnackbarType.error,
             );
+            // Stop timer on error
+            _resetTimer();
+            _pulseController.stop();
           }
         },
         child: Scaffold(
@@ -175,45 +283,47 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.close, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
+              onPressed: () {
+                // Clean up before leaving
+                _stopRecordingTimer();
+                Navigator.pop(context);
+              },
             ),
-            title: const Text(
-              'Record Alarm',
-              style: TextStyle(color: Colors.white),
+            title: Text(
+              "Record an alarm for ${widget.request.fromUser.username ?? 'Unknown User'}",
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
-            actions: [
-              // Camera switch button (only show for video recording)
-              if (_selectedRecordingType == 'video' &&
-                  _cameras != null &&
-                  _cameras!.length > 1)
-                IconButton(
-                  icon: const Icon(Icons.flip_camera_ios, color: Colors.white),
-                  onPressed: _switchCamera,
-                ),
-            ],
+            // Text(
+            //   '${widget.request.fromUser.username ?? 'Unknown User'} wants to wake up to your voice or smile 😊 🎬',
+            //   style: const TextStyle(
+            //     color: Colors.white,
+            //     fontSize: 16,
+            //     fontWeight: FontWeight.w500,
+            //   ),
+            // ),
+            centerTitle: false,
           ),
           body: BlocBuilder<RecordAlarmBloc, RecordAlarmState>(
             builder: (context, state) {
               return Column(
                 children: [
-                  // Request Info
-                  _buildRequestInfo(),
+                  // Request message
+                  _buildRequestMessage(),
 
-                  // Recording Type Selector
-                  _buildRecordingTypeSelector(),
+                  // Recording type selector
+                  _buildRecordingTypeSelector(state),
 
-                  // Timer Display (always visible during recording)
-                  if (state is RecordingInProgress ||
-                      _recordingDuration.inSeconds > 0)
-                    _buildTimerDisplay(),
-
-                  // Camera/Recording Area
+                  // Main recording area
                   Expanded(
                     child: _buildRecordingArea(state),
                   ),
 
-                  // Controls
-                  _buildControls(state),
+                  // Bottom controls
+                  _buildBottomControls(state),
 
                   const SizedBox(height: 32),
                 ],
@@ -225,93 +335,50 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
     );
   }
 
-  Widget _buildTimerDisplay() {
+  Widget _buildRequestMessage() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.red, width: 1),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 8,
-            height: 8,
-            decoration: const BoxDecoration(
-              color: Colors.red,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            _formatDuration(_recordingDuration),
-            style: const TextStyle(
-              color: Colors.red,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'monospace',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRequestInfo() {
-    return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
+        color: const Color(0xFF1C1C1E),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Recording for ${widget.request.fromUser.username ?? 'Unknown User'}',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            widget.request.message,
-            style: const TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
-            ),
-          ),
-        ],
+      child: Text(
+        "${widget.request.fromUser.username ?? 'Unknown User'} wants to wake up to your voice or smile 😊 🎬 and said: ${widget.request.message}",
+        maxLines: 4,
+        // widget.request.message,
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+        ),
+        textAlign: TextAlign.start,
       ),
     );
   }
 
-  Widget _buildRecordingTypeSelector() {
+  Widget _buildRecordingTypeSelector(RecordAlarmState state) {
+    // Don't show selector during recording
+    if (state is RecordingInProgress) return const SizedBox();
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       child: Row(
         children: [
           Expanded(
             child: _buildTypeButton(
-              'Voice',
-              Icons.mic,
-              'audio',
-              _selectedRecordingType == 'audio',
+              'Record a Video',
+              Icons.videocam,
+              'video',
+              _selectedRecordingType == 'video',
             ),
           ),
           const SizedBox(width: 16),
           Expanded(
             child: _buildTypeButton(
-              'Video',
-              Icons.videocam,
-              'video',
-              _selectedRecordingType == 'video',
+              'Record a Voice',
+              Icons.mic,
+              'audio',
+              _selectedRecordingType == 'audio',
             ),
           ),
         ],
@@ -322,37 +389,32 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
   Widget _buildTypeButton(
       String title, IconData icon, String type, bool isSelected) {
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedRecordingType = type;
-        });
-        _recordAlarmBloc.add(SwitchRecordingTypeEvent(recordingType: type));
-      },
+      onTap: () => _onRecordingTypeChanged(type),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.red : Colors.grey[800],
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(
-            color: isSelected ? Colors.red : Colors.grey[600]!,
-            width: 1,
-          ),
+          color: isSelected ? const Color(0xFFFF3B30) : const Color(0xFF1C1C1E),
+          borderRadius: BorderRadius.circular(12),
+          border: isSelected
+              ? null
+              : Border.all(color: const Color(0xFF38383A), width: 1),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Column(
           children: [
             Icon(
               icon,
               color: Colors.white,
-              size: 20,
+              size: 24,
             ),
-            const SizedBox(width: 8),
+            const SizedBox(height: 8),
             Text(
               title,
               style: const TextStyle(
                 color: Colors.white,
+                fontSize: 14,
                 fontWeight: FontWeight.w500,
               ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -372,11 +434,11 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
     // Show video preview during playback
     if (state is PlayingRecording && _videoPlayerController != null) {
       return Container(
-        margin: const EdgeInsets.all(16),
+        margin: const EdgeInsets.all(20),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: AspectRatio(
-            aspectRatio: 9 / 16, // Vertical aspect ratio for mobile
+            aspectRatio: 9 / 16,
             child: VideoPlayer(_videoPlayerController!),
           ),
         ),
@@ -391,34 +453,95 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
       final cameraController = _recordAlarmBloc.cameraController;
 
       if (cameraController != null && cameraController.value.isInitialized) {
-        return Container(
-          margin: const EdgeInsets.all(16),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: AspectRatio(
-              aspectRatio: 9 / 16, // Vertical aspect ratio
-              child: OverflowBox(
-                alignment: Alignment.center,
-                child: FittedBox(
-                  fit: BoxFit.fitHeight,
-                  child: SizedBox(
-                    width: cameraController.value.previewSize!.height,
-                    height: cameraController.value.previewSize!.width,
-                    child: CameraPreview(cameraController),
+        return Stack(
+          children: [
+            Container(
+              margin: const EdgeInsets.all(20),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: AspectRatio(
+                  aspectRatio: 9 / 16,
+                  child: OverflowBox(
+                    alignment: Alignment.center,
+                    child: FittedBox(
+                      fit: BoxFit.fitHeight,
+                      child: SizedBox(
+                        width: cameraController.value.previewSize!.height,
+                        height: cameraController.value.previewSize!.width,
+                        child: CameraPreview(cameraController),
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
+            // Camera switch button
+            if (_cameras != null && _cameras!.length > 1)
+              Positioned(
+                top: 40,
+                right: 40,
+                child: GestureDetector(
+                  onTap: _switchCamera,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.flip_camera_ios,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
+            // Recording timer overlay
+            if (state is RecordingInProgress && _isTimerActive)
+              Positioned(
+                top: 40,
+                left: 40,
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF3B30),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        _formatDuration(_recordingDuration),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+          ],
         );
       }
     }
 
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFF1C1C1E),
+        borderRadius: BorderRadius.circular(16),
       ),
       child: const Center(
         child: Column(
@@ -445,252 +568,353 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
 
   Widget _buildAudioRecordingArea(RecordAlarmState state) {
     return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[900],
-        borderRadius: BorderRadius.circular(12),
-      ),
+      margin: const EdgeInsets.all(20),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Animated recording indicator
-            if (state is RecordingInProgress && !state.isPaused)
-              AnimatedBuilder(
-                animation: _scaleAnimation,
-                builder: (context, child) {
-                  return Transform.scale(
-                    scale: _scaleAnimation.value,
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.red.withOpacity(0.3),
-                      ),
-                      child: const Icon(
-                        Icons.mic,
-                        size: 40,
-                        color: Colors.red,
-                      ),
-                    ),
-                  );
-                },
-              )
-            else
-              Icon(
-                Icons.mic,
-                size: 80,
-                color: state is RecordingCompleted ? Colors.green : Colors.grey,
+            // Large circular recording area
+            Container(
+              width: 200,
+              height: 200,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white10,
               ),
-
-            const SizedBox(height: 24),
-
-            // Status text
-            Text(
-              _getStatusText(state),
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 16,
+              child: Center(
+                child: _buildRecordingIndicator(state),
               ),
             ),
+            const SizedBox(height: 40),
+            // Status text
+            Text(
+              _getAudioStatusText(state),
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            if (state is RecordingInProgress) ...[
+              const SizedBox(height: 8),
+              Text(
+                '(max record time is 30 seconds)',
+                style: TextStyle(
+                  color: Colors.grey[400],
+                  fontSize: 14,
+                ),
+              ),
+            ],
           ],
         ),
       ),
     );
   }
 
-  Widget _buildControls(RecordAlarmState state) {
+  Widget _buildRecordingIndicator(RecordAlarmState state) {
+    if (state is RecordingInProgress && _isTimerActive) {
+      return AnimatedBuilder(
+        animation: _pulseAnimation,
+        builder: (context, child) {
+          return Transform.scale(
+            scale: _pulseAnimation.value,
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFFF3B30),
+              ),
+            ),
+          );
+        },
+      );
+    } else if (state is RecordingCompleted) {
+      return Container(
+        width: 120,
+        height: 120,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Color(0xFF34C759),
+        ),
+        child: const Icon(
+          Icons.check,
+          size: 60,
+          color: Colors.white,
+        ),
+      );
+    } else {
+      return Container(
+        width: 80,
+        height: 80,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: const Color(0xFFFF3B30),
+        ),
+        child: const Icon(
+          Icons.fiber_manual_record,
+          size: 40,
+          color: Colors.white,
+        ),
+      );
+    }
+  }
+
+  Widget _buildBottomControls(RecordAlarmState state) {
+    if (state is RecordingInProgress) {
+      return _buildRecordingControls(state);
+    } else if (state is RecordingCompleted || state is PlayingRecording) {
+      return _buildCompletedControls(state);
+    } else if (state is RecordAlarmLoading || state is UploadingRecording) {
+      return _buildLoadingControls(state);
+    } else {
+      return _buildInitialControls();
+    }
+  }
+
+  Widget _buildInitialControls() {
     return Container(
-      padding: const EdgeInsets.all(24),
-      child: Column(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
         children: [
-          // Recording controls
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              // Record/Stop button
-              _buildMainRecordButton(state),
-
-              // Play/Pause button (only when recording is completed)
-              if (state is RecordingCompleted || state is PlayingRecording)
-                _buildPlayButton(state),
-
-              // Send button (only when recording is completed)
-              if (state is RecordingCompleted) _buildSendButton(state),
-            ],
-          ),
-
-          const SizedBox(height: 16),
-
-          // Reset button
-          if (state is RecordingCompleted || state is PlayingRecording)
-            CustomButton(
-              text: 'Record Again',
-              onPressed: () {
-                _videoPlayerController?.dispose();
-                _videoPlayerController = null;
-                _recordingDuration = Duration.zero;
-                _recordAlarmBloc.add(ResetRecordingEvent());
-              },
-              backgroundColor: Colors.grey[700],
-              textColor: Colors.white,
+          // Record button for audio
+          if (_selectedRecordingType == 'audio')
+            Expanded(
+              child: _buildStyledButton(
+                icon: Icons.mic,
+                text: 'Record',
+                backgroundColor: const Color(0xFFFF3B30),
+                onPressed: () {
+                  _recordAlarmBloc.add(
+                    StartRecordingEvent(
+                      recordingType: _selectedRecordingType,
+                      cameraIndex: _selectedCameraIndex,
+                    ),
+                  );
+                },
+              ),
             ),
-
-          // Loading indicator
-          if (state is RecordAlarmLoading || state is UploadingRecording)
-            const Padding(
-              padding: EdgeInsets.only(top: 16),
-              child: LoadingWidget(),
+          // Record button for video
+          if (_selectedRecordingType == 'video') ...[
+            Expanded(
+              child: _buildStyledButton(
+                icon: Icons.videocam,
+                text: 'Record',
+                backgroundColor: const Color(0xFFFF3B30),
+                onPressed: () {
+                  _recordAlarmBloc.add(
+                    StartRecordingEvent(
+                      recordingType: _selectedRecordingType,
+                      cameraIndex: _selectedCameraIndex,
+                    ),
+                  );
+                },
+              ),
             ),
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildMainRecordButton(RecordAlarmState state) {
-    IconData icon;
-    Color color;
-    VoidCallback? onPressed;
-
-    if (state is RecordingInProgress) {
-      if (state.isPaused) {
-        icon = Icons.play_arrow;
-        color = Colors.green;
-        onPressed = () => _recordAlarmBloc.add(ResumeRecordingEvent());
-      } else {
-        icon = Icons.stop;
-        color = Colors.red;
-        onPressed = () => _recordAlarmBloc.add(StopRecordingEvent());
-      }
-    } else {
-      icon = Icons.fiber_manual_record;
-      color = Colors.red;
-      onPressed = () {
-        _recordAlarmBloc.add(
-          StartRecordingEvent(
-            recordingType: _selectedRecordingType,
-            cameraIndex: _selectedCameraIndex,
+  Widget _buildRecordingControls(RecordAlarmState state) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          // Timer display - only show if timer is active
+          if (_isTimerActive)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF3B30),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    _formatDuration(_recordingDuration),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Text(
+                    '/ 0:30',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(height: 20),
+          // Stop button
+          _buildStyledButton(
+            icon: Icons.stop,
+            text: 'Stop',
+            backgroundColor: const Color(0xFF48484A),
+            onPressed: () => _recordAlarmBloc.add(StopRecordingEvent()),
           ),
-        );
-      };
-    }
+        ],
+      ),
+    );
+  }
 
+  Widget _buildCompletedControls(RecordAlarmState state) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              // Delete button
+              Expanded(
+                child: _buildStyledButton(
+                  icon: Icons.delete_outline,
+                  text: 'Delete',
+                  backgroundColor: const Color(0xFF48484A),
+                  onPressed: () {
+                    _videoPlayerController?.dispose();
+                    _videoPlayerController = null;
+                    _resetTimer();
+                    _recordAlarmBloc.add(ResetRecordingEvent());
+                  },
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Play button
+              Expanded(
+                child: _buildStyledButton(
+                  icon: state is PlayingRecording
+                      ? Icons.pause
+                      : Icons.play_arrow,
+                  text: state is PlayingRecording ? 'Pause' : 'Play',
+                  backgroundColor: const Color(0xFF48484A),
+                  onPressed: () {
+                    if (state is PlayingRecording) {
+                      _recordAlarmBloc.add(StopPlaybackEvent());
+                      _videoPlayerController?.pause();
+                    } else {
+                      _recordAlarmBloc.add(PlayRecordingEvent());
+                      if (_selectedRecordingType == 'video' &&
+                          _videoPlayerController != null) {
+                        _videoPlayerController!.play();
+                      }
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Send button
+              Expanded(
+                child: _buildStyledButton(
+                  icon: Icons.send,
+                  text: 'Send',
+                  backgroundColor: const Color(0xFF34C759),
+                  onPressed: () {
+                    final completedState = state as RecordingCompleted;
+                    _recordAlarmBloc.add(UploadRecordingEvent(
+                      requestId: widget.request.id,
+                      recordingType: completedState.recordingType,
+                      audioFile: completedState.audioFile,
+                      videoFile: completedState.videoFile,
+                      duration: completedState.duration,
+                    ));
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingControls(RecordAlarmState state) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Column(
+        children: [
+          const CircularProgressIndicator(
+            color: Color(0xFFFF9500),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            state is UploadingRecording
+                ? 'Processing Recorded Media\nPlease Wait and don\'t close this app'
+                : 'Loading...',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStyledButton({
+    required IconData icon,
+    required String text,
+    required Color backgroundColor,
+    required VoidCallback onPressed,
+  }) {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        width: 80,
-        height: 80,
+        padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: color,
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 10,
-              spreadRadius: 2,
+          color: backgroundColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: Colors.white, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ],
-        ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 40,
         ),
       ),
     );
   }
 
-  Widget _buildPlayButton(RecordAlarmState state) {
-    final isPlaying = state is PlayingRecording;
-
-    return GestureDetector(
-      onTap: () {
-        if (isPlaying) {
-          _recordAlarmBloc.add(StopPlaybackEvent());
-          _videoPlayerController?.pause();
-        } else {
-          _recordAlarmBloc.add(PlayRecordingEvent());
-          if (_selectedRecordingType == 'video' &&
-              _videoPlayerController != null) {
-            _videoPlayerController!.play();
-          }
-        }
-      },
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.blue,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.blue.withOpacity(0.3),
-              blurRadius: 8,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: Icon(
-          isPlaying ? Icons.stop : Icons.play_arrow,
-          color: Colors.white,
-          size: 30,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSendButton(RecordAlarmState state) {
-    if (state is! RecordingCompleted) return const SizedBox();
-
-    return GestureDetector(
-      onTap: () {
-        _recordAlarmBloc.add(UploadRecordingEvent(
-          requestId: widget.request.id,
-          recordingType: state.recordingType,
-          audioFile: state.audioFile,
-          videoFile: state.videoFile,
-          duration: state.duration,
-        ));
-      },
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.green,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.green.withOpacity(0.3),
-              blurRadius: 8,
-              spreadRadius: 1,
-            ),
-          ],
-        ),
-        child: const Icon(
-          Icons.send,
-          color: Colors.white,
-          size: 30,
-        ),
-      ),
-    );
-  }
-
-  String _getStatusText(RecordAlarmState state) {
-    if (state is RecordingInProgress) {
-      return state.isPaused ? 'Recording paused' : 'Recording...';
+  String _getAudioStatusText(RecordAlarmState state) {
+    if (state is RecordingInProgress && _isTimerActive) {
+      return 'Recording...';
     } else if (state is RecordingCompleted) {
       return 'Recording completed';
-    } else if (state is PlayingRecording) {
-      return 'Playing...';
-    } else if (state is UploadingRecording) {
-      return state.message;
+    } else {
+      return 'Click record to start recording.';
     }
-    return 'Tap record to start';
   }
 
   String _formatDuration(Duration duration) {
-    final minutes = duration.inMinutes.toString().padLeft(2, '0');
+    final minutes = duration.inMinutes.toString().padLeft(1, '0');
     final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
     return '$minutes:$seconds';
   }

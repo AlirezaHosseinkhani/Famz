@@ -29,8 +29,6 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
   bool _camerasInitialized = false;
 
   // Recording state
-  Timer? _recordingTimer;
-  Duration _currentDuration = Duration.zero;
   String _currentRecordingPath = '';
   String _currentRecordingType = 'audio';
   bool _isRecording = false;
@@ -52,8 +50,6 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
     on<SwitchRecordingTypeEvent>(_onSwitchRecordingType);
     on<SwitchCameraEvent>(_onSwitchCamera);
     on<InitializeCameraEvent>(_onInitializeCamera);
-    on<UpdateRecordingDurationEvent>(_onUpdateRecordingDuration);
-    on<UpdatePlaybackPositionEvent>(_onUpdatePlaybackPosition);
 
     _initializeRecorders();
   }
@@ -225,7 +221,6 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
       }
 
       _currentRecordingType = event.recordingType;
-      _currentDuration = Duration.zero;
       _isRecording = true;
 
       // Get recording path
@@ -240,12 +235,10 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
         await _startAudioRecording();
       }
 
-      // Start timer
-      _startTimer();
-
+      // UI will manage timer - just emit the recording state
       emit(RecordingInProgress(
         recordingType: _currentRecordingType,
-        duration: _currentDuration,
+        duration: Duration.zero, // UI will manage duration
         cameraIndex: event.cameraIndex,
       ));
     } catch (e) {
@@ -305,14 +298,6 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
     }
   }
 
-  void _startTimer() {
-    _recordingTimer?.cancel();
-    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      _currentDuration = Duration(seconds: timer.tick);
-      add(UpdateRecordingDurationEvent(duration: _currentDuration));
-    });
-  }
-
   Future<void> _onStopRecording(
     StopRecordingEvent event,
     Emitter<RecordAlarmState> emit,
@@ -320,7 +305,6 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
     try {
       emit(RecordAlarmLoading(message: 'Stopping recording...'));
 
-      _recordingTimer?.cancel();
       _isRecording = false;
 
       File? audioFile;
@@ -344,7 +328,8 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
         recordingType: _currentRecordingType,
         audioFile: audioFile,
         videoFile: videoFile,
-        duration: _currentDuration,
+        duration: Duration.zero,
+        // UI will provide the actual duration
         filePath: _currentRecordingPath,
       ));
     } catch (e) {
@@ -358,8 +343,6 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
     Emitter<RecordAlarmState> emit,
   ) async {
     try {
-      _recordingTimer?.cancel();
-
       if (_currentRecordingType == 'audio') {
         await _audioRecorder!.pauseRecorder();
       }
@@ -367,7 +350,7 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
 
       emit(RecordingInProgress(
         recordingType: _currentRecordingType,
-        duration: _currentDuration,
+        duration: Duration.zero, // UI manages duration
         isPaused: true,
         cameraIndex: _currentCameraIndex,
       ));
@@ -385,11 +368,9 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
         await _audioRecorder!.resumeRecorder();
       }
 
-      _startTimer();
-
       emit(RecordingInProgress(
         recordingType: _currentRecordingType,
-        duration: _currentDuration,
+        duration: Duration.zero, // UI manages duration
         isPaused: false,
         cameraIndex: _currentCameraIndex,
       ));
@@ -417,7 +398,8 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
 
         // Listen to player position updates
         _audioPlayerSubscription = _audioPlayer!.onProgress?.listen((event) {
-          add(UpdatePlaybackPositionEvent(position: event.position));
+          // You can emit playback position updates here if needed
+          // For now, we'll keep it simple
         });
       }
 
@@ -430,7 +412,8 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
             ? File(_currentRecordingPath)
             : null,
         currentPosition: Duration.zero,
-        totalDuration: _currentDuration,
+        totalDuration: Duration.zero,
+        // UI can manage this
         filePath: _currentRecordingPath,
       ));
     } catch (e) {
@@ -457,7 +440,8 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
         videoFile: _currentRecordingType == 'video'
             ? File(_currentRecordingPath)
             : null,
-        duration: _currentDuration,
+        duration: Duration.zero,
+        // UI manages duration
         filePath: _currentRecordingPath,
       ));
     } catch (e) {
@@ -524,7 +508,6 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
   ) async {
     try {
       // Stop any ongoing operations
-      _recordingTimer?.cancel();
       await _audioPlayerSubscription?.cancel();
       _audioPlayerSubscription = null;
 
@@ -537,7 +520,6 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
       }
 
       // Reset state
-      _currentDuration = Duration.zero;
       _currentRecordingPath = '';
       _isRecording = false;
       _isPlaying = false;
@@ -552,7 +534,7 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
         }
       }
 
-      emit(RecordAlarmInitial());
+      emit(RecordingReset());
     } catch (e) {
       emit(RecordAlarmError(message: 'Failed to reset recording: $e'));
     }
@@ -562,6 +544,18 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
     SwitchRecordingTypeEvent event,
     Emitter<RecordAlarmState> emit,
   ) async {
+    // If currently recording, stop it first
+    if (_isRecording) {
+      if (_currentRecordingType == 'audio') {
+        await _audioRecorder!.stopRecorder();
+      } else if (_cameraController != null &&
+          _cameraController!.value.isRecordingVideo) {
+        await _cameraController!.stopVideoRecording();
+      }
+      _isRecording = false;
+      _currentRecordingPath = '';
+    }
+
     _currentRecordingType = event.recordingType;
 
     // Initialize camera if switching to video
@@ -583,49 +577,21 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
     }
   }
 
-  Future<void> _onUpdateRecordingDuration(
-    UpdateRecordingDurationEvent event,
-    Emitter<RecordAlarmState> emit,
-  ) async {
-    if (state is RecordingInProgress) {
-      final currentState = state as RecordingInProgress;
-      emit(RecordingInProgress(
-        recordingType: currentState.recordingType,
-        duration: event.duration,
-        isPaused: currentState.isPaused,
-        cameraIndex: currentState.cameraIndex,
-      ));
-    }
-  }
-
-  Future<void> _onUpdatePlaybackPosition(
-    UpdatePlaybackPositionEvent event,
-    Emitter<RecordAlarmState> emit,
-  ) async {
-    if (state is PlayingRecording) {
-      final currentState = state as PlayingRecording;
-      emit(PlayingRecording(
-        recordingType: currentState.recordingType,
-        audioFile: currentState.audioFile,
-        videoFile: currentState.videoFile,
-        currentPosition: event.position,
-        totalDuration: currentState.totalDuration,
-        filePath: currentState.filePath,
-      ));
-    }
-  }
-
   // Getters
   camera.CameraController? get cameraController => _cameraController;
+
   List<camera.CameraDescription>? get availableCameras => _availableCameras;
+
   int get currentCameraIndex => _currentCameraIndex;
+
   bool get isRecording => _isRecording;
+
   bool get isPlaying => _isPlaying;
+
   bool get camerasInitialized => _camerasInitialized;
 
   @override
   Future<void> close() async {
-    _recordingTimer?.cancel();
     await _audioPlayerSubscription?.cancel();
     await _audioRecorder?.closeRecorder();
     await _audioPlayer?.closePlayer();
