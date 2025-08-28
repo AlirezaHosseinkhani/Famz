@@ -11,6 +11,8 @@ class RouteNames {
 
   static const String nameInput = '/name-input';
   static const String notificationPermission = '/notification-permission';
+  static const String systemAlertWindowPermission =
+      '/system-alert-window-permission';
 
   // static const String registerOtpVerification = '/register-otp-verification';
   static const String welcome = '/welcome';

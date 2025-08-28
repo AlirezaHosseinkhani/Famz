@@ -5,6 +5,8 @@ class RouteConstants {
   static const String otpVerification = '/otp-verification';
   static const String nameInput = '/name-input';
   static const String notificationPermission = '/notification-permission';
+  static const String systemAlertWindowPermission =
+      '/system-alert-window-permission';
   static const String main = '/main';
   static const String alarms = '/main/alarms';
   static const String setAlarm = '/main/alarms/set';

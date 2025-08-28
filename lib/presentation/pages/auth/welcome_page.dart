@@ -73,7 +73,7 @@ class WelcomePage extends StatelessWidget {
                 text: 'Continue',
                 onPressed: () {
                   Navigator.of(context).pushNamedAndRemoveUntil(
-                    RouteNames.notificationPermission,
+                    RouteNames.systemAlertWindowPermission,
                     (route) => false,
                   );
                 },

@@ -1,3 +1,4 @@
+import 'package:famz/presentation/pages/auth/system_alert_window_permission_page.dart';
 import 'package:famz/presentation/pages/auth/welcome_page.dart';
 import 'package:famz/presentation/pages/main/alarms/set_alarm_page.dart';
 import 'package:flutter/material.dart';
@@ -68,6 +69,10 @@ class AppRouter {
       case RouteNames.notificationPermission:
         return MaterialPageRoute(
             builder: (_) => const NotificationPermissionPage());
+
+      case RouteNames.systemAlertWindowPermission:
+        return MaterialPageRoute(
+            builder: (_) => const SystemAlertWindowPermissionPage());
 
       case RouteNames.main:
         return MaterialPageRoute(

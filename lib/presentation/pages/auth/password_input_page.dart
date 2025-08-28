@@ -83,7 +83,7 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
         listener: (context, state) {
           if (state is AuthAuthenticated) {
             Navigator.of(context).pushNamedAndRemoveUntil(
-              RouteNames.notificationPermission,
+              RouteNames.systemAlertWindowPermission,
               (route) => false,
             );
           } else if (state is AuthError) {
