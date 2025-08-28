@@ -67,7 +67,7 @@ class _NameInputPageState extends State<NameInputPage> {
         listener: (context, state) {
           if (state is AuthRegistrationSuccess) {
             Navigator.of(context).pushNamed(
-              RouteNames.welcome,
+              RouteNames.systemAlertWindowPermission,
               arguments: {
                 'name': _nameController.text.trim(),
                 'email': widget.emailOrPhone,

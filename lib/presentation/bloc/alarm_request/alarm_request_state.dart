@@ -30,24 +30,20 @@ class AlarmRequestsLoaded extends AlarmRequestState {
     required this.receivedRequests,
   });
 
-  List<SentRequest> get typedSentRequests => sentRequests.cast<SentRequest>();
-  List<ReceivedRequest> get typedReceivedRequests =>
-      receivedRequests.cast<ReceivedRequest>();
-
-  AlarmRequestsLoaded copyWith({
-    List<SentRequest>? sentRequests,
-    List<ReceivedRequest>? receivedRequests,
-  }) {
-    return AlarmRequestsLoaded(
-      sentRequests: sentRequests ?? this.sentRequests,
-      receivedRequests: receivedRequests ?? this.receivedRequests,
-    );
-  }
-
   @override
   List<Object?> get props => [sentRequests, receivedRequests];
 }
 
+class AlarmRequestError extends AlarmRequestState {
+  final String message;
+
+  const AlarmRequestError({required this.message});
+
+  @override
+  List<Object?> get props => [message];
+}
+
+// Base class for all operation success states
 abstract class AlarmRequestOperationSuccess extends AlarmRequestState {
   final String message;
 
@@ -58,34 +54,24 @@ abstract class AlarmRequestOperationSuccess extends AlarmRequestState {
 }
 
 class AlarmRequestCreated extends AlarmRequestOperationSuccess {
-  const AlarmRequestCreated({required super.message});
+  const AlarmRequestCreated({required String message})
+      : super(message: message);
 }
 
 class AlarmRequestUpdated extends AlarmRequestOperationSuccess {
-  const AlarmRequestUpdated({required super.message});
+  const AlarmRequestUpdated({required String message})
+      : super(message: message);
 }
 
 class AlarmRequestDeleted extends AlarmRequestOperationSuccess {
-  const AlarmRequestDeleted({required super.message});
+  const AlarmRequestDeleted({required String message})
+      : super(message: message);
 }
 
 class RequestAccepted extends AlarmRequestOperationSuccess {
-  const RequestAccepted({required super.message});
+  const RequestAccepted({required String message}) : super(message: message);
 }
 
 class RequestRejected extends AlarmRequestOperationSuccess {
-  const RequestRejected({required super.message});
-}
-
-class AlarmRequestError extends AlarmRequestState {
-  final String message;
-  final bool isCritical;
-
-  const AlarmRequestError({
-    required this.message,
-    this.isCritical = false,
-  });
-
-  @override
-  List<Object?> get props => [message, isCritical];
+  const RequestRejected({required String message}) : super(message: message);
 }

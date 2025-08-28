@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/errors/failures.dart';
+import '../../../domain/entities/received_request.dart';
+import '../../../domain/entities/sent_request.dart';
 import '../../../domain/usecases/alarm_request/accept_request_usecase.dart';
 import '../../../domain/usecases/alarm_request/create_alarm_request_usecase.dart';
 import '../../../domain/usecases/alarm_request/delete_alarm_request_usecase.dart';
@@ -19,6 +23,10 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
   final DeleteAlarmRequestUseCase deleteAlarmRequestUseCase;
   final AcceptRequestUseCase acceptRequestUseCase;
   final RejectRequestUseCase rejectRequestUseCase;
+
+  // Cache for current requests
+  List<SentRequest> _cachedSentRequests = [];
+  List<ReceivedRequest> _cachedReceivedRequests = [];
 
   AlarmRequestBloc({
     required this.getSentRequestsUseCase,
@@ -42,33 +50,16 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     LoadAllRequestsEvent event,
     Emitter<AlarmRequestState> emit,
   ) async {
-    emit(AlarmRequestLoading());
-
-    final sentResult = await getSentRequestsUseCase.call();
-    final receivedResult = await getReceivedRequestsUseCase.call();
-
-    final failure = sentResult.fold((l) => l, (_) => null) ??
-        receivedResult.fold((l) => l, (_) => null);
-
-    if (failure != null) {
-      emit(AlarmRequestError(message: _mapFailureToMessage(failure)));
-      return;
-    }
-
-    final sentRequests = sentResult.getOrElse(() => []);
-    final receivedRequests = receivedResult.getOrElse(() => []);
-
-    emit(AlarmRequestsLoaded(
-      sentRequests: sentRequests,
-      receivedRequests: receivedRequests,
-    ));
+    emit(const AlarmRequestLoading());
+    await _loadAndEmitRequests(emit);
   }
 
   Future<void> _onCreateAlarmRequest(
     CreateAlarmRequestEvent event,
     Emitter<AlarmRequestState> emit,
   ) async {
-    emit(AlarmRequestLoading());
+    // Show loading with preserved data
+    emit(const AlarmRequestLoading(preserveData: true));
 
     final result = await createAlarmRequestUseCase.call(
       CreateAlarmRequestParams(
@@ -80,14 +71,26 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     await result.fold(
       (failure) async {
         emit(AlarmRequestError(message: _mapFailureToMessage(failure)));
+        // Restore previous state after error
+        if (_cachedSentRequests.isNotEmpty ||
+            _cachedReceivedRequests.isNotEmpty) {
+          await Future.delayed(const Duration(seconds: 2));
+          emit(AlarmRequestsLoaded(
+            sentRequests: _cachedSentRequests,
+            receivedRequests: _cachedReceivedRequests,
+          ));
+        }
       },
       (_) async {
-        // Emit success state first
+        // Emit success state
         emit(
             const AlarmRequestCreated(message: 'Request created successfully'));
 
-        // Then reload all requests to get updated lists
-        await _reloadAllRequests(emit);
+        // Wait a bit for the snackbar to show
+        await Future.delayed(const Duration(milliseconds: 500));
+
+        // Reload all requests
+        await _loadAndEmitRequests(emit);
       },
     );
   }
@@ -96,7 +99,7 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     UpdateAlarmRequestEvent event,
     Emitter<AlarmRequestState> emit,
   ) async {
-    emit(AlarmRequestLoading(preserveData: true));
+    emit(const AlarmRequestLoading(preserveData: true));
 
     final result = await updateAlarmRequestUseCase.call(
       UpdateAlarmRequestParams(
@@ -108,14 +111,21 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     await result.fold(
       (failure) async {
         emit(AlarmRequestError(message: _mapFailureToMessage(failure)));
+        // Restore previous state
+        if (_cachedSentRequests.isNotEmpty ||
+            _cachedReceivedRequests.isNotEmpty) {
+          await Future.delayed(const Duration(seconds: 2));
+          emit(AlarmRequestsLoaded(
+            sentRequests: _cachedSentRequests,
+            receivedRequests: _cachedReceivedRequests,
+          ));
+        }
       },
       (_) async {
-        // Emit success state first
         emit(
             const AlarmRequestUpdated(message: 'Request updated successfully'));
-
-        // Then reload all requests to get updated lists
-        await _reloadAllRequests(emit);
+        await Future.delayed(const Duration(milliseconds: 500));
+        await _loadAndEmitRequests(emit);
       },
     );
   }
@@ -124,7 +134,7 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     DeleteAlarmRequestEvent event,
     Emitter<AlarmRequestState> emit,
   ) async {
-    emit(AlarmRequestLoading(preserveData: true));
+    emit(const AlarmRequestLoading(preserveData: true));
 
     final result = await deleteAlarmRequestUseCase.call(
       DeleteAlarmRequestParams(requestId: event.requestId),
@@ -133,14 +143,21 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     await result.fold(
       (failure) async {
         emit(AlarmRequestError(message: _mapFailureToMessage(failure)));
+        // Restore previous state
+        if (_cachedSentRequests.isNotEmpty ||
+            _cachedReceivedRequests.isNotEmpty) {
+          await Future.delayed(const Duration(seconds: 2));
+          emit(AlarmRequestsLoaded(
+            sentRequests: _cachedSentRequests,
+            receivedRequests: _cachedReceivedRequests,
+          ));
+        }
       },
       (_) async {
-        // Emit success state first
         emit(
             const AlarmRequestDeleted(message: 'Request deleted successfully'));
-
-        // Then reload all requests to get updated lists
-        await _reloadAllRequests(emit);
+        await Future.delayed(const Duration(milliseconds: 500));
+        await _loadAndEmitRequests(emit);
       },
     );
   }
@@ -149,7 +166,7 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     AcceptRequestEvent event,
     Emitter<AlarmRequestState> emit,
   ) async {
-    emit(AlarmRequestLoading(preserveData: true));
+    emit(const AlarmRequestLoading(preserveData: true));
 
     final result = await acceptRequestUseCase.call(
       AcceptRequestParams(requestId: event.requestId),
@@ -158,13 +175,20 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     await result.fold(
       (failure) async {
         emit(AlarmRequestError(message: _mapFailureToMessage(failure)));
+        // Restore previous state
+        if (_cachedSentRequests.isNotEmpty ||
+            _cachedReceivedRequests.isNotEmpty) {
+          await Future.delayed(const Duration(seconds: 2));
+          emit(AlarmRequestsLoaded(
+            sentRequests: _cachedSentRequests,
+            receivedRequests: _cachedReceivedRequests,
+          ));
+        }
       },
       (_) async {
-        // Emit success state first
         emit(const RequestAccepted(message: 'Request accepted successfully'));
-
-        // Then reload all requests to get updated lists
-        await _reloadAllRequests(emit);
+        await Future.delayed(const Duration(milliseconds: 500));
+        await _loadAndEmitRequests(emit);
       },
     );
   }
@@ -173,7 +197,7 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     RejectRequestEvent event,
     Emitter<AlarmRequestState> emit,
   ) async {
-    emit(AlarmRequestLoading(preserveData: true));
+    emit(const AlarmRequestLoading(preserveData: true));
 
     final result = await rejectRequestUseCase.call(
       RejectRequestParams(requestId: event.requestId),
@@ -182,13 +206,20 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     await result.fold(
       (failure) async {
         emit(AlarmRequestError(message: _mapFailureToMessage(failure)));
+        // Restore previous state
+        if (_cachedSentRequests.isNotEmpty ||
+            _cachedReceivedRequests.isNotEmpty) {
+          await Future.delayed(const Duration(seconds: 2));
+          emit(AlarmRequestsLoaded(
+            sentRequests: _cachedSentRequests,
+            receivedRequests: _cachedReceivedRequests,
+          ));
+        }
       },
       (_) async {
-        // Emit success state first
         emit(const RequestRejected(message: 'Request rejected successfully'));
-
-        // Then reload all requests to get updated lists
-        await _reloadAllRequests(emit);
+        await Future.delayed(const Duration(milliseconds: 500));
+        await _loadAndEmitRequests(emit);
       },
     );
   }
@@ -197,11 +228,11 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     RefreshRequestsEvent event,
     Emitter<AlarmRequestState> emit,
   ) async {
-    await _reloadAllRequests(emit);
+    await _loadAndEmitRequests(emit);
   }
 
-  // Helper method to reload all requests
-  Future<void> _reloadAllRequests(Emitter<AlarmRequestState> emit) async {
+  // Helper method to load and emit requests
+  Future<void> _loadAndEmitRequests(Emitter<AlarmRequestState> emit) async {
     final sentResult = await getSentRequestsUseCase.call();
     final receivedResult = await getReceivedRequestsUseCase.call();
 
@@ -213,12 +244,12 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
       return;
     }
 
-    final sentRequests = sentResult.getOrElse(() => []);
-    final receivedRequests = receivedResult.getOrElse(() => []);
+    _cachedSentRequests = sentResult.getOrElse(() => []);
+    _cachedReceivedRequests = receivedResult.getOrElse(() => []);
 
     emit(AlarmRequestsLoaded(
-      sentRequests: sentRequests,
-      receivedRequests: receivedRequests,
+      sentRequests: _cachedSentRequests,
+      receivedRequests: _cachedReceivedRequests,
     ));
   }
 

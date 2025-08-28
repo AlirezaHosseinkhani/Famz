@@ -49,9 +49,8 @@ class _RequestsPageState extends State<RequestsPage>
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _alarmRequestBloc,
-      child: BlocListener<AlarmRequestBloc, AlarmRequestState>(
+      child: BlocConsumer<AlarmRequestBloc, AlarmRequestState>(
         listener: (context, state) {
-          // Show success messages
           if (state is AlarmRequestOperationSuccess) {
             SnackbarUtils.showOverlaySnackbar(
               context,
@@ -68,53 +67,57 @@ class _RequestsPageState extends State<RequestsPage>
             );
           }
         },
-        child: Scaffold(
-          resizeToAvoidBottomInset: false,
-          backgroundColor: Colors.black,
-          appBar: CustomAppBar(
-            title: 'Requests',
-            bottom: TabBar(
-              controller: _tabController,
-              tabs: const [
-                Tab(
-                  text: 'Received',
-                  icon: Icon(Icons.inbox_outlined),
+        builder: (context, state) {
+          return Scaffold(
+            resizeToAvoidBottomInset: false,
+            backgroundColor: Colors.black,
+            appBar: CustomAppBar(
+              title: 'Requests',
+              bottom: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(
+                    text: 'Received',
+                    icon: Icon(Icons.inbox_outlined),
+                  ),
+                  Tab(
+                    text: 'Sent',
+                    icon: Icon(Icons.send_outlined),
+                  ),
+                ],
+              ),
+              centerTitle: true,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  tooltip: 'Refresh',
+                  onPressed: () {
+                    context
+                        .read<AlarmRequestBloc>()
+                        .add(RefreshRequestsEvent());
+                  },
                 ),
-                Tab(
-                  text: 'Sent',
-                  icon: Icon(Icons.send_outlined),
+                IconButton(
+                  icon: const Icon(Icons.ios_share),
+                  tooltip: 'Share Link',
+                  onPressed: () => _showShareDialog(context),
                 ),
               ],
             ),
-            centerTitle: true,
-            actions: [
-              // IconButton(
-              //   icon: const Icon(Icons.refresh),
-              //   tooltip: 'Refresh',
-              //   onPressed: () {
-              //     context.read<AlarmRequestBloc>().add(RefreshRequestsEvent());
-              //   },
-              // ),
-              IconButton(
-                icon: const Icon(Icons.ios_share),
-                tooltip: 'Share Link',
-                onPressed: () => _showShareDialog(context),
-              ),
-            ],
-          ),
-          body: TabBarView(
-            controller: _tabController,
-            children: const [
-              _ReceivedRequestsTab(),
-              _SentRequestsTab(),
-            ],
-          ),
-          // floatingActionButton: FloatingActionButton(
-          //   onPressed: () => _showCreateRequestDialog(context),
-          //   tooltip: 'Create New Request',
-          //   child: const Icon(Icons.add),
-          // ),
-        ),
+            body: TabBarView(
+              controller: _tabController,
+              children: const [
+                _ReceivedRequestsTab(),
+                _SentRequestsTab(),
+              ],
+            ),
+            floatingActionButton: FloatingActionButton(
+              onPressed: () => createRequestDialog(context),
+              tooltip: 'Create New Request',
+              child: const Icon(Icons.add),
+            ),
+          );
+        },
       ),
     );
   }

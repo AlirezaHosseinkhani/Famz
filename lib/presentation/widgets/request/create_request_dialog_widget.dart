@@ -4,13 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../bloc/alarm_request/alarm_request_bloc.dart';
 import '../../bloc/alarm_request/alarm_request_event.dart';
 
-void createRequestDialog(BuildContext context) {
+void createRequestDialog(BuildContext ctx) {
   final messageController = TextEditingController();
   final userIdController = TextEditingController();
   final formKey = GlobalKey<FormState>();
 
   showDialog(
-    context: context,
+    context: ctx,
     barrierDismissible: false,
     builder: (context) => Dialog(
       backgroundColor: Colors.transparent,
@@ -233,7 +233,7 @@ void createRequestDialog(BuildContext context) {
                           onPressed: () {
                             if (formKey.currentState?.validate() ?? false) {
                               final userId = int.parse(userIdController.text);
-                              context.read<AlarmRequestBloc>().add(
+                              ctx.read<AlarmRequestBloc>().add(
                                     CreateAlarmRequestEvent(
                                       toUserId: userId,
                                       message: messageController.text.trim(),
