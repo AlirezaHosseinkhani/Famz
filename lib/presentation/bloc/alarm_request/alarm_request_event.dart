@@ -10,7 +10,7 @@ abstract class AlarmRequestEvent extends Equatable {
 class LoadAllRequestsEvent extends AlarmRequestEvent {}
 
 class CreateAlarmRequestEvent extends AlarmRequestEvent {
-  final int toUserId;
+  final String toUserId;
   final String message;
 
   const CreateAlarmRequestEvent({

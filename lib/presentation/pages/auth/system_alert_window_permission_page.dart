@@ -7,7 +7,10 @@ import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_snackbar.dart';
 
 class SystemAlertWindowPermissionPage extends StatefulWidget {
-  const SystemAlertWindowPermissionPage({Key? key}) : super(key: key);
+  final Map<String, dynamic>? arguments;
+
+  const SystemAlertWindowPermissionPage({Key? key, this.arguments})
+      : super(key: key);
 
   @override
   State<SystemAlertWindowPermissionPage> createState() =>
@@ -16,20 +19,18 @@ class SystemAlertWindowPermissionPage extends StatefulWidget {
 
 class _SystemAlertWindowPermissionPageState
     extends State<SystemAlertWindowPermissionPage> {
-  bool _isLoading = false;
-
   Future<void> _requestPermission() async {
-    setState(() {
-      _isLoading = true;
-    });
+    // setState(() {
+    //   _isLoading = true;
+    // });
 
     try {
       final status = await Permission.systemAlertWindow.request();
 
       if (mounted) {
-        // Navigate to the notification permission page
         Navigator.of(context).pushReplacementNamed(
-          RouteNames.notificationPermission, // or whatever your route name is
+          RouteNames.notificationPermission,
+          arguments: widget.arguments,
         );
       }
     } catch (e) {
@@ -40,19 +41,20 @@ class _SystemAlertWindowPermissionPageState
           SnackbarType.warning,
         );
       }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
     }
+    // finally {
+    //   if (mounted) {
+    //     setState(() {
+    //       _isLoading = false;
+    //     });
+    //   }
+    // }
   }
 
   void _skipPermission() {
-    // Navigate to the notification permission page
     Navigator.of(context).pushReplacementNamed(
       RouteNames.notificationPermission,
+      arguments: widget.arguments, // Pass along the arguments
     );
   }
 

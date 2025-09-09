@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/permission_utils.dart';
 import '../../../core/utils/snackbar_utils.dart';
 import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/auth/auth_event.dart';
@@ -64,15 +65,38 @@ class _NameInputPageState extends State<NameInputPage> {
       resizeToAvoidBottomInset: false,
       appBar: const CustomAppBar(title: '', backgroundColor: Colors.black),
       body: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is AuthRegistrationSuccess) {
-            Navigator.of(context).pushNamed(
-              RouteNames.systemAlertWindowPermission,
-              arguments: {
-                'name': _nameController.text.trim(),
-                'email': widget.emailOrPhone,
-              },
-            );
+            try {
+              final bool shouldRequest =
+                  await PermissionUtils.shouldRequestSystemAlertWindow();
+
+              if (shouldRequest) {
+                Navigator.of(context).pushNamed(
+                  RouteNames.systemAlertWindowPermission,
+                  arguments: {
+                    'name': _nameController.text.trim(),
+                    'phone_number': widget.emailOrPhone,
+                  },
+                );
+              } else {
+                Navigator.of(context).pushReplacementNamed(
+                  RouteNames.notificationPermission,
+                  arguments: {
+                    'name': _nameController.text.trim(),
+                    'phone_number': widget.emailOrPhone,
+                  },
+                );
+              }
+            } catch (e) {
+              Navigator.of(context).pushNamed(
+                RouteNames.systemAlertWindowPermission,
+                arguments: {
+                  'name': _nameController.text.trim(),
+                  'phone_number': widget.emailOrPhone,
+                },
+              );
+            }
           } else if (state is AuthError) {
             SnackbarUtils.showOverlaySnackbar(
               context,
@@ -137,6 +161,10 @@ class _NameInputPageState extends State<NameInputPage> {
                       return null;
                     },
                     onSubmitted: (_) => _submitName(),
+                    prefixIcon: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: const Icon(Icons.alternate_email),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   BlocBuilder<AuthBloc, AuthState>(

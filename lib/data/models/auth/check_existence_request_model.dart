@@ -1,14 +1,14 @@
 // lib/data/models/auth/check_existence_request_model.dart
 class CheckExistenceRequestModel {
-  final String email;
+  final String phoneNumber;
 
   const CheckExistenceRequestModel({
-    required this.email,
+    required this.phoneNumber,
   });
 
   Map<String, dynamic> toJson() {
     return {
-      'email': email,
+      'phone_number': phoneNumber,
     };
   }
 }

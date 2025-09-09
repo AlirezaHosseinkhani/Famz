@@ -63,7 +63,7 @@ class _EmailPhoneInputPageState extends State<EmailPhoneInputPage> {
             Navigator.of(context).pushNamed(
               RouteNames.passwordInput,
               arguments: {
-                'email': state.emailOrPhone,
+                'phone_number': state.emailOrPhone,
                 'isExistingUser': state.result.exists,
               },
             );

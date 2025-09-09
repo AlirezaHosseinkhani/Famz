@@ -10,7 +10,7 @@ abstract class AppException implements Exception {
   });
 
   @override
-  String toString() => 'AppException: $message';
+  String toString() => message;
 }
 
 // class ServerException extends AppException {

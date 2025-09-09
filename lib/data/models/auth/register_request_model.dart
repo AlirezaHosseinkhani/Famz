@@ -1,12 +1,13 @@
 class RegisterRequestModel {
-  final String email;
+  final String phoneNumber;
   final String username;
   final String password;
   final String password2;
+
   // final String? phoneNumber;
 
   const RegisterRequestModel({
-    required this.email,
+    required this.phoneNumber,
     required this.username,
     required this.password,
     required this.password2,
@@ -15,7 +16,7 @@ class RegisterRequestModel {
 
   Map<String, dynamic> toJson() {
     return {
-      'email': email,
+      'phone_number': phoneNumber,
       'username': username,
       'password': password,
       'password2': password2,

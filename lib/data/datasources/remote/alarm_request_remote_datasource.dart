@@ -10,7 +10,7 @@ abstract class AlarmRequestRemoteDataSource {
   Future<List<ReceivedRequestModel>> getReceivedRequests();
 
   Future<SentRequestModel> createAlarmRequest({
-    required int toUserId,
+    required String toUserId,
     required String message,
   });
 
@@ -58,14 +58,14 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
 
   @override
   Future<SentRequestModel> createAlarmRequest({
-    required int toUserId,
+    required String toUserId,
     required String message,
   }) async {
     try {
       final response = await apiClient.post(
         ApiConstants.sentRequestsEndpoint,
         body: {
-          'to_user_id': toUserId,
+          'to_user': toUserId,
           'message': message,
         },
       );

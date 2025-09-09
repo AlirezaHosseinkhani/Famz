@@ -15,7 +15,7 @@ class ApiConstants {
     _cachedBaseUrl = null;
   }
 
-  static const String baseUrl = 'http://164.90.178.164:8000';
+  static const String baseUrl = 'http://164.90.178.164:80';
   static const String apiVersion = 'api';
 
   // static const String baseUrl = 'https://api.famz.app/v1';

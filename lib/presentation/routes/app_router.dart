@@ -43,7 +43,7 @@ class AppRouter {
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
           builder: (_) => PasswordInputPage(
-            emailOrPhone: args['email'] as String,
+            emailOrPhone: args['phone_number'] as String,
             isExistingUser: args['isExistingUser'] as bool,
           ),
         );
@@ -52,7 +52,7 @@ class AppRouter {
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
           builder: (_) => NameInputPage(
-            emailOrPhone: args['email'] as String,
+            emailOrPhone: args['username'] as String,
             password: args['password'] as String,
           ),
         );
@@ -62,7 +62,7 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => WelcomePage(
             name: args['name'] as String,
-            emailOrPhone: args['email'] as String,
+            emailOrPhone: args['phone_number'] as String,
           ),
         );
 
@@ -71,8 +71,10 @@ class AppRouter {
             builder: (_) => const NotificationPermissionPage());
 
       case RouteNames.systemAlertWindowPermission:
+        final args = settings.arguments as Map<String, dynamic>?;
         return MaterialPageRoute(
-            builder: (_) => const SystemAlertWindowPermissionPage());
+          builder: (_) => SystemAlertWindowPermissionPage(arguments: args),
+        );
 
       case RouteNames.main:
         return MaterialPageRoute(

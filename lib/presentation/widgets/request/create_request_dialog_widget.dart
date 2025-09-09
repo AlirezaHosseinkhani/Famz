@@ -81,7 +81,7 @@ void createRequestDialog(BuildContext ctx) {
                   TextFormField(
                     controller: userIdController,
                     style: const TextStyle(color: Colors.white),
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.text,
                     decoration: InputDecoration(
                       hintText: 'Enter user ID',
                       hintStyle: TextStyle(color: Colors.grey.shade400),
@@ -123,11 +123,11 @@ void createRequestDialog(BuildContext ctx) {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return 'Please enter a user ID';
+                        return 'Please enter a username';
                       }
-                      if (int.tryParse(value) == null) {
-                        return 'Please enter a valid number';
-                      }
+                      // if (int.tryParse(value) == null) {
+                      //   return 'Please enter a valid number';
+                      // }
                       return null;
                     },
                   ),
@@ -232,7 +232,7 @@ void createRequestDialog(BuildContext ctx) {
                         child: ElevatedButton(
                           onPressed: () {
                             if (formKey.currentState?.validate() ?? false) {
-                              final userId = int.parse(userIdController.text);
+                              final userId = userIdController.text;
                               ctx.read<AlarmRequestBloc>().add(
                                     CreateAlarmRequestEvent(
                                       toUserId: userId,

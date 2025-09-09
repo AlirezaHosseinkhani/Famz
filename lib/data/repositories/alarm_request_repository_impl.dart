@@ -52,7 +52,7 @@ class AlarmRequestRepositoryImpl implements AlarmRequestRepository {
 
   @override
   Future<Either<Failure, SentRequest>> createAlarmRequest({
-    required int toUserId,
+    required String toUserId,
     required String message,
   }) async {
     if (await networkInfo.isConnected) {

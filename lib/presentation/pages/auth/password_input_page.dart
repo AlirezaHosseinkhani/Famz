@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/utils/permission_utils.dart';
 import '../../../core/utils/snackbar_utils.dart';
 import '../../../core/utils/validators.dart';
 import '../../bloc/auth/auth_bloc.dart';
@@ -50,18 +51,26 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
     if (_formKey.currentState?.validate() ?? false) {
       if (widget.isExistingUser) {
         // Login existing user
-        context.read<AuthBloc>().add(
-              AuthLoginEvent(
-                emailOrPhone: widget.emailOrPhone,
-                password: _passwordController.text,
-              ),
-            );
+        try {
+          context.read<AuthBloc>().add(
+                AuthLoginEvent(
+                  emailOrPhone: widget.emailOrPhone,
+                  password: _passwordController.text,
+                ),
+              );
+        } catch (e) {
+          SnackbarUtils.showOverlaySnackbar(
+            context,
+            e.toString(),
+            SnackbarType.error,
+          );
+        }
       } else {
         // Navigate to name input for new user registration
         Navigator.of(context).pushNamed(
           RouteNames.nameInput,
           arguments: {
-            'email': widget.emailOrPhone,
+            'phone_number': widget.emailOrPhone,
             'password': _passwordController.text,
           },
         );
@@ -80,12 +89,22 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
         backgroundColor: Colors.black,
       ),
       body: BlocListener<AuthBloc, AuthState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is AuthAuthenticated) {
-            Navigator.of(context).pushNamedAndRemoveUntil(
-              RouteNames.systemAlertWindowPermission,
-              (route) => false,
-            );
+            final bool hasPermission =
+                await PermissionUtils.isSystemAlertWindowGranted();
+
+            if (hasPermission) {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                RouteNames.systemAlertWindowPermission,
+                (route) => false,
+              );
+            } else {
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                RouteNames.notificationPermission,
+                (route) => false,
+              );
+            }
           } else if (state is AuthError) {
             SnackbarUtils.showOverlaySnackbar(
               context,

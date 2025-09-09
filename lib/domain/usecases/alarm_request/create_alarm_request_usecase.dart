@@ -20,7 +20,7 @@ class CreateAlarmRequestUseCase {
 }
 
 class CreateAlarmRequestParams extends Equatable {
-  final int toUserId;
+  final String toUserId;
   final String message;
 
   const CreateAlarmRequestParams({

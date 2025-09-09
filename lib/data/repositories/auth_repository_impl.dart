@@ -30,7 +30,7 @@ class AuthRepositoryImpl implements AuthRepository {
       String emailOrPhone) async {
     if (await networkInfo.isConnected) {
       try {
-        final request = CheckExistenceRequestModel(email: emailOrPhone);
+        final request = CheckExistenceRequestModel(phoneNumber: emailOrPhone);
         final result = await remoteDataSource.checkExistence(request);
         return Right(result);
       } on AuthException catch (e) {
@@ -78,7 +78,7 @@ class AuthRepositoryImpl implements AuthRepository {
     if (await networkInfo.isConnected) {
       try {
         final request = RegisterRequestModel(
-          email: emailOrPhone,
+          phoneNumber: emailOrPhone,
           password: password,
           username: username,
           password2: password,
