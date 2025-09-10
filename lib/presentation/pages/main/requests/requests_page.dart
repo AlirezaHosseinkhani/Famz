@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/utils/snackbar_utils.dart';
+import '../../../../data/datasources/local/auth_local_datasource.dart';
 import '../../../../domain/entities/received_request.dart';
 import '../../../../domain/entities/sent_request.dart';
 import '../../../../injection_container.dart' as di;
@@ -28,14 +29,20 @@ class _RequestsPageState extends State<RequestsPage>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late AlarmRequestBloc _alarmRequestBloc;
+  late AuthLocalDataSource _authLocalDataSource;
+
+  String username = "";
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
     _alarmRequestBloc = di.sl<AlarmRequestBloc>();
+    _authLocalDataSource = di.sl<AuthLocalDataSource>();
+
     // Load initial data
     _alarmRequestBloc.add(LoadAllRequestsEvent());
+    _loadUsername();
   }
 
   @override
@@ -45,12 +52,23 @@ class _RequestsPageState extends State<RequestsPage>
     super.dispose();
   }
 
+  Future<void> _loadUsername() async {
+    try {
+      final fetchedUsername = await _authLocalDataSource.getUsername();
+      if (mounted) {
+        setState(() {
+          username = fetchedUsername ?? "";
+        });
+      }
+    } catch (e) {}
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _alarmRequestBloc,
       child: BlocConsumer<AlarmRequestBloc, AlarmRequestState>(
-        listener: (context, state) {
+        listener: (context, state) async {
           if (state is AlarmRequestOperationSuccess) {
             SnackbarUtils.showOverlaySnackbar(
               context,
@@ -100,7 +118,9 @@ class _RequestsPageState extends State<RequestsPage>
                 IconButton(
                   icon: const Icon(Icons.ios_share),
                   tooltip: 'Share Link',
-                  onPressed: () => _showShareDialog(context),
+                  onPressed: () => _showShareDialog(
+                    context,
+                  ),
                 ),
               ],
             ),
@@ -130,6 +150,7 @@ class _RequestsPageState extends State<RequestsPage>
           borderRadius: BorderRadius.circular(12),
         ),
         child: ShareLinkWidget(
+          username: username,
           onShare: (link) {
             Navigator.pop(context);
             SnackbarUtils.showOverlaySnackbar(

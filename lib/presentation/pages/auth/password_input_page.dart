@@ -91,17 +91,33 @@ class _PasswordInputPageState extends State<PasswordInputPage> {
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) async {
           if (state is AuthAuthenticated) {
-            final bool hasPermission =
-                await PermissionUtils.isSystemAlertWindowGranted();
+            try {
+              final navigationType =
+                  await PermissionUtils.getRequiredPermissionNavigation();
 
-            if (hasPermission) {
+              switch (navigationType) {
+                case PermissionNavigationType.mainScreen:
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    RouteNames.main, // Replace with your main screen route
+                    (route) => false,
+                  );
+                  break;
+                case PermissionNavigationType.systemAlertWindow:
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    RouteNames.systemAlertWindowPermission,
+                    (route) => false,
+                  );
+                  break;
+                case PermissionNavigationType.notification:
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    RouteNames.notificationPermission,
+                    (route) => false,
+                  );
+                  break;
+              }
+            } catch (e) {
               Navigator.of(context).pushNamedAndRemoveUntil(
                 RouteNames.systemAlertWindowPermission,
-                (route) => false,
-              );
-            } else {
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                RouteNames.notificationPermission,
                 (route) => false,
               );
             }

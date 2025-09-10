@@ -22,22 +22,48 @@ class Validators {
     return null;
   }
 
-  static bool isValidPhoneNumber(String phoneNumber) {
-    final digitsOnly = phoneNumber.replaceAll(RegExp(r'\D'), '');
-    return digitsOnly.length >= 10 && digitsOnly.length <= 15;
-  }
+  //
+  // static bool isValidPhoneNumber(String phoneNumber) {
+  //   final digitsOnly = phoneNumber.replaceAll(RegExp(r'\D'), '');
+  //   return digitsOnly.length >= 10 && digitsOnly.length <= 15;
+  // }
+  //
+  // static String? validateEmailOrPhone(String? value) {
+  //   if (value == null || value.isEmpty) {
+  //     return 'Please enter email or phone number';
+  //   }
+  //
+  //   // Check if it's an email
+  //   if (value.contains('@')) {
+  //     return validateEmail(value);
+  //   } else {
+  //     return validatePhoneNumber(value);
+  //   }
+  // }
 
-  static String? validateEmailOrPhone(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter email or phone number';
+  static String? validatePhoneNumber(String? value) {
+    if (value == null || value.trim().isEmpty) {
+      return "Phone number is required";
     }
 
-    // Check if it's an email
-    if (value.contains('@')) {
-      return validateEmail(value);
-    } else {
-      return validatePhoneNumber(value);
+    final number = value.trim();
+
+    // Only digits allowed
+    if (!RegExp(r'^[0-9]+$').hasMatch(number)) {
+      return "Phone number must contain digits only";
     }
+
+    // Must not start with zero
+    if (number.startsWith('0')) {
+      return "Phone number must not start with 0";
+    }
+
+    // Length check (7–12 digits for general case)
+    if (number.length < 7 || number.length > 12) {
+      return "must be between 7 and 12 digits";
+    }
+
+    return null;
   }
 
   static String? validateEmail(String? value) {
@@ -53,18 +79,18 @@ class Validators {
     return null;
   }
 
-  static String? validatePhoneNumber(String? value) {
-    if (value == null || value.isEmpty) {
-      return 'Please enter a phone number';
-    }
-
-    final phoneRegExp = RegExp(r'^[\+]?[1-9][\d]{0,15}$');
-    if (!phoneRegExp.hasMatch(value.replaceAll(RegExp(r'[\s\-\(\)]'), ''))) {
-      return 'Please enter a valid phone number';
-    }
-
-    return null;
-  }
+  // static String? validatePhoneNumber(String? value) {
+  //   if (value == null || value.isEmpty) {
+  //     return 'Please enter a phone number';
+  //   }
+  //
+  //   final phoneRegExp = RegExp(r'^[\+]?[1-9][\d]{0,15}$');
+  //   if (!phoneRegExp.hasMatch(value.replaceAll(RegExp(r'[\s\-\(\)]'), ''))) {
+  //     return 'Please enter a valid phone number';
+  //   }
+  //
+  //   return null;
+  // }
 
   static String? validatePassword(String? value) {
     if (value == null || value.isEmpty) {

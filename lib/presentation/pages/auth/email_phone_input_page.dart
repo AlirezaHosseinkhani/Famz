@@ -1,5 +1,7 @@
 // lib/presentation/pages/auth/email_phone_input_page.dart
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/utils/snackbar_utils.dart';
@@ -11,7 +13,6 @@ import '../../routes/route_names.dart';
 import '../../widgets/common/custom_app_bar.dart';
 import '../../widgets/common/custom_button.dart';
 import '../../widgets/common/custom_snackbar.dart';
-import '../../widgets/common/custom_text_field.dart';
 
 class EmailPhoneInputPage extends StatefulWidget {
   const EmailPhoneInputPage({Key? key}) : super(key: key);
@@ -22,8 +23,12 @@ class EmailPhoneInputPage extends StatefulWidget {
 
 class _EmailPhoneInputPageState extends State<EmailPhoneInputPage> {
   final _formKey = GlobalKey<FormState>();
-  final _emailPhoneController = TextEditingController();
+  final _phoneController = TextEditingController();
   final _focusNode = FocusNode();
+
+  // Default country code
+  String _selectedCountryCode = '+1';
+  String _selectedCountryDialCode = '+1';
 
   @override
   void initState() {
@@ -33,16 +38,20 @@ class _EmailPhoneInputPageState extends State<EmailPhoneInputPage> {
 
   @override
   void dispose() {
-    _emailPhoneController.dispose();
+    _phoneController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
+
+  String get _fullPhoneNumber =>
+      '$_selectedCountryDialCode${_phoneController.text.trim()}';
 
   void _checkExistence() {
     if (_formKey.currentState?.validate() ?? false) {
       context.read<AuthBloc>().add(
             AuthCheckExistenceEvent(
-                emailOrPhone: _emailPhoneController.text.trim()),
+              emailOrPhone: _fullPhoneNumber,
+            ),
           );
     }
   }
@@ -63,7 +72,7 @@ class _EmailPhoneInputPageState extends State<EmailPhoneInputPage> {
             Navigator.of(context).pushNamed(
               RouteNames.passwordInput,
               arguments: {
-                'phone_number': state.emailOrPhone,
+                'phone_number': _fullPhoneNumber,
                 'isExistingUser': state.result.exists,
               },
             );
@@ -96,7 +105,7 @@ class _EmailPhoneInputPageState extends State<EmailPhoneInputPage> {
                   ),
                   const SizedBox(height: 40),
                   Text(
-                    'Add Email or Phone Number',
+                    'Add Your Phone Number',
                     style: theme.textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
@@ -109,34 +118,14 @@ class _EmailPhoneInputPageState extends State<EmailPhoneInputPage> {
                     ),
                   ),
                   const SizedBox(height: 48),
-                  CustomTextField(
-                    label: 'Email or Phone Number',
-                    hint: 'Enter a valid Email / Phone number',
-                    controller: _emailPhoneController,
-                    keyboardType: TextInputType.emailAddress,
-                    focusNode: _focusNode,
-                    textInputAction: TextInputAction.done,
-                    prefixIcon: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: const Icon(Icons.alternate_email),
-                    ),
-                    validator: Validators.validateEmailOrPhone,
-                    onSubmitted: (_) => _checkExistence(),
-                  ),
+
+                  // Phone Number Input with Country Picker
+                  _buildPhoneInputField(theme),
+
                   const SizedBox(height: 24),
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
                       if (state is AuthError || state is AuthNetworkError) {
-                        // return Padding(
-                        //   padding: const EdgeInsets.only(bottom: 16),
-                        //   child: CustomErrorWidget(
-                        //     message: state is AuthError
-                        //         ? state.message
-                        //         : (state as AuthNetworkError).message,
-                        //     onRetry: _checkExistence,
-                        //     retryText: 'Retry',
-                        //   ),
-                        // );
                         return Text('Try again');
                       }
                       return const SizedBox.shrink();
@@ -161,6 +150,92 @@ class _EmailPhoneInputPageState extends State<EmailPhoneInputPage> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPhoneInputField(ThemeData theme) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: theme.dividerColor.withOpacity(0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          // Country Code Picker
+          CountryCodePicker(
+            onChanged: (CountryCode countryCode) {
+              setState(() {
+                _selectedCountryCode = countryCode.code!;
+                _selectedCountryDialCode = countryCode.dialCode!;
+              });
+            },
+            initialSelection: 'US',
+            flagWidth: 24,
+            favorite: const ['+1', 'US', '+98', 'IR'],
+            showCountryOnly: true,
+            showOnlyCountryWhenClosed: false,
+            showFlagMain: false,
+            alignLeft: false,
+            textStyle: TextStyle(
+              color: theme.textTheme.bodyLarge?.color,
+              fontSize: 14,
+            ),
+            dialogTextStyle: TextStyle(
+              color: theme.textTheme.bodyLarge?.color,
+            ),
+            searchStyle: TextStyle(
+              color: theme.textTheme.bodyLarge?.color,
+            ),
+            dialogBackgroundColor: theme.scaffoldBackgroundColor,
+            barrierColor: Colors.black54,
+            backgroundColor: theme.scaffoldBackgroundColor,
+            boxDecoration: BoxDecoration(
+              color: theme.scaffoldBackgroundColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+
+          // Vertical Divider
+          // Container(
+          //   height: 30,
+          //   width: 1,
+          //   color: theme.dividerColor.withOpacity(0.3),
+          // ),
+
+          // Phone Number Input
+          Expanded(
+            child: TextFormField(
+              controller: _phoneController,
+              focusNode: _focusNode,
+              keyboardType: TextInputType.phone,
+              textInputAction: TextInputAction.done,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(15), // Max phone number length
+              ],
+              style: TextStyle(
+                color: theme.textTheme.bodyLarge?.color,
+                fontSize: 16,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Phone Number',
+                hintStyle: TextStyle(
+                  color: theme.textTheme.bodyLarge?.color?.withOpacity(0.5),
+                ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 16,
+                ),
+              ),
+              validator: (value) => Validators.validatePhoneNumber(value),
+              onFieldSubmitted: (_) => _checkExistence(),
+            ),
+          ),
+        ],
       ),
     );
   }

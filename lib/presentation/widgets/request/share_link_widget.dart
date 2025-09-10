@@ -7,15 +7,17 @@ import '../common/custom_snackbar.dart';
 
 class ShareLinkWidget extends StatelessWidget {
   final Function(String) onShare;
+  final String username;
 
   const ShareLinkWidget({
     super.key,
     required this.onShare,
+    required this.username,
   });
 
   @override
   Widget build(BuildContext context) {
-    final shareLink = _generateShareLink();
+    final shareLink = _generateShareLink(username);
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -94,10 +96,8 @@ class ShareLinkWidget extends StatelessWidget {
     );
   }
 
-  String _generateShareLink() {
-    // Generate a unique share link for the user
-    // This would typically include the user's ID or a unique token
-    return 'https://famz.app/request/username';
+  String _generateShareLink(String username) {
+    return username;
   }
 
   void _copyToClipboard(BuildContext context, String link) {
@@ -112,8 +112,8 @@ class ShareLinkWidget extends StatelessWidget {
 
   void _shareLink(String link) {
     Share.share(
-      'Hey! You can send me alarm requests using this link: $link',
-      subject: 'Famz Alarm Request Link',
+      'Hey! You can send me alarm requests using this username on famz: $link',
+      subject: 'Famz Alarm Request Username',
     );
     onShare(link);
   }

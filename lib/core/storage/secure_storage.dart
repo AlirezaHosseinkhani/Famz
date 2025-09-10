@@ -20,6 +20,14 @@ class SecureStorage {
     await _storage.write(key: StorageKeys.refreshToken, value: token);
   }
 
+  Future<void> saveUsername(String username) async {
+    await _storage.write(key: StorageKeys.userName, value: username);
+  }
+
+  Future<String?> getUsername() async {
+    return await _storage.read(key: StorageKeys.userName);
+  }
+
   Future<String?> getRefreshToken() async {
     return await _storage.read(key: StorageKeys.refreshToken);
   }

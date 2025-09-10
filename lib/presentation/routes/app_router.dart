@@ -52,7 +52,7 @@ class AppRouter {
         final args = settings.arguments as Map<String, dynamic>;
         return MaterialPageRoute(
           builder: (_) => NameInputPage(
-            emailOrPhone: args['username'] as String,
+            emailOrPhone: args['phone_number'] as String,
             password: args['password'] as String,
           ),
         );

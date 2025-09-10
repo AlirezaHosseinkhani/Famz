@@ -56,6 +56,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
         // Save tokens and user data locally
         await localDataSource.saveTokens(response);
+        await localDataSource.saveUsername(response.username!);
         // await localDataSource.saveUser(response.user);
         await localDataSource.setLoggedIn(true);
 

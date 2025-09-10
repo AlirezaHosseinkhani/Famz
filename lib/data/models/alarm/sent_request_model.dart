@@ -25,7 +25,7 @@ class SentRequestModel {
       status: json['status'],
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),
-      toUser: ToUserModel.fromJson(json['to_user']),
+      toUser: ToUserModel.fromJson(json['recipient_data']),
     );
   }
 

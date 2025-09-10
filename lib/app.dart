@@ -1,3 +1,4 @@
+import 'package:country_code_picker/country_code_picker.dart';
 import 'package:famz/presentation/bloc/alarm_recording/alarm_recording_bloc.dart';
 import 'package:famz/presentation/bloc/alarm_request/alarm_request_bloc.dart';
 import 'package:flutter/material.dart';
@@ -51,6 +52,7 @@ class FamzApp extends StatelessWidget {
         darkTheme: ThemeConfig.darkTheme,
         themeMode: ThemeMode.dark,
         localizationsDelegates: const [
+          CountryLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,

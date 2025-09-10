@@ -6,6 +6,10 @@ import '../../models/auth/user_model.dart';
 abstract class AuthLocalDataSource {
   Future<void> saveTokens(TokenModel tokens);
 
+  Future<void> saveUsername(String username);
+
+  Future<String?> getUsername();
+
   Future<String?> getAccessToken();
 
   Future<String?> getRefreshToken();
@@ -36,6 +40,16 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   Future<void> saveTokens(TokenModel tokens) async {
     await secureStorage.saveAccessToken(tokens.access);
     await secureStorage.saveRefreshToken(tokens.refresh);
+  }
+
+  @override
+  Future<void> saveUsername(String username) async {
+    await secureStorage.saveUsername(username);
+  }
+
+  @override
+  Future<String?> getUsername() async {
+    return await secureStorage.getUsername();
   }
 
   @override

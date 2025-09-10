@@ -68,25 +68,33 @@ class _NameInputPageState extends State<NameInputPage> {
         listener: (context, state) async {
           if (state is AuthRegistrationSuccess) {
             try {
-              final bool shouldRequest =
-                  await PermissionUtils.shouldRequestSystemAlertWindow();
+              final navigationType =
+                  await PermissionUtils.getRequiredPermissionNavigation();
 
-              if (shouldRequest) {
-                Navigator.of(context).pushNamed(
-                  RouteNames.systemAlertWindowPermission,
-                  arguments: {
-                    'name': _nameController.text.trim(),
-                    'phone_number': widget.emailOrPhone,
-                  },
-                );
-              } else {
-                Navigator.of(context).pushReplacementNamed(
-                  RouteNames.notificationPermission,
-                  arguments: {
-                    'name': _nameController.text.trim(),
-                    'phone_number': widget.emailOrPhone,
-                  },
-                );
+              final arguments = {
+                'name': _nameController.text.trim(),
+                'phone_number': widget.emailOrPhone,
+              };
+
+              switch (navigationType) {
+                case PermissionNavigationType.mainScreen:
+                  Navigator.of(context).pushReplacementNamed(
+                    RouteNames.main, // Replace with your main screen route
+                    arguments: arguments,
+                  );
+                  break;
+                case PermissionNavigationType.systemAlertWindow:
+                  Navigator.of(context).pushNamed(
+                    RouteNames.systemAlertWindowPermission,
+                    arguments: arguments,
+                  );
+                  break;
+                case PermissionNavigationType.notification:
+                  Navigator.of(context).pushReplacementNamed(
+                    RouteNames.notificationPermission,
+                    arguments: arguments,
+                  );
+                  break;
               }
             } catch (e) {
               Navigator.of(context).pushNamed(
