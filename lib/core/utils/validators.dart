@@ -125,8 +125,9 @@ class Validators {
       return 'Name must be at least 2 characters';
     }
 
-    if (RegExp(r'[0-9@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
-      return 'Names cannot include numbers, symbols (e.g., @, #) or special characters';
+    // Allow numbers but still block symbols and special characters
+    if (RegExp(r'[@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
+      return 'Names cannot include symbols (e.g., @, #) or special characters';
     }
 
     return null;

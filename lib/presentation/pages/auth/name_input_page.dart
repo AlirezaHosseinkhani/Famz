@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../core/utils/permission_utils.dart';
 import '../../../core/utils/snackbar_utils.dart';
+import '../../../core/utils/validators.dart';
 import '../../bloc/auth/auth_bloc.dart';
 import '../../bloc/auth/auth_event.dart';
 import '../../bloc/auth/auth_state.dart';
@@ -155,19 +156,7 @@ class _NameInputPageState extends State<NameInputPage> {
                     keyboardType: TextInputType.name,
                     focusNode: _focusNode,
                     textInputAction: TextInputAction.done,
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Names cannot include numbers, symbols (e.g., @, #) or special characters';
-                      }
-                      if (value.trim().length < 2) {
-                        return 'Name must be at least 2 characters';
-                      }
-                      // Check for numbers and special characters
-                      if (RegExp(r'[0-9@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
-                        return 'Names cannot include numbers, symbols (e.g., @, #) or special characters';
-                      }
-                      return null;
-                    },
+                    validator: Validators.validateName,
                     onSubmitted: (_) => _submitName(),
                     prefixIcon: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
