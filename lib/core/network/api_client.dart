@@ -227,7 +227,10 @@ class ApiClient {
     // Try to extract error message from response body
     try {
       final jsonResponse = jsonDecode(response.body);
-      message = jsonResponse['detail'] ?? jsonResponse['message'] ?? message;
+      message = jsonResponse['detail'] ??
+          jsonResponse['message'] ??
+          jsonResponse['username'][0] ??
+          message;
     } catch (e) {
       // If JSON parsing fails, use default message or raw body if it's short
       if (response.body.isNotEmpty && response.body.length < 200) {

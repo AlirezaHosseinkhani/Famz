@@ -175,24 +175,18 @@ class _NameInputPageState extends State<NameInputPage> {
                     ),
                   ),
                   const SizedBox(height: 24),
-                  BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, state) {
-                      if (state is AuthError || state is AuthNetworkError) {
-                        // return Padding(
-                        //   padding: const EdgeInsets.only(bottom: 16),
-                        //   child: CustomErrorWidget(
-                        //     message: state is AuthError
-                        //         ? state.message
-                        //         : (state as AuthNetworkError).message,
-                        //     onRetry: _submitName,
-                        //     retryText: 'Retry',
-                        //   ),
-                        // );
-                        return Text('Try again');
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
+                  // BlocBuilder<AuthBloc, AuthState>(
+                  //   builder: (context, state) {
+                  //     if (state is AuthError) {
+                  //       SnackbarUtils.showOverlaySnackbar(
+                  //         context,
+                  //         state.message,
+                  //         SnackbarType.error,
+                  //       );
+                  //     }
+                  //     return const SizedBox.shrink();
+                  //   },
+                  // ),
                   const Spacer(),
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
