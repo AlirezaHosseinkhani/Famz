@@ -117,7 +117,7 @@ class AlarmRequestRemoteDataSourceImpl implements AlarmRequestRemoteDataSource {
   Future<void> rejectRequest(int requestId) async {
     try {
       await apiClient
-          .post('${ApiConstants.receivedRequestsEndpoint}/$requestId/reject/');
+          .post('${ApiConstants.receivedRequestsEndpoint}$requestId/reject/');
     } catch (e) {
       throw ServerException(e.toString());
     }
