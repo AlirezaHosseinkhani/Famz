@@ -22,6 +22,8 @@ abstract class AuthRemoteDataSource {
   Future<TokenModel> refreshToken(String refreshToken);
 
   Future<UserModel> getCurrentUser();
+
+  Future<void> updateFcmToken(String fcmToken);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -98,6 +100,18 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       return UserModel.fromJson(response);
     } catch (e) {
       throw ServerException(e.toString());
+    }
+  }
+
+  @override
+  Future<void> updateFcmToken(String fcmToken) async {
+    try {
+      await apiClient.patch(
+        ApiConstants.profileEndpoint,
+        body: {'fcm_token': fcmToken},
+      );
+    } catch (e) {
+      throw ServerException('Failed to update FCM token: ${e.toString()}');
     }
   }
 }

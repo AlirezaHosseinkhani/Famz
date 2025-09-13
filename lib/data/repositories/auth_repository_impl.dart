@@ -1,5 +1,6 @@
 // lib/data/repositories/auth_repository_impl.dart
 import 'package:dartz/dartz.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../../core/errors/exceptions.dart';
 import '../../core/errors/failures.dart';
@@ -57,8 +58,8 @@ class AuthRepositoryImpl implements AuthRepository {
         // Save tokens and user data locally
         await localDataSource.saveTokens(response);
         await localDataSource.saveUsername(response.username!);
-        // await localDataSource.saveUser(response.user);
         await localDataSource.setLoggedIn(true);
+        await _sendFcmTokenAfterLogin();
 
         return Right(response);
       } on AuthException catch (e) {
@@ -89,6 +90,7 @@ class AuthRepositoryImpl implements AuthRepository {
         // Save tokens locally
         await localDataSource.saveTokens(tokens);
         await localDataSource.setLoggedIn(true);
+        await _sendFcmTokenAfterLogin();
 
         return Right(tokens);
       } on AuthException catch (e) {
@@ -101,6 +103,36 @@ class AuthRepositoryImpl implements AuthRepository {
     } else {
       return Left(NetworkFailure('No internet connection'));
     }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateFcmToken(String fcmToken) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.updateFcmToken(fcmToken);
+        return const Right(null);
+      } on AuthException catch (e) {
+        return Left(AuthFailure(e.message));
+      } on NetworkException catch (e) {
+        return Left(NetworkFailure(e.message));
+      } on ServerException catch (e) {
+        return Left(ServerFailure(e.message));
+      }
+    } else {
+      return Left(NetworkFailure('No internet connection'));
+    }
+  }
+
+  Future<void> _sendFcmTokenAfterLogin() async {
+    try {
+      final FirebaseMessaging fm = FirebaseMessaging.instance;
+      final token = await fm.getToken();
+
+      if (token != null) {
+        // Send FCM token to server (fire and forget approach)
+        updateFcmToken(token).catchError((error) {});
+      }
+    } catch (e) {}
   }
 
   @override
