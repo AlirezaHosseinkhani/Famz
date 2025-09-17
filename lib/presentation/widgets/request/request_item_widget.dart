@@ -162,9 +162,9 @@ class RequestItemWidget extends StatelessWidget {
 
   String _getUsername() {
     if (request.runtimeType.toString().contains('Received')) {
-      return request.fromUser.email?.split('@')[0] ?? 'Unknown User';
+      return request.fromUser.username ?? 'Unknown User';
     } else {
-      return request.toUser.email?.split('@')[0] ?? 'Unknown User';
+      return request.toUser.username ?? 'Unknown User';
     }
   }
 

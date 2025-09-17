@@ -24,14 +24,19 @@ class AlarmRequestLoading extends AlarmRequestState {
 class AlarmRequestsLoaded extends AlarmRequestState {
   final List<SentRequest> sentRequests;
   final List<ReceivedRequest> receivedRequests;
+  final bool isLoadingSent;
+  final bool isLoadingReceived;
 
   const AlarmRequestsLoaded({
     required this.sentRequests,
     required this.receivedRequests,
+    this.isLoadingSent = false,
+    this.isLoadingReceived = false,
   });
 
   @override
-  List<Object?> get props => [sentRequests, receivedRequests];
+  List<Object?> get props =>
+      [sentRequests, receivedRequests, isLoadingSent, isLoadingReceived];
 }
 
 class AlarmRequestError extends AlarmRequestState {

@@ -63,3 +63,16 @@ class RejectRequestEvent extends AlarmRequestEvent {
 }
 
 class RefreshRequestsEvent extends AlarmRequestEvent {}
+
+class LoadSentRequestsEvent extends AlarmRequestEvent {}
+
+class LoadReceivedRequestsEvent extends AlarmRequestEvent {}
+
+class TabChangedEvent extends AlarmRequestEvent {
+  final int tabIndex;
+
+  const TabChangedEvent({required this.tabIndex});
+
+  @override
+  List<Object> get props => [tabIndex];
+}

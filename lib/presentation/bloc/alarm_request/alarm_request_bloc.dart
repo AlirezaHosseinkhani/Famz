@@ -44,6 +44,9 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     on<AcceptRequestEvent>(_onAcceptRequest);
     on<RejectRequestEvent>(_onRejectRequest);
     on<RefreshRequestsEvent>(_onRefreshRequests);
+    on<LoadSentRequestsEvent>(_onLoadSentRequests);
+    on<LoadReceivedRequestsEvent>(_onLoadReceivedRequests);
+    on<TabChangedEvent>(_onTabChanged);
   }
 
   Future<void> _onLoadAllRequests(
@@ -229,6 +232,80 @@ class AlarmRequestBloc extends Bloc<AlarmRequestEvent, AlarmRequestState> {
     Emitter<AlarmRequestState> emit,
   ) async {
     await _loadAndEmitRequests(emit);
+  }
+
+  Future<void> _onLoadSentRequests(
+    LoadSentRequestsEvent event,
+    Emitter<AlarmRequestState> emit,
+  ) async {
+    // Show loading only for sent requests if we have received requests cached
+    if (_cachedReceivedRequests.isNotEmpty) {
+      emit(AlarmRequestsLoaded(
+        sentRequests: [],
+        receivedRequests: _cachedReceivedRequests,
+        isLoadingSent: true,
+      ));
+    } else {
+      emit(const AlarmRequestLoading());
+    }
+
+    final result = await getSentRequestsUseCase.call();
+
+    result.fold(
+      (failure) =>
+          emit(AlarmRequestError(message: _mapFailureToMessage(failure))),
+      (sentRequests) {
+        _cachedSentRequests = sentRequests;
+        emit(AlarmRequestsLoaded(
+          sentRequests: _cachedSentRequests,
+          receivedRequests: _cachedReceivedRequests,
+        ));
+      },
+    );
+  }
+
+  Future<void> _onLoadReceivedRequests(
+    LoadReceivedRequestsEvent event,
+    Emitter<AlarmRequestState> emit,
+  ) async {
+    // Show loading only for received requests if we have sent requests cached
+    if (_cachedSentRequests.isNotEmpty) {
+      emit(AlarmRequestsLoaded(
+        sentRequests: _cachedSentRequests,
+        receivedRequests: [],
+        isLoadingReceived: true,
+      ));
+    } else {
+      emit(const AlarmRequestLoading());
+    }
+
+    final result = await getReceivedRequestsUseCase.call();
+
+    result.fold(
+      (failure) =>
+          emit(AlarmRequestError(message: _mapFailureToMessage(failure))),
+      (receivedRequests) {
+        _cachedReceivedRequests = receivedRequests;
+        emit(AlarmRequestsLoaded(
+          sentRequests: _cachedSentRequests,
+          receivedRequests: _cachedReceivedRequests,
+        ));
+      },
+    );
+  }
+
+  Future<void> _onTabChanged(
+    TabChangedEvent event,
+    Emitter<AlarmRequestState> emit,
+  ) async {
+    // Refresh data based on which tab is selected
+    if (event.tabIndex == 0) {
+      // Received requests tab
+      add(LoadReceivedRequestsEvent());
+    } else {
+      // Sent requests tab
+      add(LoadSentRequestsEvent());
+    }
   }
 
   // Helper method to load and emit requests

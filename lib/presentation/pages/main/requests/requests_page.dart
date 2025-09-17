@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -26,11 +28,12 @@ class RequestsPage extends StatefulWidget {
 }
 
 class _RequestsPageState extends State<RequestsPage>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
   late AlarmRequestBloc _alarmRequestBloc;
   late AuthLocalDataSource _authLocalDataSource;
-
+  Timer? _debounceTimer;
+  int _previousTabIndex = 0;
   String username = "";
 
   @override
@@ -40,6 +43,11 @@ class _RequestsPageState extends State<RequestsPage>
     _alarmRequestBloc = di.sl<AlarmRequestBloc>();
     _authLocalDataSource = di.sl<AuthLocalDataSource>();
 
+    _tabController.addListener(_onTabChanged);
+
+    // Add app lifecycle observer
+    WidgetsBinding.instance.addObserver(this);
+
     // Load initial data
     _alarmRequestBloc.add(LoadAllRequestsEvent());
     _loadUsername();
@@ -47,7 +55,10 @@ class _RequestsPageState extends State<RequestsPage>
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     _alarmRequestBloc.close();
     super.dispose();
   }
@@ -61,6 +72,36 @@ class _RequestsPageState extends State<RequestsPage>
         });
       }
     } catch (e) {}
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    if (state == AppLifecycleState.resumed) {
+      // App returned from background, refresh data
+      _alarmRequestBloc.add(RefreshRequestsEvent());
+    }
+  }
+
+  void _onTabChanged() {
+    // Check if the tab actually changed
+    if (_tabController.index != _previousTabIndex) {
+      print('Tab changed from $_previousTabIndex to ${_tabController.index}');
+
+      // Cancel previous timer
+      _debounceTimer?.cancel();
+
+      // Update previous tab index
+      _previousTabIndex = _tabController.index;
+
+      // Add debouncing to prevent excessive API calls
+      _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+        print('Refreshing data for tab ${_tabController.index}');
+        // Refresh data when tab changes
+        _alarmRequestBloc.add(RefreshRequestsEvent());
+      });
+    }
   }
 
   @override
@@ -233,21 +274,21 @@ class _ReceivedRequestsTab extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => createRequestDialog(context),
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    disabledBackgroundColor: Colors.black54,
-                  ),
-                  child: const Text(
-                    ' Request for an alarm media ',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      // fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
+                // TextButton(
+                //   onPressed: () => createRequestDialog(context),
+                //   style: TextButton.styleFrom(
+                //     backgroundColor: Colors.orange,
+                //     disabledBackgroundColor: Colors.black54,
+                //   ),
+                //   child: const Text(
+                //     ' Request for an alarm media ',
+                //     style: TextStyle(
+                //       color: Colors.white,
+                //       fontSize: 14,
+                //       // fontWeight: FontWeight.w500,
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           );
@@ -284,21 +325,21 @@ class _ReceivedRequestsTab extends StatelessWidget {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 12),
-                          TextButton(
-                            onPressed: () => createRequestDialog(context),
-                            style: TextButton.styleFrom(
-                              backgroundColor: Colors.white24,
-                              disabledBackgroundColor: Colors.black54,
-                            ),
-                            child: const Text(
-                              ' Request for an alarm media ',
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 14,
-                                // fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
+                          // TextButton(
+                          //   onPressed: () => createRequestDialog(context),
+                          //   style: TextButton.styleFrom(
+                          //     backgroundColor: Colors.white24,
+                          //     disabledBackgroundColor: Colors.black54,
+                          //   ),
+                          //   child: const Text(
+                          //     ' Request for an alarm media ',
+                          //     style: TextStyle(
+                          //       color: Colors.white70,
+                          //       fontSize: 14,
+                          //       // fontWeight: FontWeight.w500,
+                          //     ),
+                          //   ),
+                          // ),
                         ],
                       ),
                     );
@@ -446,21 +487,21 @@ class _SentRequestsTab extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
-                TextButton(
-                  onPressed: () => createRequestDialog(context),
-                  style: TextButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    disabledBackgroundColor: Colors.black54,
-                  ),
-                  child: const Text(
-                    ' Request for an alarm media ',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      // fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
+                // TextButton(
+                //   onPressed: () => createRequestDialog(context),
+                //   style: TextButton.styleFrom(
+                //     backgroundColor: Colors.orange,
+                //     disabledBackgroundColor: Colors.black54,
+                //   ),
+                //   child: const Text(
+                //     ' Request for an alarm media ',
+                //     style: TextStyle(
+                //       color: Colors.white,
+                //       fontSize: 14,
+                //       // fontWeight: FontWeight.w500,
+                //     ),
+                //   ),
+                // ),
               ],
             ),
           );
