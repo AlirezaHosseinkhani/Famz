@@ -323,12 +323,13 @@ class RecordAlarmBloc extends Bloc<RecordAlarmEvent, RecordAlarmState> {
         await _audioRecorder!.stopRecorder();
         audioFile = File(_currentRecordingPath);
       }
+      Duration finalDuration = event.recordingDuration ?? Duration.zero;
 
       emit(RecordingCompleted(
         recordingType: _currentRecordingType,
         audioFile: audioFile,
         videoFile: videoFile,
-        duration: Duration.zero,
+        duration: finalDuration,
         // UI will provide the actual duration
         filePath: _currentRecordingPath,
       ));

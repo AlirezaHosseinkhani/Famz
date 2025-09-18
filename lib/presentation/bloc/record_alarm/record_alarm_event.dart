@@ -12,7 +12,14 @@ class StartRecordingEvent extends RecordAlarmEvent {
   });
 }
 
-class StopRecordingEvent extends RecordAlarmEvent {}
+class StopRecordingEvent extends RecordAlarmEvent {
+  final Duration? recordingDuration;
+
+  StopRecordingEvent({this.recordingDuration});
+
+  @override
+  List<Object?> get props => [recordingDuration];
+}
 
 class PauseRecordingEvent extends RecordAlarmEvent {}
 

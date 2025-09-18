@@ -139,12 +139,8 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
     }
   }
 
-  // Improved timer management methods
   void _startRecordingTimer() {
-    // Always stop any existing timer first
     _stopRecordingTimer();
-
-    // Reset duration and start fresh
     _recordingDuration = Duration.zero;
     _isTimerActive = true;
 
@@ -158,9 +154,10 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
         _recordingDuration = Duration(seconds: timer.tick);
       });
 
-      // Auto-stop at 30 seconds
+      // Auto-stop at 30 seconds with duration
       if (_recordingDuration.inSeconds >= 30) {
-        _recordAlarmBloc.add(StopRecordingEvent());
+        _recordAlarmBloc
+            .add(StopRecordingEvent(recordingDuration: _recordingDuration));
       }
     });
   }
@@ -768,7 +765,8 @@ class _RecordAlarmPageState extends State<RecordAlarmPage>
             icon: Icons.stop,
             text: 'Stop',
             backgroundColor: const Color(0xFF48484A),
-            onPressed: () => _recordAlarmBloc.add(StopRecordingEvent()),
+            onPressed: () => _recordAlarmBloc
+                .add(StopRecordingEvent(recordingDuration: _recordingDuration)),
           ),
         ],
       ),
