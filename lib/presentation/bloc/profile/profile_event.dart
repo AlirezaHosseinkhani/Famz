@@ -28,11 +28,13 @@ class UpdateProfileEvent extends ProfileEvent {
 
 class PatchProfileEvent extends ProfileEvent {
   final String? phoneNumber;
+  final String? username;
   final String? bio;
   final String? profilePicture;
 
   const PatchProfileEvent({
     this.phoneNumber,
+    this.username,
     this.bio,
     this.profilePicture,
   });

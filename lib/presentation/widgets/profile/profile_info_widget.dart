@@ -54,7 +54,7 @@ class ProfileInfoWidget extends StatelessWidget {
           // Profile Information Fields
           _buildInfoField(
             context,
-            'Name',
+            'Username',
             profile.username,
           ),
 

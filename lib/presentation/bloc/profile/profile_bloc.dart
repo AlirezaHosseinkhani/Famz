@@ -69,6 +69,7 @@ class ProfileBloc extends Bloc<ProfileEvent, ProfileState> {
 
       final params = PatchProfileParams(
         phoneNumber: event.phoneNumber,
+        username: event.username,
         bio: event.bio,
         profilePicture: event.profilePicture,
       );

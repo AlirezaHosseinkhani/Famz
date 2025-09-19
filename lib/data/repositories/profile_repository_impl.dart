@@ -39,6 +39,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Either<Failure, Profile>> updateProfile({
     String? phoneNumber,
+    String? username,
     String? bio,
     String? profilePicture,
   }) async {
@@ -64,6 +65,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Either<Failure, Profile>> patchProfile({
     String? phoneNumber,
+    String? username,
     String? bio,
     String? profilePicture,
   }) async {
@@ -71,6 +73,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       try {
         final request = UpdateProfileRequestModel(
           phoneNumber: phoneNumber,
+          username: username,
           bio: bio,
           profilePicture: profilePicture,
         );

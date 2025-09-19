@@ -21,6 +21,7 @@ class EditProfilePage extends StatefulWidget {
 class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _bioController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
 
@@ -38,6 +39,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     final state = context.read<ProfileBloc>().state;
     if (state is ProfileLoaded) {
       _phoneController.text = state.profile.phoneNumber ?? '';
+      _usernameController.text = state.profile.username ?? '';
       _bioController.text = state.profile.bio ?? '';
       _profileImagePath = state.profile.profilePicture;
     }
@@ -46,6 +48,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void dispose() {
     _phoneController.dispose();
+    _usernameController.dispose();
     _bioController.dispose();
     super.dispose();
   }
@@ -151,6 +154,24 @@ class _EditProfilePageState extends State<EditProfilePage> {
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                           ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Username Field
+                        _buildInputField(
+                          label: 'Username',
+                          controller: _usernameController,
+                          icon: Icons.perm_identity,
+                          keyboardType: TextInputType.text,
+                          // validator: (value) {
+                          //   if (value != null && value.isNotEmpty) {
+                          //     if (!RegExp(r'^\+?[1-9]\d{1,14}$')
+                          //         .hasMatch(value)) {
+                          //       return 'Please enter a valid phone number';
+                          //     }
+                          //   }
+                          //   return null;
+                          // },
                         ),
                         const SizedBox(height: 20),
 
@@ -389,11 +410,13 @@ class _EditProfilePageState extends State<EditProfilePage> {
   void _saveProfile() {
     if (_formKey.currentState!.validate()) {
       final phoneNumber = _phoneController.text.trim();
+      final username = _usernameController.text.trim();
       final bio = _bioController.text.trim();
 
       context.read<ProfileBloc>().add(
             PatchProfileEvent(
               phoneNumber: phoneNumber.isEmpty ? null : phoneNumber,
+              username: username.isEmpty ? null : username,
               bio: bio.isEmpty ? null : bio,
               profilePicture: _profileImageBase64,
             ),

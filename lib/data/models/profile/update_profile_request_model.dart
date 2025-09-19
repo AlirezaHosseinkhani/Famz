@@ -1,10 +1,12 @@
 class UpdateProfileRequestModel {
   final String? phoneNumber;
+  final String? username;
   final String? bio;
   final String? profilePicture;
 
   UpdateProfileRequestModel({
     this.phoneNumber,
+    this.username,
     this.bio,
     this.profilePicture,
   });
@@ -14,6 +16,10 @@ class UpdateProfileRequestModel {
 
     if (phoneNumber != null) {
       data['phone_number'] = phoneNumber;
+    }
+
+    if (username != null) {
+      data['username'] = username;
     }
     if (bio != null) {
       data['bio'] = bio;

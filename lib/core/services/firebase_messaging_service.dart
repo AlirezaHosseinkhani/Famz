@@ -28,10 +28,7 @@ class FirebaseMessagingService {
         criticalAlert: false,
         provisional: false,
         sound: true);
-// Print permission status
-    print('FCM permission status: ${settings.authorizationStatus}');
 
-// Get token
     final token = await _fm.getToken();
     print('FCM token: $token');
 // TODO: send this token to your server if needed
@@ -44,7 +41,6 @@ class FirebaseMessagingService {
 // Show local notification
       await NotificationService()
           .showLocalNotificationFromRemoteMessage(message);
-// Optionally dispatch to NotificationBloc or other state management
     });
 
 // App opened from background via notification
